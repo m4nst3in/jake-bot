@@ -27,13 +27,13 @@ function daysUntil(dateStr?: string) {
     const now = new Date();
     return Math.ceil((target.getTime() - now.getTime()) / 86400000);
 }
-function mapType(type: string) {
+function mapType(type: string, snow: string) {
     switch (type) {
-        case 'criado': return { title: '<a:snowflake:1313280806235672656> RPP Criado', color: 0x1f8b4c };
-        case 'solicitado': return { title: '<a:snowflake:1313280806235672656> RPP Solicitado', color: 0x1f8b4c };
-        case 'ativado': return { title: '<a:snowflake:1313280806235672656> RPP Iniciado', color: 0x4b9cd3 };
-        case 'removido': return { title: '<a:snowflake:1313280806235672656> RPP Encerrado', color: 0x95a5a6 };
-        default: return { title: '<a:snowflake:1313280806235672656> RPP', color: 0xcccccc };
+        case 'criado': return { title: `${snow} RPP Criado`, color: 0x1f8b4c };
+        case 'solicitado': return { title: `${snow} RPP Solicitado`, color: 0x1f8b4c };
+        case 'ativado': return { title: `${snow} RPP Iniciado`, color: 0x4b9cd3 };
+        case 'removido': return { title: `${snow} RPP Encerrado`, color: 0x95a5a6 };
+        default: return { title: `${snow} RPP`, color: 0xcccccc };
     }
 }
 export async function sendRppLog(guild: Guild | null | undefined, type: string, payload: RppLogPayload) {
@@ -41,7 +41,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     const rootCfg: any = loadConfig();
     const rppCfg = rootCfg.rpp?.guilds?.[guild.id];
     if (!rppCfg) {
-        throw new Error('Config RPP ausente para guild ' + guild.id + ' em bot-config.json');
+        throw new Error('Config RPP ausente para o servidor ' + guild.id + ' na config do bot.');
     }
     const reviewChannelId = rppCfg.review;
     const logChannelId = rppCfg.log;
@@ -54,7 +54,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
         } catch {}
     }
     if (!channel || !('send' in channel)) {
-    logger.warn({ channelId: useReview ? reviewChannelId : logChannelId, type }, 'RPP log: canal não encontrado ou inválido');
+    logger.warn({ channelId: useReview ? reviewChannelId : logChannelId, type }, 'Log dos erripepe: canal não encontrado ou inválido');
 
         if (type === 'ativado') {
             const fallbackId = reviewChannelId;
@@ -71,7 +71,9 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
         }
         if (!channel) return;
     }
-    const meta = mapType(type);
+    const snow = rootCfg.emojis?.rppSnowflake || '<a:snowflake:placeholder>';
+    const dot = rootCfg.emojis?.dot || '•';
+    const meta = mapType(type, snow);
     const days = daysUntil(payload.returnDate);
     const reasonRaw = (payload.reason || '').trim();
     const reason = reasonRaw ? (reasonRaw.length > 800 ? reasonRaw.slice(0, 800) + '…' : reasonRaw) : undefined;
@@ -90,20 +92,20 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
         return base.charAt(0).toUpperCase() + base.slice(1);
     }
     const parts: string[] = [];
-    parts.push(`<:white_ponto:1218673656679628942> **Usuário**\n<@${payload.userId}> (${payload.userId})`);
+    parts.push(`${dot} **Usuário**\n<@${payload.userId}> (${payload.userId})`);
     if (payload.moderatorId)
-        parts.push(`<:white_ponto:1218673656679628942> **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`);
+    parts.push(`${dot} **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`);
     const friendlyStatus = mapStatus(payload.status);
     if (friendlyStatus)
-        parts.push(`<:white_ponto:1218673656679628942> **Status**\n${friendlyStatus}`);
+    parts.push(`${dot} **Status**\n${friendlyStatus}`);
     if (reason)
-        parts.push(`<:white_ponto:1218673656679628942> **Motivo**\n${reason}`);
+    parts.push(`${dot} **Motivo**\n${reason}`);
     if (payload.area)
-        parts.push(`<:white_ponto:1218673656679628942> **Área**\n${payload.area}`);
+    parts.push(`${dot} **Área**\n${payload.area}`);
     if (type === 'removido' && payload.startedAt)
-        parts.push(`<:white_ponto:1218673656679628942> **Início do RPP**\n${payload.startedAt}`);
+    parts.push(`${dot} **Início do RPP**\n${payload.startedAt}`);
     if (payload.returnDate) {
-        parts.push(`<:white_ponto:1218673656679628942> **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
+    parts.push(`${dot} **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
     }
     const embed = new EmbedBuilder()
         .setTitle(meta.title)
@@ -117,7 +119,10 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     catch { }
     let components: any[] | undefined;
     if (type === 'solicitado' && payload.id !== undefined) {
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`rpp_accept:${payload.id}`).setLabel('ACEITAR').setStyle(3).setEmoji('<:white_certocr:1345874948589096980>'), new ButtonBuilder().setCustomId(`rpp_reject:${payload.id}`).setLabel('RECUSAR').setStyle(4).setEmoji('<:waterrado:1377911729199255602>'));
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder().setCustomId(`rpp_accept:${payload.id}`).setLabel('Aceitar').setStyle(3).setEmoji(rootCfg.emojis?.rppAccept || '') ,
+            new ButtonBuilder().setCustomId(`rpp_reject:${payload.id}`).setLabel('Recusar').setStyle(4).setEmoji(rootCfg.emojis?.rppReject || '')
+        );
         components = [row];
     }
     try {

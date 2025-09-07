@@ -17,6 +17,6 @@ export default {
         }
         const created = await service.requestRPP(interaction.user.id, motivo, retornoIso);
         await sendRppLog(interaction.guild, 'solicitado', { id: created.id, userId: interaction.user.id, reason: motivo, returnDate: formatBrDate(retornoIso), createdAt: created.requested_at });
-        await interaction.editReply(`Solicitação registrada. Motivo: ${motivo} • Retorno: ${retornoRaw}`);
+        await interaction.editReply(`Solicitação de RPP registrada. Motivo: ${motivo} • Retorno: ${retornoRaw}`);
     }
 };

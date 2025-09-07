@@ -10,7 +10,7 @@ export class RPPService {
             reason,
             return_date: returnDate
         });
-        logger.info({ record }, 'RPP request created');
+        logger.info({ record }, 'Pedido de RPP criado');
         return record;
     }
     async accept(id: number | string, moderatorId: string) {
@@ -61,6 +61,6 @@ export class RPPService {
     }
     async resetAll() {
         await (this.repo as any).clearAll();
-        logger.warn('All RPP records cleared');
+        logger.warn('Todos os RPPs foram removidos!');
     }
 }

@@ -20,15 +20,15 @@ client.buttons = new Collection();
 client.modals = new Collection();
 client.selects = new Collection();
 async function bootstrap() {
-    logger.info('Inicializando bot Jake...');
+    logger.info('Inicializando bot Jake da CDW...');
     await DatabaseManager.init();
     await loadCommands(client);
     await loadInteractions(client);
     registerEventHandlers(client);
     await client.login(process.env.DISCORD_TOKEN);
-    logger.info('Bot Jake logado.');
+    logger.info('Bot Jakezaum logado.');
 }
 bootstrap().catch(err => {
-    logger.error({ err }, 'Erro fatal no bootstrap');
+    logger.error({ err }, 'Erro fatal no bootstrap do bot');
     process.exit(1);
 });

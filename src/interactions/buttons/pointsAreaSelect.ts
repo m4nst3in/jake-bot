@@ -7,7 +7,7 @@ export default {
     const [, mode, area] = interaction.customId.split(':');
     const member = interaction.member as GuildMember | null;
     if(!assertAreaPermission(member, area)){
-      await interaction.reply({ content: 'Sem permissão para esta área.', ephemeral: true });
+      await interaction.reply({ content: 'Você não tem permissão pra mexer nos pontos dessa área, intruso!', ephemeral: true });
       return;
     }
   const modal = new ModalBuilder().setCustomId(`pts_amount:${mode}:${area}`).setTitle(`${mode==='add'?'Adicionar':'Remover'} • ${area}`);

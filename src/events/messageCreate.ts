@@ -11,15 +11,15 @@ const pointsWebhookCache = new Map<string, { id: string; token: string }>();
 
 async function replicateToPointsLog(message: Message, supportCfg: any) {
     try {
-        const pointsLogChannelId = supportCfg?.channels?.pointsLog || '1414091584210735135';
+    const pointsLogChannelId = supportCfg?.channels?.pointsLog;
         const pointsLogChannel: any = await message.client.channels.fetch(pointsLogChannelId).catch(()=>null);
         if (!pointsLogChannel || !pointsLogChannel.isTextBased()) return;
         let webhookData = pointsWebhookCache.get(pointsLogChannelId);
         if (!webhookData) {
             const hooks = await pointsLogChannel.fetchWebhooks().catch(()=>null);
-            const existing = hooks?.find((w:any) => w.name === 'Points Logger');
+            const existing = hooks?.find((w:any) => w.name === 'Log de pontos');
             let hook = existing;
-            if (!hook) hook = await pointsLogChannel.createWebhook({ name: 'Points Logger' }).catch(()=>null);
+            if (!hook) hook = await pointsLogChannel.createWebhook({ name: 'Log de pontos' }).catch(()=>null);
             if (hook) {
                 webhookData = { id: hook.id, token: hook.token! };
                 pointsWebhookCache.set(pointsLogChannelId, webhookData);
@@ -47,15 +47,15 @@ async function replicateToPointsLog(message: Message, supportCfg: any) {
 
 async function replicateToBancaLog(message: Message, supportCfg: any) {
     try {
-        const bancaLogChannelId = supportCfg?.channels?.bancaLog || '1307017660260810762';
+    const bancaLogChannelId = supportCfg?.channels?.bancaLog;
         const bancaLogChannel: any = await message.client.channels.fetch(bancaLogChannelId).catch(()=>null);
         if (!bancaLogChannel || !bancaLogChannel.isTextBased()) return;
         let webhookData = bancaWebhookCache.get(bancaLogChannelId);
         if (!webhookData) {
             const hooks = await bancaLogChannel.fetchWebhooks().catch(()=>null);
-            const existing = hooks?.find((w:any) => w.name === 'Banca Logger');
+            const existing = hooks?.find((w:any) => w.name === 'Banca Logs');
             let hook = existing;
-            if (!hook) hook = await bancaLogChannel.createWebhook({ name: 'Banca Logger' }).catch(()=>null);
+            if (!hook) hook = await bancaLogChannel.createWebhook({ name: 'Banca Logs' }).catch(()=>null);
             if (hook) {
                 webhookData = { id: hook.id, token: hook.token! };
                 bancaWebhookCache.set(bancaLogChannelId, webhookData);
@@ -100,11 +100,11 @@ export default async function messageCreate(message: Message) {
     const cfg = loadConfig();
     const supportCfg: any = (cfg as any).support;
         const reportsChannelId = process.env.REPORTS_CHANNEL_ID;
-                const PLANTAO_CHANNEL = supportCfg?.channels?.plantao || '1294070656194838529';
-                const SUPERVISAO_CHANNEL = supportCfg?.channels?.plantaoSupervisao || '1332541696608571505';
-                const SUPERVISAO_ROLE = supportCfg?.roles?.supervisao || '1190515971144818760';
-                const LOG_CHANNEL = supportCfg?.channels?.plantaoLog || '1414103437657767986';
-                const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim || '<a:check2:1413993680313909350>';
+                const PLANTAO_CHANNEL = supportCfg?.channels?.plantao;
+                const SUPERVISAO_CHANNEL = supportCfg?.channels?.plantaoSupervisao;
+                const SUPERVISAO_ROLE = supportCfg?.roles?.supervisao;
+                const LOG_CHANNEL = supportCfg?.channels?.plantaoLog;
+                const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim;
                 if (message.guild && message.channelId === PLANTAO_CHANNEL) {
 
                         if (/(https?:\/\/\S+)/i.test(message.content)) {
@@ -121,8 +121,8 @@ export default async function messageCreate(message: Message) {
                                                     .setFooter({ text: `Msg ${message.id}` })
                                                     .setTimestamp();
                                                 const row = new ActionRowBuilder().addComponents(
-                                                    new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3).setEmoji('✅'),
-                                                    new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4).setEmoji('❌')
+                                                    new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3),
+                                                    new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4)
                                                 );
                                                 await supervisaoChannel.send({ content: `<@&${SUPERVISAO_ROLE}>`, embeds:[embed], components:[row] });
                                         }
@@ -168,7 +168,7 @@ export default async function messageCreate(message: Message) {
                 if (contentLower.includes(keyword)) {
 
                     await (pointsService as any).adicionarComRelatorio(message.author.id, 'Recrutamento', recruitCfg.pointsPerMessage || 10, message.author.id);
-                    const emojiId = extractEmojiId(recruitCfg.reactionEmoji || '<a:Check:1217789508939157515>');
+                    const emojiId = extractEmojiId(recruitCfg.reactionEmoji || '');
                     await message.react(emojiId).catch(()=>{});
                     if (recruitCfg.bannerUrl) {
                         const ch:any = message.channel as any;
@@ -198,7 +198,7 @@ export default async function messageCreate(message: Message) {
     const isAvisoChannel = message.channel.id === (supportCfg?.channels?.bancaBonus || cfg.banca.bonusChannelId);
     const isSupervisaoBancaChannel = message.channel.id === (supportCfg?.channels?.bancaSupervisao || cfg.banca.supervisionChannelId);
     if (!banca && !(isAvisoChannel || isSupervisaoBancaChannel)) return;
-    const failEmojiId = extractEmojiId(supportCfg?.emojis?.fail || '<:waterrado:1413997059853516932>');
+    const failEmojiId = extractEmojiId(supportCfg?.emojis?.fail || '');
 
     if (banca && banca.staff_id && !isAvisoChannel && !isSupervisaoBancaChannel && message.author.id !== banca.staff_id) { await message.react(failEmojiId).catch(()=>{}); return; }
 

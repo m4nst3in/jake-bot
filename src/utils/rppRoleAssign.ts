@@ -16,10 +16,10 @@ export async function assignRppRolesToAllGuilds(client: Client, userId: string) 
       if (!member) continue;
       if (!member.roles.cache.has(roleId)) {
         await member.roles.add(roleId).catch(()=>null);
-        logger.info({ userId, guildId, roleId }, 'RPP role atribuído');
+        logger.info({ userId, guildId, roleId }, 'Cargo rpp atribuído');
       }
     } catch (e) {
-      logger.warn({ err: (e as any)?.message, userId, guildId }, 'Falha ao atribuir RPP role');
+      logger.warn({ err: (e as any)?.message, userId, guildId }, 'Falha ao atribuir cargo rpp');
     }
   }
 }

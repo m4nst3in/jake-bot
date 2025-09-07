@@ -1,6 +1,7 @@
 import { PointRepository } from '../repositories/pointRepository.ts';
 import { baseEmbed } from '../utils/embeds.ts';
 import { sendPointsLog } from '../utils/pointsLogger.ts';
+import { loadConfig } from '../config/index.ts';
 export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
@@ -30,14 +31,16 @@ export class PointsService {
     }
     async ranking(area: string) {
         const top = await this.repo.getTop(area, 10);
-        const flame = '<a:Blue_Flame:1324154745979408455>';
-        const designEmote = '<:Designsemnome:1311826417624813598>';
+    const cfg:any = loadConfig();
+    const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
+    const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
         return baseEmbed({ title: `${designEmote} Ranking - ${area}`, description: top.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — ${r.points} pts`).join('\n') || 'Sem dados ainda', color: 0xf1c40f });
     }
     async richRanking(area: string) {
         const [top, total] = await Promise.all([this.repo.getTop(area, 10), this.repo.countArea(area)]);
-        const flame = '<a:Blue_Flame:1324154745979408455>';
-        const designEmote = '<:Designsemnome:1311826417624813598>';
+    const cfg:any = loadConfig();
+    const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
+    const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
     const filtered = top.filter((r:any)=> (r.points||0) > 0);
     const lines = filtered.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts`);
         return baseEmbed({
@@ -63,8 +66,9 @@ export class PointsService {
             this.repo.countArea(area),
             (this.repo as any).sumReports(area)
         ]);
-        const flame = '<a:Blue_Flame:1324154745979408455>';
-        const designEmote = '<:Designsemnome:1311826417624813598>';
+    const cfg:any = loadConfig();
+    const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
+    const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
     const filtered = top.filter((r:any)=> (r.points||0) > 0);
     const lines = filtered.map((r:any,i:number)=>`${flame} **${i+1}.** <@${r.user_id}> — **${r.points}** pts • 🧾 ${r.reports_count||0} rel. • 🕒 ${r.shifts_count||0} plant.`);
         return baseEmbed({

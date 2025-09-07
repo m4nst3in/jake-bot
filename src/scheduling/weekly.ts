@@ -11,7 +11,7 @@ export function scheduleWeeklyTasks(client: Client) {
     const spec = process.env.POINTS_BACKUP_SCHEDULE || '0 0 22 * * 5';
     const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
     cron.schedule(spec, async () => {
-        logger.info('Running weekly points backup job');
+        logger.info('Rodando o backup semanal e reset de pontos');
         try {
             const data = await exportPoints();
             const { jsonBuffer, csvBuffer, count } = data;

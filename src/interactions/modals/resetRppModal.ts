@@ -11,14 +11,14 @@ export default {
     const scope = parts[1];
     const typed = interaction.fields.getTextInputValue('confirm').trim().toLowerCase();
     if (typed !== 'confirmar') {
-      return interaction.reply({ content: 'Confirmação incorreta. Digite exatamente confirmar.', ephemeral: true });
+      return interaction.reply({ content: 'Confirmação incorreta. Digite EXATAMENTE "confirmar".', ephemeral: true });
     }
     await interaction.deferReply({ ephemeral: true });
     try {
 
       if (scope && scope !== '__all__') {
 
-        return interaction.editReply('Reset parcial por área de RPP ainda não suportado. Use opção geral.');
+        return interaction.editReply('Reset parcial por área de RPP ainda não é suportado, blz? Use a opção geral.');
       }
       await rppSvc.resetAll();
       await interaction.editReply('Todos os registros de RPP foram limpos.');

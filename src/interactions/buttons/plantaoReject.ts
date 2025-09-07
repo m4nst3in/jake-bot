@@ -1,9 +1,10 @@
 import { ButtonInteraction, EmbedBuilder } from 'discord.js';
 
 import { loadConfig } from '../../config/index.ts';
+import { logger } from '../../utils/logger.ts';
 const scfg: any = (loadConfig() as any).support || {};
-const PLANTAO_CHANNEL = scfg.channels?.plantao || '1294070656194838529';
-const LOG_CHANNEL = scfg.channels?.plantaoLog || '1414103437657767986';
+const PLANTAO_CHANNEL = scfg.channels?.plantao;
+const LOG_CHANNEL = scfg.channels?.plantaoLog;
 
 export default {
   id: 'plantao_reject',
@@ -14,8 +15,12 @@ export default {
     const userId = parts[2];
     const staffId = interaction.user.id;
 
+    if(!PLANTAO_CHANNEL || !LOG_CHANNEL){
+      logger.warn({ PLANTAO_CHANNEL, LOG_CHANNEL }, 'Config de plantão incompleta no bot');
+    }
+
     try {
-      const channel: any = await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(()=>null);
+  const channel: any = PLANTAO_CHANNEL ? await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(()=>null) : null;
       if (channel && channel.isTextBased()) {
         const original = await channel.messages.fetch(messageId).catch(()=>null);
         if (original) await original.delete().catch(()=>{});
@@ -25,7 +30,7 @@ export default {
     try { await interaction.message.delete().catch(()=>{}); } catch {}
 
     try {
-      const logCh: any = await interaction.client.channels.fetch(LOG_CHANNEL).catch(()=>null);
+  const logCh: any = LOG_CHANNEL ? await interaction.client.channels.fetch(LOG_CHANNEL).catch(()=>null) : null;
       if (logCh && logCh.isTextBased()) {
         const embed = new EmbedBuilder()
           .setTitle('❌ Plantão Recusado')

@@ -17,7 +17,7 @@ export class DatabaseManager {
             this.mongo = new MongoAdapter(process.env.MONGO_URI || 'mongodb://localhost:27017/jake');
             await this.mongo.connect();
         }
-        logger.info({ db: selected }, 'Database initialized');
+        logger.info({ db: selected }, 'Inicializei a db');
     }
     static getSqlite() { return this.sqlite; }
     static getMongo() { return this.mongo; }

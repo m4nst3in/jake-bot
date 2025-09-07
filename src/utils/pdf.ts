@@ -89,7 +89,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     }
     if (!avatarDrawn){
       doc.save().circle(badgeX+70, badgeY+35, 32).fill('#ccc').restore();
-  doc.fillColor('#666').fontSize(10).text('SEM AVATAR', badgeX+54, badgeY+28, { width:32, align:'center' });
+  doc.fillColor('#666').fontSize(10).text('Sem foto', badgeX+54, badgeY+28, { width:32, align:'center' });
     }
 
     const infoX = badgeX + 120;

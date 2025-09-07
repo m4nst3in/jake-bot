@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, GuildMember } from 'discord.js';
 import { hasAnyLeadership, isAdminFromMember, isOwner } from '@utils/permissions.ts';
+import { loadConfig } from '../config/index.ts';
 
 export default {
     data: new SlashCommandBuilder().setName('pontos').setDescription('Painel de gestão de pontos'),
@@ -8,8 +9,9 @@ export default {
     const isAdm = isAdminFromMember(member||null);
     const hasLeadership = hasAnyLeadership(member||null);
     if(!isAdm && !hasLeadership){ await interaction.reply({ content: 'Apenas liderança, administradores ou donos.', ephemeral: true }); return; }
-        const champion = '<a:champion78:1312240136796242021>';
-        const dot = '<:white_ponto:1218673656679628942>';
+    const cfg:any = loadConfig();
+    const champion = cfg.emojis?.champion || '<a:champion:placeholder>';
+    const dot = cfg.emojis?.dot || '•';
             const embed = new EmbedBuilder()
                 .setColor(0x1f2a44)
                 .setTitle(`${champion} Painel de Pontos`)

@@ -4,7 +4,7 @@ export default {
     async execute(interaction: StringSelectMenuInteraction) {
         const roles = interaction.values;
         if (!interaction.guild)
-            return interaction.reply({ content: 'Guild não encontrada.', ephemeral: true });
+            return interaction.reply({ content: 'Servidor não encontrado.', ephemeral: true });
         const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
         if (!member)
             return interaction.reply({ content: 'Membro não encontrado.', ephemeral: true });

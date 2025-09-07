@@ -10,7 +10,9 @@ interface PointsLogPayload {
   reason: string;
 }
 
-const DEFAULT_SUPPORT_CHANNEL_ID = '1414091584210735135';
+function getSupportPointsLog(cfg:any){
+  return cfg.support?.channels?.pointsLog || cfg.channels?.pointsLog || null;
+}
 
 function formatReason(reason: string){
   const r = (reason||'').trim();
@@ -35,7 +37,7 @@ export async function sendPointsLog(client: Client, type: 'adicionado' | 'removi
   function pickChannel(g:any): TextBasedChannel | undefined {
     let id: string | undefined;
     if (payload.area.toLowerCase() === 'recrutamento') id = recruitChannelId;
-    else id = DEFAULT_SUPPORT_CHANNEL_ID;
+  else id = getSupportPointsLog(cfg) || undefined;
     if (!id) return undefined;
     const ch = g.channels.cache.get(id);
     return ch && 'send' in ch ? ch as TextBasedChannel : undefined;
@@ -45,18 +47,20 @@ export async function sendPointsLog(client: Client, type: 'adicionado' | 'removi
   const color = positive ? 0x2ecc71 : 0xe74c3c;
   const arrow = positive ? '⬆️' : '⬇️';
   const sign = (positive ? '+' : '') + payload.delta;
-  const title = positive ? '<a:champion78:1312240136796242021> Pontos Adicionados' : '<a:champion78:1312240136796242021> Pontos Removidos';
+  const champion = cfg.emojis?.champion || '<a:champion:placeholder>';
+  const dot = cfg.emojis?.dot || '•';
+  const title = positive ? `${champion} Pontos Adicionados` : `${champion} Pontos Removidos`;
 
   const embed = new EmbedBuilder()
     .setTitle(title + ' • ' + payload.area)
     .setColor(color)
     .setDescription([
-      `<:white_ponto:1218673656679628942> **Usuário**\n<@${payload.userId}> (${payload.userId})`,
-      `<:white_ponto:1218673656679628942> **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`,
-      `<:white_ponto:1218673656679628942> **Área**\n${payload.area}`,
-      `<:white_ponto:1218673656679628942> **Alteração**\n${arrow} ${sign} pts`,
-      `<:white_ponto:1218673656679628942> **Total**\n${payload.total} pts`,
-      `<:white_ponto:1218673656679628942> **Motivo**\n${formatReason(payload.reason)}`
+  `${dot} **Usuário**\n<@${payload.userId}> (${payload.userId})`,
+  `${dot} **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`,
+  `${dot} **Área**\n${payload.area}`,
+  `${dot} **Motivo**\n${formatReason(payload.reason)}`,
+  `${dot} **Alteração**\n${arrow} ${sign} pts`,
+  `${dot} **Total**\n${payload.total} pts`
     ].join('\n\n'))
     .setTimestamp(new Date());
 

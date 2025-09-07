@@ -20,9 +20,10 @@ export default {
     })
     .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
   async execute(interaction: ChatInputCommandInteraction){
-  const allowed = ['511264305832919050','1382506667211493429','199242071507337216','418824536570593280'];
-    if(!allowed.includes(interaction.user.id)){
-      return interaction.reply({ content: 'Sem permissão para reset.', ephemeral: true });
+  const cfg:any = (await import('../config/index.ts')).loadConfig();
+  const owners: string[] = cfg.owners || [];
+  if(!owners.includes(interaction.user.id)){
+      return interaction.reply({ content: 'Sem permissão para resetar, tá metendo o nariz aonde não deve.', ephemeral: true });
     }
     const tipo = interaction.options.getString('tipo', true);
     const area = interaction.options.getString('area');
@@ -30,7 +31,7 @@ export default {
       return interaction.reply({ content: 'Área inválida.', ephemeral: true });
     }
     if (tipo === 'rpp' && area) {
-      return interaction.reply({ content: 'Reset de RPP não suporta área no momento.', ephemeral: true });
+      return interaction.reply({ content: 'Reset de RPP não suporta áreas no momento.', ephemeral: true });
     }
     const modal = new ModalBuilder()
       .setCustomId(tipo === 'pontos' ? `reset_points_modal:${area||'__all__'}` : 'reset_rpp_modal:__all__')

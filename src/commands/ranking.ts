@@ -22,8 +22,9 @@ export default { data: new SlashCommandBuilder().setName('ranking').setDescripti
     (embed as EmbedBuilder).setImage('https://i.imgur.com/MaXRcNR.gif');
   }
   if (area.toLowerCase() === 'recrutamento') {
-    const primary = '<a:d_brabuleta:1185777338907099197>';
-    const arrow = '<a:vSETAverdeclaro:1386504186396676141>';
+  const cfgAll:any = loadConfig();
+  const primary = cfgAll.emojis?.recruitPrimary || '★';
+  const arrow = cfgAll.emojis?.recruitArrow || '→';
     const data: any = (embed as any).data || {};
     const desc = data.description || (embed as any).description || '';
     const cfg = loadConfig() as any;
@@ -37,12 +38,12 @@ export default { data: new SlashCommandBuilder().setName('ranking').setDescripti
     }).join('\n');
     const newDesc = augmented.split('\n').map((line:string)=>{
       if(!line.trim()) return line;
-      return line.replace(/^.*?\*\*(\d+)\.\*\*/,(m,idx)=>`${primary} **${idx}.**`).replace(/—/, `${arrow}`);
+  return line.replace(/^.*?\*\*(\d+)\.\*\*/,(m,idx)=>`${primary} **${idx}.**`).replace(/—/, `${arrow}`);
     }).join('\n');
     if (data.description) data.description = newDesc; else (embed as any).setDescription(newDesc);
   }
   const target = interaction.options.getChannel('canal') as TextChannel | null || interaction.channel as TextChannel | null;
   if (!target || typeof (target as any).send !== 'function'){ await interaction.editReply('Canal inválido.'); return; }
   await target.send({ embeds: [embed] });
-  await interaction.editReply('✅ Ranking enviado. (Atualização automática global via scheduler a cada 10min)');
+  await interaction.editReply('✅ Ranking enviado, pode crer?. (Atualização automática global via scheduler a cada 10min)');
 } };

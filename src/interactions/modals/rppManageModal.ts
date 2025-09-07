@@ -38,7 +38,7 @@ export default {
             try { active = await (service as any).repo.findActiveByUser(userId); } catch {}
             await service.removeActive(userId, interaction.user.id);
 
-            const roleIdFixed = ((loadConfig() as any).support?.roles?.rpp) || '1190515971119661073';
+            const roleIdFixed = ((loadConfig() as any).support?.roles?.rpp);
             if (interaction.guild) {
                 const member = await interaction.guild.members.fetch(userId).catch(()=>null);
                 if (member && roleIdFixed && member.roles.cache.has(roleIdFixed)) {

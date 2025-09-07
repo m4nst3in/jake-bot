@@ -27,8 +27,9 @@ export default {
     const listBtn = new ButtonBuilder().setCustomId('rpp_menu_list').setLabel('🟢 Ativos').setStyle(3);
     const removedBtn = new ButtonBuilder().setCustomId('rpp_menu_removed').setLabel('📕 Encerrados').setStyle(4).setDisabled(!canManage);
 
-        const tool = (interaction.guild?.emojis?.cache.get('1377912584484946012')?.toString()) || '<:a_staff_40SBR:1377912584484946012>';
-        const dot = (interaction.guild?.emojis?.cache.get('1218673656679628942')?.toString()) || '<:white_ponto:1218673656679628942>';
+    const embedCfg = cfg.rpp?.guilds?.[interaction.guild!.id]?.embed;
+    const tool = embedCfg?.tool || '';
+    const dot = embedCfg?.bullet || '•';
 
         const descParts: string[] = [];
         descParts.push(`${tool} **Painel de RPP**`);

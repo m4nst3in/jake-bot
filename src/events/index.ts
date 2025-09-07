@@ -7,5 +7,5 @@ export function registerEventHandlers(client: Client) {
     client.once(Events.ClientReady, ready);
     client.on(Events.InteractionCreate, interactionCreate);
     client.on(Events.MessageCreate, messageCreate);
-    logger.info('Event handlers registered');
+    logger.info('Registrei os handlers de eventos, pdc?');
 }

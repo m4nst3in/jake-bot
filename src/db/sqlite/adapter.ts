@@ -17,7 +17,7 @@ export class SqliteAdapter {
                 resolve();
             });
         });
-        logger.info({ file: this.file }, 'SQLite connected');
+        logger.info({ file: this.file }, 'Conectei no sqlite');
         await this.migrate();
     }
     private run(sql: string, params: any[] = []): Promise<void> {

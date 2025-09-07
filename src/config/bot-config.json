@@ -1,6 +1,7 @@
 {
   "version": 1,
   "environment": "dev",
+  "owners": ["1382506667211493429","511264305832919050","199242071507337216","418824536570593280"],
   "mainGuildId": "000000000000000000",
   "roles": {
     "staff": "000000000000000001",
@@ -17,6 +18,18 @@
   "auditLog": "000000000000001003",
   "ranking": "1282445335620354131",
   "recruitRanking": "1261861624998924301"
+  },
+  "emojis": {
+    "flame": "<a:champion78:1312240136796242021>",
+    "design": "<:Designsemnome:1311826417624813598>",
+    "champion": "<a:champion78:1312240136796242021>",
+    "recruitPrimary": "<a:champion78:1312240136796242021>",
+    "recruitArrow": "<a:vSETAverdeclaro:1386504186396676141>",
+    "rppSnowflake": "<a:snowflake:1313280806235672656>",
+    "rppAccept": "<:white_certocr:1345874948589096980>",
+    "rppReject": "<:waterrado:1377911729199255602>",
+    "dot": "<:white_ponto:1218673656679628942>",
+    "bancaTitle": "<:bregblakk:1347017024412455026>"
   },
   "support": {
     "guildId": "1190515971035774996",
@@ -56,6 +69,7 @@
   ],
   "banca": {
   "supportGuildId": "1190515971035774996",
+    "supportOrderReferenceChannelId": "1307015943590903878",
     "bonusChannelId": "1190515972239528004",
     "supervisionChannelId": "1288659402588422165",
     "reactionEmoji": "<a:check2:1413993680313909350>",
@@ -63,6 +77,11 @@
     "basePoints": 10,
     "bonusPoints": 15,
     "supervisionPoints": 10
+  },
+  "journalismBanca": {
+    "guildId": "1224414082866745405",
+    "categoryId": "1224414084980805756",
+    "prefix": "💕・"
   },
   "recruitBanca": {
     "guildId": "1180721287476289596",
@@ -85,7 +104,7 @@
           "section": "<:a_staff_40SBR:1377912584484946012>",
           "bullet": "<:white_ponto:1218673656679628942>",
           "button": "<:white_rules:1313284978397941812>",
-          "image": "https://cdn.discordapp.com/attachments/1396327164131016854/1413733584656666746/rWAS6pU.gif"
+          "image": "https://media.discordapp.net/attachments/1190515971706863619/1395923578976866404/IMG_1872.png?ex=68be21a4&is=68bcd024&hm=b0ffd7c75851be3cb8c65d577b741617ac42ffe0352a9e23bbbcab0893791a8b&=&format=webp&quality=lossless"
         }
       },
       "1190390194533318706": {

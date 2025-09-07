@@ -12,8 +12,13 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
   const recruitCfg: any = (config as any).recruitBanca;
   const recruitPrefix = recruitCfg?.prefix || '🟢・';
   const supportPrefix = '📖・';
-  const channelName = interaction.guild.id === recruitCfg?.guildId ? `${recruitPrefix}${sanitized}` : `${supportPrefix}${sanitized}`;
-  const SUPPORT_CATEGORY_ID = '1190515972239528001';
+  const journalismCfg:any = (config as any).journalismBanca;
+  const journalismGuildId = journalismCfg?.guildId;
+  const journalismCategoryId = journalismCfg?.categoryId;
+  const journalismPrefix = journalismCfg?.prefix || '💕・';
+  let channelName = interaction.guild.id === recruitCfg?.guildId ? `${recruitPrefix}${sanitized}` : `${supportPrefix}${sanitized}`;
+  if(interaction.guild.id === journalismGuildId){ channelName = `${journalismPrefix}${sanitized}`; }
+  const SUPPORT_CATEGORY_ID = (config as any).support?.categories?.banca;
   const createOptions: any = { name: channelName, permissionOverwrites: [
     { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
     { id: staffId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
@@ -23,8 +28,18 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
   if (interaction.guild.id === recruitCfg?.guildId && recruitCfg?.categoryId) {
     createOptions.parent = recruitCfg.categoryId;
   }
+  const SUPPORT_ORDER_REFERENCE = (config as any).banca?.supportOrderReferenceChannelId;
   if (interaction.guild.id === config.banca?.supportGuildId) {
-    createOptions.parent = SUPPORT_CATEGORY_ID;
+    // Try to use the category of the reference channel dynamically
+    const ref = await interaction.guild.channels.fetch(SUPPORT_ORDER_REFERENCE).catch(()=>null) as any;
+    if(ref && ref.parentId){
+      createOptions.parent = ref.parentId;
+    } else {
+      createOptions.parent = SUPPORT_CATEGORY_ID; // fallback static
+    }
+  }
+  if (journalismGuildId && interaction.guild.id === journalismGuildId && journalismCategoryId) {
+    createOptions.parent = journalismCategoryId;
   }
   let channel: any;
   try {
@@ -36,7 +51,20 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
       channel = await interaction.guild.channels.create(createOptions);
     } else throw err;
   }
-  await service.create(channel.id, nome, staffId);
+  if(!(journalismGuildId && interaction.guild.id === journalismGuildId)){
+    await service.create(channel.id, nome, staffId);
+  }
+  if(interaction.guild.id === config.banca?.supportGuildId){
+    try {
+      const ref = await interaction.guild.channels.fetch(SUPPORT_ORDER_REFERENCE).catch(()=>null) as any;
+      if(ref){
+        const targetPos = ref.position;
+        if (typeof targetPos === 'number') {
+          await channel.edit({ position: targetPos }).catch(()=>{});
+        }
+      }
+    } catch{}
+  }
   await interaction.editReply(`Banca criada: <#${channel.id}>`);
   const textChannel = channel as TextChannel;
   const embed = new EmbedBuilder().setTitle(`Banca: ${nome}`).setColor(0x5865F2).setDescription(`Canal criado para a banca **${nome}**`).addFields(

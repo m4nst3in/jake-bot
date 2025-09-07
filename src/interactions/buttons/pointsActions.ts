@@ -16,7 +16,7 @@ export default {
     const member = interaction.member as GuildMember | null;
     const areas = getAllowedAreas(member);
     if(!areas.length){
-      await interaction.reply({ content: 'Você não tem liderança em nenhuma área.', ephemeral: true });
+      await interaction.reply({ content: 'Você não tem liderança em nenhuma área, tá loucão?', ephemeral: true });
       return;
     }
     const rows: any[] = [];

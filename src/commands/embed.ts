@@ -71,8 +71,11 @@ export default {
             }
             return;
         } else if (tipo === 'banca') {
-            const embed = new EmbedBuilder().setTitle('<:bregblakk:1347017024412455026> Crie sua banca!').setDescription('Clique no botão abaixo para criar a sua banca. Preencha as informações necessárias para a criação da sua banca.').setColor(0x3498db);
-            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('banca_create').setLabel('Criar Banca').setStyle(1).setEmoji('<:white_certocr:1345874948589096980>'));
+            const cfgAll:any = loadConfig();
+            const bancaTitle = cfgAll.emojis?.bancaTitle || 'Banca';
+            const rppAccept = cfgAll.emojis?.rppAccept || '';
+            const embed = new EmbedBuilder().setTitle(`${bancaTitle} Crie sua banca!`).setDescription('Clique no botão abaixo para criar a sua banca. Preencha as informações necessárias para a criação da sua banca.').setColor(0x3498db);
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('banca_create').setLabel('Criar Banca').setStyle(1).setEmoji(rppAccept));
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de banca publicada.');
             return;

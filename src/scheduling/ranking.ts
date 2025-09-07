@@ -34,8 +34,8 @@ export function scheduleRankingUpdater(client: Client){
           (embed as any).setImage && (embed as any).setImage('https://i.imgur.com/MaXRcNR.gif');
         }
         if (area.toLowerCase() === 'recrutamento') {
-          const primary = '<a:d_brabuleta:1185777338907099197>';
-          const arrow = '<a:vSETAverdeclaro:1386504186396676141>';
+          const primary = cfg.emojis?.recruitPrimary || '★';
+          const arrow = cfg.emojis?.recruitArrow || '→';
           const dOrig = (embed as any).data?.description || (embed as any).description || '';
           const pointsPerMsg = (cfg as any).recruitBanca?.pointsPerMessage || 10;
           const augmented = dOrig.split('\n').map((line:string)=>{
@@ -63,7 +63,7 @@ export function scheduleRankingUpdater(client: Client){
       if (supportChannelId) await processChannel(supportChannelId);
       if (recruitChannelId) await processChannel(recruitChannelId, 'Recrutamento');
     } catch(err){
-      logger.error({ err }, 'Falha ao atualizar ranking');
+      logger.error({ err }, 'Falha ao atualizar ranking de pontos.');
     }
   });
 }

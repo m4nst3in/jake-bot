@@ -3,11 +3,12 @@ import { loadConfig } from '../config/index.ts';
 
 function norm(str: string){ return (str||'').trim().toLowerCase(); }
 
-export const OWNER_IDS = ['1382506667211493429','511264305832919050','199242071507337216','418824536570593280'];
-
-export function isOwner(member: GuildMember | null | undefined){
-  if(!member) return false; return OWNER_IDS.includes(member.id);
+function getOwners(){
+  const cfg:any = loadConfig();
+  return Array.isArray(cfg.owners) ? cfg.owners : [];
 }
+
+export function isOwner(member: GuildMember | null | undefined){ if(!member) return false; return getOwners().includes(member.id); }
 
 export function isAdminFromMember(member: GuildMember | null | undefined){
   if(isOwner(member)) return true;

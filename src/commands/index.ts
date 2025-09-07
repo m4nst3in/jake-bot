@@ -23,12 +23,12 @@ export async function loadCommands(client: Client) {
         client.commands.set(cmd.data.name, cmd);
         commands.push(cmd.data.toJSON());
     }
-    logger.info({ count: commands.length }, 'Commands loaded');
+    logger.info({ count: commands.length }, 'Comandos carregados igual o Fumaça no CS');
     if (process.env.DISCORD_TOKEN && process.env.DISCORD_CLIENT_ID) {
         const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
         try {
             await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID), { body: commands });
-            logger.info('Slash commands registrados globalmente');
+            logger.info('Comandos de barra registrados parça');
         }
         catch (err) {
             logger.error({ err }, 'Falha ao registrar comandos');

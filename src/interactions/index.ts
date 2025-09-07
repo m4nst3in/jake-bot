@@ -23,5 +23,5 @@ export async function loadInteractions(client: Client) {
                 client.selects.set(handler.id, handler);
         }
     }
-    logger.info('Interactions loaded');
+    logger.info('Carreguei as interações, pdc?');
 }

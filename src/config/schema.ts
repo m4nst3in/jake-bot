@@ -27,12 +27,15 @@ export interface GlobalChannelsConfig {
 
 export interface ConfigRoot {
   mainGuildId: string
+  owners?: string[]
   environment?: 'prod' | 'dev' | 'staging'
   roles: GlobalRolesConfig
   channels: GlobalChannelsConfig
   areas: AreaConfig[]
+  emojis?: Record<string,string>
   banca?: {
     supportGuildId: string
+    supportOrderReferenceChannelId?: string
     bonusChannelId: string
     supervisionChannelId: string
     reactionEmoji: string
@@ -50,6 +53,11 @@ export interface ConfigRoot {
     bannerUrl?: string
     prefix?: string
   categoryId?: string
+  }
+  journalismBanca?: {
+    guildId: string
+    categoryId: string
+    prefix?: string
   }
   rpp?: {
     guilds: Record<string, {

@@ -8,7 +8,7 @@ export class MongoAdapter {
         this.client = new MongoClient(this.uri);
         await this.client.connect();
         this.db = this.client.db();
-        logger.info('MongoDB connected');
+        logger.info('Ei mongol, conectei no mongodb, pdc?');
         await this.ensureIndexes();
     }
     private async ensureIndexes() {
