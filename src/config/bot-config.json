@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "environment": "dev",
+  "mainGuildId": "000000000000000000",
+  "roles": {
+    "staff": "000000000000000001",
+    "admin": "000000000000000002",
+    "mod": "000000000000000003",
+    "rppManager": "000000000000000004",
+    "recruiter": "000000000000000005"
+  },
+  "channels": {
+  "rppLog": "1414091725483282555",
+  "rppReview": "1271452939742875670",
+    "recruitLog": "000000000000001001",
+    "blacklistLog": "000000000000001002",
+  "auditLog": "000000000000001003",
+  "ranking": "1282445335620354131",
+  "recruitRanking": "1261861624998924301"
+  },
+  "support": {
+    "guildId": "1190515971035774996",
+    "roles": {
+      "rpp": "1190515971119661073",
+      "supervisao": "1190515971144818760"
+    },
+    "channels": {
+      "ranking": "1282445335620354131",
+      "rppLog": "1414091725483282555",
+      "rppReview": "1271452939742875670",
+      "plantao": "1294070656194838529",
+      "plantaoSupervisao": "1332541696608571505",
+      "plantaoLog": "1414103437657767986",
+      "pointsLog": "1414091584210735135",
+      "bancaBonus": "1190515972239528004",
+  "bancaSupervisao": "1288659402588422165",
+  "bancaLog": "1307017660260810762"
+    },
+    "categories": {
+      "banca": "1190515972239528001"
+    },
+    "emojis": {
+      "checkAnim": "<a:check2:1413993680313909350>",
+      "fail": "<:waterrado:1413997059853516932>",
+      "tool": "<:a_staff_40SBR:1377912584484946012>",
+      "dot": "<:white_ponto:1218673656679628942>"
+    }
+  },
+  "areas": [
+    { "name": "MOVCALL", "guildId": "000000000000100001", "roleIds": { "lead": "000000000000110001", "member": "000000000000110002" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
+    { "name": "DESIGN", "guildId": "000000000000100002", "roleIds": { "lead": "000000000000120001", "member": "000000000000120002" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
+    { "name": "RECRUTAMENTO", "guildId": "000000000000100003", "roleIds": { "lead": "000000000000130001", "member": "000000000000130002" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
+    { "name": "JORNALISMO", "guildId": "000000000000100004", "roleIds": { "lead": "000000000000140001", "member": "000000000000140002" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
+    { "name": "SUPORTE", "guildId": "1190515971035774996", "roleIds": { "lead": "1190515971144818760", "member": "1190515971069321238" }, "blacklistAreas": ["SUPORTE", "GLOBAL"] },
+    { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "000000000000160001", "member": "000000000000160002" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+  ],
+  "banca": {
+  "supportGuildId": "1190515971035774996",
+    "bonusChannelId": "1190515972239528004",
+    "supervisionChannelId": "1288659402588422165",
+    "reactionEmoji": "<a:check2:1413993680313909350>",
+    "bannerUrl": "https://cdn.discordapp.com/attachments/1396327164131016854/1413733584656666746/rWAS6pU.gif?ex=68bdaa40&is=68bc58c0&hm=f77c534a722719c36ea086a06dcd5cce6fa05e0f048c97e24c5613f558951b45&",
+    "basePoints": 10,
+    "bonusPoints": 15,
+    "supervisionPoints": 10
+  },
+  "recruitBanca": {
+    "guildId": "1180721287476289596",
+    "reactionEmoji": "<a:Check:1217789508939157515>",
+    "pointsPerMessage": 10,
+    "keyword": "recrutamento",
+    "pointsLogChannelId": "1263455658594926644",
+  "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
+  "prefix": "🟢・",
+  "categoryId": "1242538995649351820"
+  },
+  "rpp": {
+    "guilds": {
+      "1190515971035774996": {
+        "review": "1271452939742875670",
+        "log": "1414091725483282555",
+        "embed": {
+          "color": 16777215,
+          "tool": "<:a_staff_40SBR:1377912584484946012>",
+          "section": "<:a_staff_40SBR:1377912584484946012>",
+          "bullet": "<:white_ponto:1218673656679628942>",
+          "button": "<:white_rules:1313284978397941812>",
+          "image": "https://cdn.discordapp.com/attachments/1396327164131016854/1413733584656666746/rWAS6pU.gif"
+        }
+      },
+      "1190390194533318706": {
+        "review": "1283094730833661972",
+        "log": "1414130590575497358",
+  "role": "1190390194566873155",
+        "embed": {
+          "color": 16711680,
+          "tool": "<:c_picareta_red:1327422479555104828>",
+          "section": "<:mov_call20:1193710198615977985>",
+          "bullet": "<:mov_call26:1193566513727295548>",
+          "button": "<:mov_call20:1193710198615977985>",
+          "image": "https://images-ext-1.discordapp.net/external/FGEIWi2SDLPLpeWlMOmo_BCqbfrC9X5n6JtFn1h3Cn4/https/i.imgur.com/BcrMaWu.png?format=webp&quality=lossless"
+        }
+      },
+      "1283125240368730132": {
+        "review": "1283496059330498592",
+        "log": "1414139296386125866",
+        "role": "1283201521835839539", 
+        "embed": {
+          "color": 10181046,
+          "tool": "<:emoji_72:1406097314283786271>",
+          "section": "<:purple7_emoji:1283759067269042228>",
+          "bullet": "<:aqopontogg:1406099395405021265>",
+          "button": "<:purple3_emoji:1283759122210361434>",
+          "image": "https://i.imgur.com/BJxsxtt.png" 
+        }
+      },
+      "1224414082866745405": {
+        "review": "1414142417233383424",
+        "log": "1414141646202994890",
+        "role": "1224414082975797302",
+        "embed": {
+          "color": 16777215,
+          "tool": "<a:pink_butterfly2:1312933226666266634>",
+          "section": "<a:pink_butterfly2:1312933226666266634>",
+          "section2": "<:pink_dot:1312933271792910347>",
+          "bullet": "<:pink_dot:1312933271792910347>",
+          "button": "<:pink_dot:1312933271792910347>",
+          "image": "https://images-ext-1.discordapp.net/external/oXhFBQ1_D75dquVDcMbOgFLNisGvBdboX4BAGsAznQU/https/i.imgur.com/94gDPHh.gif"
+        }
+      },
+      "1183909149784952902": {
+        "review": "1322347559087243397",
+        "log": "1414144903423983660",
+        "role": "1183909149831086084",
+        "embed": {
+          "color": 16747520,
+          "tool": "<:cdwdsg_calendario:1190435210370760704>",
+          "section": "<:cdwdsg_calendario:1190435210370760704>",
+          "section2": "<:cdwdsg_ponto:1190435469691990107>",
+          "bullet": "<:cdwdsg_ponto:1190435469691990107>",
+          "button": "<:cdwdsg_mouse:1190435250342481940>",
+          "image": "https://i.imgur.com/AfWt9Oi.gif"
+        }
+      },
+      "1180721287476289596": {
+        "review": "1269418489056198760",
+        "log": "1414146840487788624",
+        "role": "1180871609272246302",
+        "embed": {
+          "color": 65433,
+          "tool": "<a:m_heartpuff:1185784962910269522>",
+          "section": "<a:m_heartpuff:1185784962910269522>",
+          "section2": "<:pontogreen2:1180875332186816543>",
+          "bullet": "<:pontogreen2:1180875332186816543>",
+          "button": "<:recpranc:1244060044081889503>",
+          "image": "https://i.imgur.com/CtbNOhI.gif"
+        }
+      }
+    }
+  }
+}
