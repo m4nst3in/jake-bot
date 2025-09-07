@@ -7,7 +7,7 @@ function buildRppEmbed(guild: Guild) {
     let cfg: any = loadConfig();
     let serverCfg = cfg.rpp?.guilds?.[guild.id];
     if (!serverCfg || !serverCfg.embed) {
-        // tenta recarregar caso tenha sido editado após start
+
         cfg = reloadConfig();
         serverCfg = cfg.rpp?.guilds?.[guild.id];
         if (!serverCfg || !serverCfg.embed) {
@@ -17,7 +17,7 @@ function buildRppEmbed(guild: Guild) {
     const embedCfg = serverCfg.embed;
     const tool = embedCfg.tool;
     const section = embedCfg.section;
-    const section2 = embedCfg.section2 || section; // permite emoji diferente para headings secundários
+    const section2 = embedCfg.section2 || section;
     const bullet = embedCfg.bullet;
     const color = embedCfg.color;
     const image = embedCfg.image;

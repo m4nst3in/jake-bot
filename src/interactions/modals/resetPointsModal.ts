@@ -6,7 +6,7 @@ const svc = new PointsService();
 export default {
   id: 'reset_points_modal',
   async execute(interaction: ModalSubmitInteraction){
-    const custom = interaction.customId; // reset_points_modal:AREA
+    const custom = interaction.customId;
     const parts = custom.split(':');
     const areaRaw = parts[1];
     const typed = interaction.fields.getTextInputValue('confirm').trim().toLowerCase();

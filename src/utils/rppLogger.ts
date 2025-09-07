@@ -10,8 +10,8 @@ interface RppLogPayload {
     returnDate?: string;
     createdAt?: string;
     processedAt?: string;
-    area?: string; // área/guild origem
-    startedAt?: string; // quando o RPP foi ativado (para logs de encerramento)
+    area?: string;
+    startedAt?: string;
 }
 function daysUntil(dateStr?: string) {
     if (!dateStr)
@@ -55,7 +55,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     }
     if (!channel || !('send' in channel)) {
     logger.warn({ channelId: useReview ? reviewChannelId : logChannelId, type }, 'RPP log: canal não encontrado ou inválido');
-        // Fallback: se for ativado tenta mandar no canal de revisão para não perder log
+
         if (type === 'ativado') {
             const fallbackId = reviewChannelId;
             if (fallbackId) {

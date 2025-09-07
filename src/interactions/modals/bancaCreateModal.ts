@@ -19,7 +19,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
     { id: staffId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
     { id: interaction.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
   ] };
-  // Para recrutamento usamos categoria configurada (se existir)
+
   if (interaction.guild.id === recruitCfg?.guildId && recruitCfg?.categoryId) {
     createOptions.parent = recruitCfg.categoryId;
   }
@@ -30,7 +30,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
   try {
     channel = await interaction.guild.channels.create(createOptions);
   } catch (err) {
-    // fallback sem parent se der erro de categoria
+
     if (createOptions.parent) {
       delete createOptions.parent;
       channel = await interaction.guild.channels.create(createOptions);

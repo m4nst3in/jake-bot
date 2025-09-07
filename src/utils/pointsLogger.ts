@@ -5,12 +5,11 @@ interface PointsLogPayload {
   userId: string;
   moderatorId: string;
   area: string;
-  delta: number; // positivo ou negativo
+  delta: number;
   total: number;
   reason: string;
 }
 
-// Canal default (suporte). Para recrutamento usamos channels.recruitRanking/pointsLogChannel se definido.
 const DEFAULT_SUPPORT_CHANNEL_ID = '1414091584210735135';
 
 function formatReason(reason: string){
@@ -21,20 +20,18 @@ function formatReason(reason: string){
 
 export async function sendPointsLog(client: Client, type: 'adicionado' | 'removido', payload: PointsLogPayload){
   if(!client?.guilds?.cache?.size) return;
-  // Pega primeiro guild (ou poderia iterar todos caso multi-guild)
+
   const guilds = [...client.guilds.cache.values()];
   const cfg: any = loadConfig();
   const recruitChannelId = cfg.recruitBanca?.pointsLogChannelId || cfg.channels?.recruitPointsLog || cfg.channels?.recruitRanking;
 
-  // filtramos guilds relevantes conforme área
   const targetGuilds = guilds.filter(g => {
-    if (payload.area.toLowerCase() === 'recrutamento') return true; // qualquer guild para tentar achar canal específico
-    // suporte: preferir guild suporte se configurado
+    if (payload.area.toLowerCase() === 'recrutamento') return true;
+
     if (payload.area.toLowerCase() === 'suporte' && cfg.banca?.supportGuildId) return g.id === cfg.banca.supportGuildId;
     return true;
   });
 
-  // Função para achar canal certo neste guild
   function pickChannel(g:any): TextBasedChannel | undefined {
     let id: string | undefined;
     if (payload.area.toLowerCase() === 'recrutamento') id = recruitChannelId;

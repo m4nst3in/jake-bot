@@ -11,9 +11,9 @@ export default {
         const userId = interaction.fields.getTextInputValue('user_id').trim();
         const acao = interaction.fields.getTextInputValue('acao').trim().toLowerCase();
     const motivo = interaction.fields.getTextInputValue('motivo')?.trim();
-    // Data de retorno agora automática: hoje
+
     const hoje = new Date();
-    const retornoIso = hoje.toISOString().slice(0, 10); // YYYY-MM-DD
+    const retornoIso = hoje.toISOString().slice(0, 10);
         if (!interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.editReply('Sem permissão.');
             return;
@@ -27,17 +27,17 @@ export default {
                 await interaction.editReply('Motivo obrigatório para adicionar.');
                 return;
             }
-            // Permite múltiplas solicitações pendentes e inclusive se já houver um ativo.
+
             const created = await service.requestRPP(userId, motivo, retornoIso);
             await sendRppLog(interaction.guild, 'solicitado', { id: created.id, userId, reason: motivo, returnDate: formatBrDate(retornoIso), createdAt: created.requested_at });
             await interaction.editReply(`Solicitação de RPP criada (pendente) para ${userId}. Motivo: ${motivo} • Retorno: ${formatBrDate(retornoIso)}`);
         }
         else {
-            // Captura registro ativo antes de remover para log (processed_at = início)
+
             let active: any;
             try { active = await (service as any).repo.findActiveByUser(userId); } catch {}
             await service.removeActive(userId, interaction.user.id);
-            // Remover cargo fixo quando RPP encerrado
+
             const roleIdFixed = ((loadConfig() as any).support?.roles?.rpp) || '1190515971119661073';
             if (interaction.guild) {
                 const member = await interaction.guild.members.fetch(userId).catch(()=>null);
@@ -45,7 +45,7 @@ export default {
                     await member.roles.remove(roleIdFixed).catch(()=>{});
                 }
             }
-            // Determina área
+
             let areaName: string | undefined;
             const guildId = interaction.guild?.id;
             if (guildId) {

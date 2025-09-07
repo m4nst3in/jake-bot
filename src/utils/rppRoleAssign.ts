@@ -8,7 +8,7 @@ export async function assignRppRolesToAllGuilds(client: Client, userId: string) 
   if (!guildEntries.length) return;
   for (const [guildId, data] of guildEntries) {
     const roleId = (data as any).role;
-    if (!roleId) continue; // exige config, mas ignora se ausente para não quebrar fluxo
+    if (!roleId) continue;
     try {
       const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(()=>null);
       if (!guild) continue;

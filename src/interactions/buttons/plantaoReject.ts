@@ -13,7 +13,7 @@ export default {
     const messageId = parts[1];
     const userId = parts[2];
     const staffId = interaction.user.id;
-    // Delete original message
+
     try {
       const channel: any = await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(()=>null);
       if (channel && channel.isTextBased()) {
@@ -21,9 +21,9 @@ export default {
         if (original) await original.delete().catch(()=>{});
       }
     } catch {}
-    // Delete supervision embed
+
     try { await interaction.message.delete().catch(()=>{}); } catch {}
-    // Log rejection
+
     try {
       const logCh: any = await interaction.client.channels.fetch(LOG_CHANNEL).catch(()=>null);
       if (logCh && logCh.isTextBased()) {

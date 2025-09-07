@@ -1,4 +1,4 @@
-// @ts-ignore - tipos de pdfkit não instalados
+
 import PDFDocument from 'pdfkit';
 import { Client } from 'discord.js';
 import { DatabaseManager } from '../db/manager.ts';
@@ -47,7 +47,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   doc.moveDown(0.3);
   doc.fontSize(10).fillColor('#555').text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, { align:'center' });
   doc.moveDown(0.5);
-  // Barra decorativa
+
   doc.save().rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left*2, 4).fill(primary).restore();
   doc.moveDown(1.2);
 
@@ -65,13 +65,12 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const idx = ++position;
     const startY = doc.y;
     const cardHeight = suporte ? 115 : 100;
-    // Card background
+
     doc.save();
     doc.roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left*2, cardHeight, 8)
       .fill(idx %2 ===0 ? '#FFFFFF' : secondary);
     doc.restore();
 
-    // Rank badge
     const badgeX = doc.page.margins.left + 10;
     const badgeY = startY + 10;
     doc.save();
@@ -79,7 +78,6 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     doc.fillColor('#fff').fontSize(14).text(String(idx), badgeX+5, badgeY+7, { width:20, align:'center' });
     doc.restore();
 
-    // Avatar
     const user = await client.users.fetch(r.user_id).catch(()=>null);
     let avatarDrawn = false;
     if (user){
@@ -94,7 +92,6 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   doc.fillColor('#666').fontSize(10).text('SEM AVATAR', badgeX+54, badgeY+28, { width:32, align:'center' });
     }
 
-    // User info
     const infoX = badgeX + 120;
     let cursorY = badgeY;
     const display = user ? (user.globalName || user.username) : r.user_id;
@@ -109,7 +106,6 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       cursorY += 16;
     }
 
-    // Progress bar (visual) relative to max points
     const maxPoints = rows[0].points || 1;
     const barWidth = 250;
     const pct = Math.max(0, Math.min(1, r.points / maxPoints));

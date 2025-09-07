@@ -13,7 +13,7 @@ export function scheduleRankingUpdater(client: Client){
   if(!supportChannelId && !recruitChannelId){
     logger.warn('Nenhum canal de ranking configurado.');
     return; }
-  // A cada 10 minutos
+
   cron.schedule('*/10 * * * *', async () => {
     try {
       async function processChannel(channelId: string, forcedArea?: string){
@@ -40,7 +40,7 @@ export function scheduleRankingUpdater(client: Client){
           const pointsPerMsg = (cfg as any).recruitBanca?.pointsPerMessage || 10;
           const augmented = dOrig.split('\n').map((line:string)=>{
             if(!line.trim()) return line;
-            if(/recrut\./i.test(line)) return line; // já processado
+            if(/recrut\./i.test(line)) return line;
             const m = line.match(/\*\*(\d+)\*\* pts/);
             const pts = m ? parseInt(m[1],10) : 0;
             const recrut = Math.floor(pts / pointsPerMsg);

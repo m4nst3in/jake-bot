@@ -11,11 +11,11 @@ export default {
     await interaction.deferReply({ ephemeral: true });
     const member = interaction.member as GuildMember | null;
     const cfg:any = loadConfig();
-    // Liderança RPP: liderança de QUALQUER área pode gerenciar somente se owner, senão limitamos a ações de listagem básica
+
     const owner = isOwner(member);
-    // Decidimos que apenas owners podem gerenciar (criar/encerrar) aqui; liderança só visualiza listas
+
     const canManage = owner; 
-        // Totais para painel
+
         const { total: activeTotal } = await service.listActivePaged(1, 1);
         let removedTotal: number | undefined;
         if (canManage) {
@@ -23,12 +23,10 @@ export default {
             removedTotal = removed.total;
         }
 
-        // Botões
     const manageBtn = new ButtonBuilder().setCustomId('rpp_menu_manage').setLabel('🛠️ Gerenciar').setStyle(1).setDisabled(!canManage);
     const listBtn = new ButtonBuilder().setCustomId('rpp_menu_list').setLabel('🟢 Ativos').setStyle(3);
     const removedBtn = new ButtonBuilder().setCustomId('rpp_menu_removed').setLabel('📕 Encerrados').setStyle(4).setDisabled(!canManage);
 
-        // Emojis customizados (fallback markup)
         const tool = (interaction.guild?.emojis?.cache.get('1377912584484946012')?.toString()) || '<:a_staff_40SBR:1377912584484946012>';
         const dot = (interaction.guild?.emojis?.cache.get('1218673656679628942')?.toString()) || '<:white_ponto:1218673656679628942>';
 

@@ -37,8 +37,6 @@ export function scheduleWeeklyTasks(client: Client) {
         }
     }, { timezone: tz });
 
-    // Reset semanal específico de Suporte (sexta 22:00). Mesmo CRON acima já roda; porém se quiser isolar lógica de apenas suporte sem backup separado, pode manter unificado.
-    // Caso queira independentemente da variável de ambiente, agendamos explicitamente.
     cron.schedule('0 0 22 * * 5', async () => {
         const cfg = loadConfig();
         const rankingChannelId = (cfg as any).support?.channels?.ranking || (cfg as any).channels?.ranking;
@@ -57,12 +55,12 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setFooter({ text: 'Novo ciclo iniciado' })
                         .setTimestamp();
                     await ch.send({ embeds:[embed] });
-                    // PDF detalhado da área Suporte antes de enviar ranking (após reset valores = 0, se quiser pré-reset mover antes de reset)
+
                     try {
                         const pdfBuffer = await generateAreaPdf(client, 'Suporte');
                         await ch.send({ files: [{ attachment: pdfBuffer, name: `backup-suporte-${Date.now()}.pdf` }] });
                     } catch(e){ logger.warn({ e }, 'Falha ao gerar PDF suporte pós-reset'); }
-                    // Opcional: enviar ranking zerado atualizado
+
                     try {
                         const rankingEmbed = await svc.buildRankingEmbedUnified('Suporte');
                         (rankingEmbed as any).setImage && (rankingEmbed as any).setImage('https://i.imgur.com/MaXRcNR.gif');
@@ -124,7 +122,6 @@ async function resetPoints() {
     }
 }
 
-// Reset apenas da área Suporte
 async function resetSupportOnly(){
     if (DatabaseManager.current === 'sqlite') {
         const db = DatabaseManager.getSqlite().connection;

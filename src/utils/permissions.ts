@@ -10,7 +10,7 @@ export function isOwner(member: GuildMember | null | undefined){
 }
 
 export function isAdminFromMember(member: GuildMember | null | undefined){
-  if(isOwner(member)) return true; // owners sempre
+  if(isOwner(member)) return true;
   if(!member) return false;
   const cfg: any = loadConfig();
   const adminRole = cfg.roles?.admin;
@@ -45,12 +45,12 @@ export function hasAnyLeadership(member: GuildMember | null | undefined){
 }
 
 export function assertAreaPermission(member: GuildMember | null | undefined, areaName: string){
-  if(isOwner(member)) return true; // dono pode tudo
+  if(isOwner(member)) return true;
   return isAdminFromMember(member) || isAreaLeader(member, areaName);
 }
 
 export function canManageAnyArea(member: GuildMember | null | undefined){
-  return isOwner(member); // somente owners para mexer em áreas onde não é líder
+  return isOwner(member);
 }
 
 export function canUsePdfForArea(member: GuildMember | null | undefined, areaName: string){

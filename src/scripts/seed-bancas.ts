@@ -4,12 +4,8 @@ import { BancaService } from '../services/bancaService.ts';
 import { loadConfig } from '../config/index.ts';
 import { logger } from '../utils/logger.ts';
 
-// Lista de bancas existentes de Recrutamento para pré-registro
-// Formato: { channelId, name, staffId }
 const recruitBancas: { channelId: string; name: string; staffId: string }[] = [
-  // TODO: Substituir pelos valores reais fornecidos pelo usuário
-  // Exemplo:
-  // { channelId: '123456789012345678', name: 'Exemplo 1', staffId: '111111111111111111' },
+
 ];
 
 async function main() {

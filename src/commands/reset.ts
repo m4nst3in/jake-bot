@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, ActionRowBuilder, ModalBuilder, TextInputBuilder } from 'discord.js';
 import { PointsService } from '../services/pointsService.ts';
 import { AREAS, isValidArea } from '../constants/areas.ts';
-const svc = new PointsService(); // ainda usado pelo modal de pontos
+const svc = new PointsService();
 
 export default {
   data: new SlashCommandBuilder()
@@ -39,7 +39,7 @@ export default {
       .setCustomId('confirm')
       .setLabel('Digite confirmar para prosseguir')
       .setRequired(true)
-      .setStyle(1 as any); // 1 = Short
+      .setStyle(1 as any);
     const row = new ActionRowBuilder<TextInputBuilder>().addComponents(input);
     modal.addComponents(row);
     await interaction.showModal(modal);

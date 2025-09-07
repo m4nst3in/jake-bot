@@ -5,9 +5,8 @@ import { loadConfig } from '../config/index.ts';
 import { BancaService } from '../services/bancaService.ts';
 import { logger } from '../utils/logger.ts';
 
-// Preencha a lista com { name, staffId }
 const BANCA_LIST: { name: string; staffId: string }[] = [
-  // Exemplo: { name: 'joao', staffId: '123456789012345678' },
+
 ];
 
 async function run() {

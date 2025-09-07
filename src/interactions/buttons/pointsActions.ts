@@ -21,13 +21,13 @@ export default {
     }
     const rows: any[] = [];
   const buttons = areas.map((a:string)=> new ButtonBuilder().setCustomId(`pts_area:${mode}:${a}`).setLabel(a).setStyle(2));
-    // dividir em duas rows se >5
+
     for (let i=0;i<buttons.length;i+=5){ rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons.slice(i,i+5))); }
     const embed = new EmbedBuilder().setTitle(mode === 'add' ? 'Adicionar Pontos' : 'Remover Pontos').setDescription('Selecione a área.').setColor(mode==='add'?0x2ecc71:0xe74c3c);
     try {
       await interaction.update({ embeds:[embed], components: rows });
     } catch {
-      // se não puder update (talvez expirado) tenta responder
+
       await interaction.reply({ embeds:[embed], components: rows, ephemeral: true });
     }
   }

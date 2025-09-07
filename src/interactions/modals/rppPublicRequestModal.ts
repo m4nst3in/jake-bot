@@ -7,7 +7,7 @@ export default {
     id: 'rpp_public_request_modal',
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true });
-    // Agora permitimos múltiplas solicitações pendentes e até mesmo enquanto um RPP está ativo.
+
         const motivo = interaction.fields.getTextInputValue('motivo').trim();
         const retornoRaw = interaction.fields.getTextInputValue('retorno').trim();
         const retornoIso = parseBrDate(retornoRaw);

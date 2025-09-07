@@ -33,7 +33,7 @@ export default {
                 catch { }
                 return;
             }
-            // Impede múltiplos RPPs ativos: se já existe ativo de outro id, não aceita
+
             const active = await (service as any).repo.findActiveByUser((rec as any).user_id);
             if (active && String(active.id) !== String(rec.id)) {
                 await interaction.editReply({ content: 'Usuário já possui um RPP ativo. Encerre o atual antes de aceitar outro.' });
@@ -41,7 +41,7 @@ export default {
             }
             await service.accept(rppId, interaction.user.id);
             startedAtIso = new Date().toISOString();
-            // Determina área a partir do guildId atual
+
             const guildId = interaction.guild?.id;
             if (guildId) {
                 const cfgAll: any = loadConfig();
@@ -50,11 +50,11 @@ export default {
                 else if (cfgAll.banca && cfgAll.banca.supportGuildId === guildId) areaName = 'SUPORTE';
             }
             returnDate = (rec as any)?.return_date;
-            // Atribui cargo de RPP aceito (config centralizada por guild)
+
             if (recordUserId) {
                 await assignRppRolesToAllGuilds(interaction.client, recordUserId);
             }
-            // ConfigRepository fallback removido para centralização total
+
         }
         await interaction.editReply({ content: 'RPP aceito e registrado.' });
     await sendRppLog(interaction.guild, 'ativado', { userId: recordUserId || String(rppId), moderatorId: interaction.user.id, status: 'ativo', returnDate, createdAt: startedAtIso, area: areaName });

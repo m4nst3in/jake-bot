@@ -1,30 +1,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Simple comment stripper for .ts/.js/.json/.jsonc files.
-// Removes // line comments and /* */ block comments, skipping those inside strings crudely.
-// Not a full parser; backup your repo before running if critical.
-
 const ROOT = path.join(process.cwd(), 'src');
 const exts = new Set(['.ts', '.js', '.json', '.jsonc']);
 const preservePatterns = [ /eslint-disable/ ];
 
 function stripComments(code: string){
-  // Preserve lines with protected patterns
+
   const protectedLines = new Set<number>();
   const lines = code.split('\n');
   lines.forEach((l,i)=>{
     if(preservePatterns.some(r=>r.test(l))) protectedLines.add(i);
   });
   let out = code;
-  // Remove block comments
+
   out = out.replace(/\/\*[\s\S]*?\*\//g, (m, offset)=>{
-    // if any protected pattern inside, keep
+
     if(preservePatterns.some(r=>r.test(m))) return m; return '';
   });
-  // Remove line comments not in strings (approx)
+
   out = out.split('\n').map((line, idx)=>{
-    if(protectedLines.has(idx)) return line; // skip
+    if(protectedLines.has(idx)) return line;
     let inSingle = false, inDouble = false, inTemplate=false, escape=false;
     for(let i=0;i<line.length;i++){
       const ch = line[i];
@@ -39,7 +35,7 @@ function stripComments(code: string){
     }
     return line;
   }).join('\n');
-  // Collapse multiple blank lines
+
   out = out.replace(/\n{3,}/g,'\n\n');
   return out.trimEnd()+"\n";
 }

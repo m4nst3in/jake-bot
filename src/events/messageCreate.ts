@@ -5,7 +5,7 @@ import { BancaService } from '../services/bancaService.js';
 import { loadConfig } from '../config/index.ts';
 const pointsService = new PointsService();
 const bancaService = new BancaService();
-// Cache simples para webhooks por canal
+
 const bancaWebhookCache = new Map<string, { id: string; token: string }>();
 const pointsWebhookCache = new Map<string, { id: string; token: string }>();
 
@@ -106,7 +106,7 @@ export default async function messageCreate(message: Message) {
                 const LOG_CHANNEL = supportCfg?.channels?.plantaoLog || '1414103437657767986';
                 const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim || '<a:check2:1413993680313909350>';
                 if (message.guild && message.channelId === PLANTAO_CHANNEL) {
-                        // Verifica link
+
                         if (/(https?:\/\/\S+)/i.test(message.content)) {
                                 await message.react(ACCEPT_EMOJI).catch(() => {});
                                 try {
@@ -126,7 +126,7 @@ export default async function messageCreate(message: Message) {
                                                 );
                                                 await supervisaoChannel.send({ content: `<@&${SUPERVISAO_ROLE}>`, embeds:[embed], components:[row] });
                                         }
-                                        // Log inicial
+
                                         const logChannel: any = await message.client.channels.fetch(LOG_CHANNEL).catch(()=>null);
                                         if (logChannel && logChannel.isTextBased()) {
                                                 const { EmbedBuilder } = await import('discord.js');
@@ -140,11 +140,10 @@ export default async function messageCreate(message: Message) {
                                 } catch {}
                         }
                 }
-                // --- Fim plantão supervision workflow ---
-                // Replicação de mensagens de avisos/plantão/supervisão para bancaLog
+
                 if (message.guild && [PLANTAO_CHANNEL, SUPERVISAO_CHANNEL, LOG_CHANNEL].includes(message.channelId)) {
                     await replicateToBancaLog(message, supportCfg);
-                    // Mantemos webhook de pontos somente para plantão/supervisão se quiser; se não, comente a linha abaixo
+
                     await replicateToPointsLog(message, supportCfg);
                 }
         if (reportsChannelId && message.channelId === reportsChannelId) {
@@ -159,16 +158,15 @@ export default async function messageCreate(message: Message) {
         }
         if (!message.guild) return;
 
-        // --- Bancas de Recrutamento ---
         const recruitCfg: any = (cfg as any).recruitBanca;
         if (recruitCfg && message.guild.id === recruitCfg.guildId) {
-            // Checar se canal é uma banca registrada para recrutamento
+
             const banca = await bancaService.getByChannel(message.channel.id).catch(()=>null);
             if (banca) {
                 const contentLower = message.content.toLowerCase();
                 const keyword = (recruitCfg.keyword || 'recrutamento').toLowerCase();
                 if (contentLower.includes(keyword)) {
-                    // Adiciona pontos para área de RECRUTAMENTO
+
                     await (pointsService as any).adicionarComRelatorio(message.author.id, 'Recrutamento', recruitCfg.pointsPerMessage || 10, message.author.id);
                     const emojiId = extractEmojiId(recruitCfg.reactionEmoji || '<a:Check:1217789508939157515>');
                     await message.react(emojiId).catch(()=>{});
@@ -176,7 +174,7 @@ export default async function messageCreate(message: Message) {
                         const ch:any = message.channel as any;
                         if (typeof ch.send === 'function') await ch.send(recruitCfg.bannerUrl).catch(()=>{});
                     }
-                    // Envia log simples no channel de points específico
+
                     if (recruitCfg.pointsLogChannelId) {
                         const logCh: any = await message.client.channels.fetch(recruitCfg.pointsLogChannelId).catch(()=>null);
                         if (logCh && logCh.isTextBased()) {
@@ -191,40 +189,40 @@ export default async function messageCreate(message: Message) {
                     }
                 }
             }
-            return; // não processa lógica de suporte abaixo
+            return;
         }
 
-        if (!cfg.banca) return; // suporte
-        if (message.guild.id !== cfg.banca.supportGuildId) return; // não é guild de suporte
+        if (!cfg.banca) return;
+        if (message.guild.id !== cfg.banca.supportGuildId) return;
     const banca = await bancaService.getByChannel(message.channel.id);
     const isAvisoChannel = message.channel.id === (supportCfg?.channels?.bancaBonus || cfg.banca.bonusChannelId);
     const isSupervisaoBancaChannel = message.channel.id === (supportCfg?.channels?.bancaSupervisao || cfg.banca.supervisionChannelId);
-    if (!banca && !(isAvisoChannel || isSupervisaoBancaChannel)) return; // não é banca, aviso ou supervisão
+    if (!banca && !(isAvisoChannel || isSupervisaoBancaChannel)) return;
     const failEmojiId = extractEmojiId(supportCfg?.emojis?.fail || '<:waterrado:1413997059853516932>');
-    // Regras de autoria: canais aviso e supervisão permitem qualquer staff; banca normal só o dono
+
     if (banca && banca.staff_id && !isAvisoChannel && !isSupervisaoBancaChannel && message.author.id !== banca.staff_id) { await message.react(failEmojiId).catch(()=>{}); return; }
-    // Validar imagem
+
     if (!message.attachments.size) { await message.react(failEmojiId).catch(()=>{}); return; }
     const hasImage = [...message.attachments.values()].some(a => (a.contentType||'').startsWith('image') || /\.(png|jpe?g|gif|webp)$/i.test(a.name||''));
     if (!hasImage) { await message.react(failEmojiId).catch(()=>{}); return; }
     logger.info({ banca: banca||null, author: message.author.id, aviso: isAvisoChannel, supervisao: isSupervisaoBancaChannel }, 'Banca/aviso/supervisao message candidate');
     let pts = cfg.banca.basePoints;
-    if (isAvisoChannel) pts = cfg.banca.bonusPoints; // canal aviso usa pontos de bonus
-    else if (isSupervisaoBancaChannel) pts = cfg.banca.supervisionPoints; // canal supervisão usa pontos de supervisão (10)
-    else if (message.channel.id === (supportCfg?.channels?.bancaBonus || cfg.banca.bonusChannelId)) pts = cfg.banca.bonusPoints; // redundância segura
+    if (isAvisoChannel) pts = cfg.banca.bonusPoints;
+    else if (isSupervisaoBancaChannel) pts = cfg.banca.supervisionPoints;
+    else if (message.channel.id === (supportCfg?.channels?.bancaBonus || cfg.banca.bonusChannelId)) pts = cfg.banca.bonusPoints;
     else if (message.channel.id === (supportCfg?.channels?.bancaSupervisao || cfg.banca.supervisionChannelId)) pts = cfg.banca.supervisionPoints;
     await (pointsService as any).adicionarComRelatorio(message.author.id, 'Suporte', pts, message.author.id);
     logger.info({ user: message.author.id, pts, aviso: isAvisoChannel, supervisao: isSupervisaoBancaChannel }, 'Banca/aviso/supervisao points added');
     const emojiId = extractEmojiId(supportCfg?.emojis?.checkAnim || cfg.banca.reactionEmoji);
     await message.react(emojiId).catch(()=>{});
-    // Enviar banner em banca, avisos e supervisão
+
     if (banca || isAvisoChannel || isSupervisaoBancaChannel) {
         const ch:any = message.channel as any;
         if (typeof ch.send === 'function') await ch.send(cfg.banca.bannerUrl).catch(()=>{});
     }
-    // Log via webhook reutilizando função (banca e também points log)
+
     await replicateToBancaLog(message, supportCfg);
-    // Removido replicateToPointsLog para bancas/avisos/supervisão de banca; embed já será enviada via pointsLogger
+
     } catch (err) {
         logger.error({ err }, 'Erro em messageCreate');
     }
