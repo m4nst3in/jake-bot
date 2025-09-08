@@ -4,6 +4,7 @@ import { loadConfig } from '../../config/index.ts';
 import { ConfigRepository } from '../../repositories/configRepository.ts';
 import { sendRppLog } from '../../utils/rppLogger.ts';
 import { assignRppRolesToAllGuilds } from '../../utils/rppRoleAssign.ts';
+import { applyRppEntryRoleAdjust } from '../../services/rppService.ts';
 import { RPPRepository } from '../../repositories/rppRepository.ts';
 export default {
     id: 'rpp_accept',
@@ -52,6 +53,7 @@ export default {
             returnDate = (rec as any)?.return_date;
             if (recordUserId) {
                 await assignRppRolesToAllGuilds(interaction.client, recordUserId);
+                await applyRppEntryRoleAdjust(interaction.client, recordUserId);
             }
         }
         await interaction.editReply({ content: 'RPP aceito e registrado.' });

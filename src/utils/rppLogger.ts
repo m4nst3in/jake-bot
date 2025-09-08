@@ -1,4 +1,4 @@
-import { Guild, EmbedBuilder, TextBasedChannel, ActionRowBuilder, ButtonBuilder, Channel } from 'discord.js';
+import { Guild, EmbedBuilder, TextBasedChannel, ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { logger } from './logger.ts';
 import { loadConfig } from '../config/index.ts';
 interface RppLogPayload {
@@ -7,11 +7,12 @@ interface RppLogPayload {
     moderatorId?: string;
     status?: string;
     reason?: string;
-    returnDate?: string;
+    returnDate?: string; // agora pode ser "X dia(s)" ou data BR
     createdAt?: string;
     processedAt?: string;
     area?: string;
     startedAt?: string;
+    restoredRoles?: string[]; // opcional: lista de cargos restaurados no encerramento
 }
 function daysUntil(dateStr?: string) {
     if (!dateStr)
@@ -61,7 +62,11 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     const snow = rootCfg.emojis?.rppSnowflake || '<a:snowflake:placeholder>';
     const dot = rootCfg.emojis?.dot || '•';
     const meta = mapType(type, snow);
-    const days = daysUntil(payload.returnDate);
+    let days: number | undefined;
+    if (payload.returnDate) {
+        const m = payload.returnDate.match(/^(\d+) dia/);
+        if (m) days = parseInt(m[1],10); else days = daysUntil(payload.returnDate);
+    }
     const reasonRaw = (payload.reason || '').trim();
     const reason = reasonRaw ? (reasonRaw.length > 800 ? reasonRaw.slice(0, 800) + '…' : reasonRaw) : undefined;
     function mapStatus(s?: string) {
@@ -92,17 +97,35 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     if (type === 'removido' && payload.startedAt)
         parts.push(`${dot} **Início do RPP**\n${payload.startedAt}`);
     if (payload.returnDate) {
-        parts.push(`${dot} **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
+        if (/^\d+ dia/.test(payload.returnDate)) parts.push(`${dot} **Ausência**\n${payload.returnDate}`); else parts.push(`${dot} **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
     }
     let components: any[] | undefined;
     if (type === 'solicitado' && payload.id !== undefined) {
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`rpp_accept:${payload.id}`).setLabel('Aceitar').setStyle(3).setEmoji(rootCfg.emojis?.rppAccept || ''), new ButtonBuilder().setCustomId(`rpp_reject:${payload.id}`).setLabel('Recusar').setStyle(4).setEmoji(rootCfg.emojis?.rppReject || ''));
         components = [row];
     }
+    // Helper para obter snapshot (roles removidos) ou restaurados
+    async function resolveSnapshotRoles(userId: string) {
+        try {
+            const svc = await import('../services/rppService.ts');
+            // @ts-ignore usar export exposto
+            const store = (svc as any).inMemorySnapshots || {};
+            const snap = store[userId];
+            if (snap?.roles?.length) return snap.roles as string[];
+        } catch {}
+        // Fallback: buscar no repositório persistido (caso reinício do bot)
+        try {
+            const repoMod = await import('../repositories/rppSnapshotRepository.ts');
+            const Repo = (repoMod as any).RppSnapshotRepository;
+            const repo = new Repo();
+            const rec = await repo.get(userId);
+            return (rec?.roles as string[]) || [];
+        } catch { return []; }
+    }
+    // Envia para cada guild de RPP configurada
     for (const g of targetGuilds) {
         const rppCfg = rootCfg.rpp?.guilds?.[g.id];
-        if (!rppCfg)
-            continue;
+        if (!rppCfg) continue;
         const reviewChannelId = rppCfg.review;
         const logChannelId = rppCfg.log;
         const useReview = type === 'solicitado';
@@ -111,44 +134,103 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
         if (!channel) {
             try {
                 const fetched = await g.channels.fetch(primaryChannelId).catch(() => null);
-                if (fetched && fetched.isTextBased())
-                    channel = fetched as TextBasedChannel;
-            }
-            catch { }
+                if (fetched && fetched.isTextBased()) channel = fetched as TextBasedChannel;
+            } catch {}
         }
         if (!channel || !('send' in channel)) {
             logger.warn({ channelId: primaryChannelId, type }, 'RPP log: canal não encontrado ou inválido');
-            if (type === 'ativado') {
+            if (type === 'ativado') { // fallback tenta canal de review
                 let fb = g.channels.cache.get(reviewChannelId) as TextBasedChannel | undefined;
                 if (!fb) {
                     try {
                         const fetchedFb = await g.channels.fetch(reviewChannelId).catch(() => null);
-                        if (fetchedFb && fetchedFb.isTextBased())
-                            fb = fetchedFb as TextBasedChannel;
-                    }
-                    catch { }
+                        if (fetchedFb && fetchedFb.isTextBased()) fb = fetchedFb as TextBasedChannel;
+                    } catch {}
                 }
-                if (fb && ('send' in fb))
-                    channel = fb;
-                else
-                    continue;
-            }
-            else
-                continue;
+                if (fb && ('send' in fb)) channel = fb; else continue;
+            } else continue;
         }
-        const embed = new EmbedBuilder()
-            .setTitle(meta.title)
-            .setDescription(parts.join('\n\n'))
-            .setColor(meta.color);
+    let description = parts.join('\n\n');
+    let contentForArea: string | undefined;
+        if (type === 'ativado') {
+            const removedRoles = await resolveSnapshotRoles(payload.userId);
+            if (removedRoles.length) description += `\n\n${dot} **Cargos Removidos**\n${removedRoles.map((r: string)=>`<@&${r}>`).join(' ')}`;
+        }
+        if (type === 'removido') {
+            // Snapshot ainda existe porque restore ocorre depois do log; mostramos cargos que serão restaurados (excluindo permissões especiais)
+            const all = await resolveSnapshotRoles(payload.userId);
+            const permExclude = ['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404'];
+            const restored = all.filter((r: string)=>!permExclude.includes(r));
+            if (restored.length) description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string)=>`<@&${r}>`).join(' ')}`;
+        }
+        if (type === 'solicitado') {
+            const areaCfg = (rootCfg.areas || []).find((a: any) => a.guildId === g.id);
+            if (areaCfg?.roleIds?.lead) contentForArea = `<@&${areaCfg.roleIds.lead}>`;
+            else if (rootCfg.support?.guildId === g.id && rootCfg.support?.roles?.supervisao) contentForArea = `<@&${rootCfg.support.roles.supervisao}>`;
+        }
+        const embed = new EmbedBuilder().setTitle(meta.title).setDescription(description).setColor(meta.color);
         try {
             const member = await g.members.fetch(payload.userId).catch(() => null);
-            if (member?.user?.avatarURL())
-                embed.setThumbnail(member.user.avatarURL()!);
+            if (member?.user?.avatarURL()) embed.setThumbnail(member.user.avatarURL()!);
+        } catch {}
+    try { await (channel as any).send({ content: contentForArea, embeds: [embed], components }); } catch {}
+    }
+    // Log adicional no servidor principal para eventos aceitos ou encerrados
+    if (['ativado','removido'].includes(type)) {
+        const mainGuildId = rootCfg.mainGuildId;
+        const mainLogChannelId = '1414539162106855476';
+        const mainGuild = guild?.client.guilds.cache.get(mainGuildId) || await guild?.client.guilds.fetch(mainGuildId).catch(()=>null);
+        if (mainGuild) {
+            let channel = mainGuild.channels.cache.get(mainLogChannelId) as TextBasedChannel | undefined;
+            if (!channel) {
+                try {
+                    const fetched = await mainGuild.channels.fetch(mainLogChannelId).catch(()=>null);
+                    if (fetched && fetched.isTextBased()) channel = fetched as TextBasedChannel;
+                } catch {}
+            }
+            if (channel && ('send' in channel)) {
+                // Construção extra apenas para ativado: inserir cargos removidos
+                let description = parts.join('\n\n');
+                let content: string | undefined;
+                if (type === 'ativado') {
+                    const removedRoles = await resolveSnapshotRoles(payload.userId);
+                    if (removedRoles.length) description += `\n\n${dot} **Cargos Removidos**\n${removedRoles.map((r: string)=>`<@&${r}>`).join(' ')}`;
+                    // Mapeamento: cargo de membro em QUALQUER servidor de área -> cargo de liderança para mencionar
+                    const membershipToLeadership: Record<string,string> = {
+                        '1190390194533318715': '1136864678253969430', // Mov Call
+                        '1180871634631020594': '1153690317262950400', // Recrutamento
+                        '1183909149784952908': '1136864742997250118', // Design
+                        '1283205107021774918': '1136864716434710608', // Eventos
+                        '1190515971069321238': '1136889351033344000', // Suporte
+                        '1224414082866745411': '1247610015787913360'  // Jornalismo
+                    };
+                    const mentioned = new Set<string>();
+                    // Itera todos os guilds de RPP (exceto principal) e verifica se o membro possui algum cargo de membro
+                    const areaGuildIds = Object.keys(rootCfg.rpp?.guilds || {}).filter(id=>id !== mainGuildId);
+                    for (const gId of areaGuildIds) {
+                        let areaGuild = guild.client.guilds.cache.get(gId);
+                        if (!areaGuild) areaGuild = await guild.client.guilds.fetch(gId).catch(()=>null) as any;
+                        if (!areaGuild) continue;
+                        const areaMember = await areaGuild.members.fetch(payload.userId).catch(()=>null);
+                        if (!areaMember) continue;
+                        for (const [memberRoleId, leadRoleId] of Object.entries(membershipToLeadership)) {
+                            if (areaMember.roles.cache.has(memberRoleId)) mentioned.add(leadRoleId);
+                        }
+                    }
+                    if (mentioned.size) content = Array.from(mentioned).map(id=>`<@&${id}>`).join(' ');
+                } else if (type === 'removido') {
+                    const all = await resolveSnapshotRoles(payload.userId);
+                    const permExclude = ['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404'];
+                    const restored = all.filter((r: string)=>!permExclude.includes(r));
+                    if (restored.length) description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string)=>`<@&${r}>`).join(' ')}`;
+                }
+                const embed = new EmbedBuilder().setTitle(meta.title).setDescription(description).setColor(meta.color).setFooter({ text: 'Log (principal)' });
+                try {
+                    const member = await mainGuild.members.fetch(payload.userId).catch(()=>null);
+                    if (member?.user?.avatarURL()) embed.setThumbnail(member.user.avatarURL()!);
+                } catch {}
+                try { const msg = await (channel as any).send({ content, embeds: [embed] }); await msg.react('<a:z_blue_Verificado:1037734218169589840>').catch(()=>{}); } catch {}
+            }
         }
-        catch { }
-        try {
-            await (channel as any).send({ embeds: [embed], components });
-        }
-        catch { }
     }
 }

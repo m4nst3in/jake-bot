@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, GuildMember, PermissionsBitField } from 'discord.js';
 import { RPPService } from '../services/rppService.ts';
 import { isOwner, isAreaLeader } from '@utils/permissions.ts';
 import { loadConfig } from '../config/index.ts';
@@ -11,15 +11,16 @@ export default {
         await interaction.deferReply({ ephemeral: true });
         const member = interaction.member as GuildMember | null;
         const cfg: any = loadConfig();
-        const owner = isOwner(member);
-        const canManage = owner;
+    const owner = isOwner(member);
+    const hasTimeout = interaction.memberPermissions?.has(PermissionsBitField.Flags.ModerateMembers);
+    const canManage = owner; // somente owner gerencia; timeout só visualiza
         const { total: activeTotal } = await service.listActivePaged(1, 1);
         let removedTotal: number | undefined;
         if (canManage) {
             const removed = await service.listRemovedPaged(1, 1);
             removedTotal = removed.total;
         }
-        const manageBtn = new ButtonBuilder().setCustomId('rpp_menu_manage').setLabel('🛠️ Gerenciar').setStyle(1).setDisabled(!canManage);
+    const manageBtn = new ButtonBuilder().setCustomId('rpp_menu_manage').setLabel('🛠️ Gerenciar').setStyle(1).setDisabled(!canManage);
         const listBtn = new ButtonBuilder().setCustomId('rpp_menu_list').setLabel('🟢 Ativos').setStyle(3);
         const removedBtn = new ButtonBuilder().setCustomId('rpp_menu_removed').setLabel('📕 Encerrados').setStyle(4).setDisabled(!canManage);
         const embedCfg = cfg.rpp?.guilds?.[interaction.guild!.id]?.embed;
@@ -32,6 +33,8 @@ export default {
         descParts.push(`${dot} 📕 Encerrados: histórico finalizados.`);
         if (canManage)
             descParts.push(`${dot} 🛠️ Gerenciar: criar / encerrar manualmente.`);
+        else if (hasTimeout)
+            descParts.push(`${dot} Você vê este painel por possuir permissão de timeout (visualização).`);
         descParts.push(`${dot} Solicitações públicas: use o painel enviado com /embed.`);
         if (canManage)
             descParts.push(`${tool} **Status**\n${dot} Ativos: **${activeTotal}**${removedTotal !== undefined ? `\n${dot} Encerrados: **${removedTotal}**` : ''}`);

@@ -1,11 +1,13 @@
-import { ButtonInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, GuildMember } from 'discord.js';
 import { rppStatusLabel } from '../../utils/statusLabels.ts';
 import { RPPService } from '../../services/rppService.ts';
+import { isOwner } from '../../utils/permissions.ts';
 const service = new RPPService();
 export default {
     id: 'rpp_menu_removed',
     async execute(interaction: ButtonInteraction) {
-        if (!interaction.memberPermissions?.has('ManageGuild')) {
+    const member = interaction.member as GuildMember | null;
+    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.reply({ content: 'Sem permissão.', ephemeral: true });
             return;
         }

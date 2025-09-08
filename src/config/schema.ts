@@ -31,6 +31,7 @@ export interface ConfigRoot {
     channels: GlobalChannelsConfig;
     areas: AreaConfig[];
     staffRankMirrors?: Record<string, Record<string, string>>; // guildId -> (rankName -> roleId)
+    progressionRoles?: Record<string,{ upa: string[]; naoUpa?: string[] }>; // guildId -> progression role classification
     support?: {
         guildId: string;
         roles?: Record<string,string>;

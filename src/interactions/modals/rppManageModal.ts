@@ -1,8 +1,9 @@
-import { ModalSubmitInteraction } from 'discord.js';
-import { RPPService } from '../../services/rppService.ts';
+import { ModalSubmitInteraction, GuildMember } from 'discord.js';
+import { RPPService, applyRppExitRoleRestore } from '../../services/rppService.ts';
 import { loadConfig } from '../../config/index.ts';
 import { sendRppLog } from '../../utils/rppLogger.ts';
 import { formatBrDate } from '../../utils/dateFormat.ts';
+import { isOwner } from '../../utils/permissions.ts';
 const service = new RPPService();
 export default {
     id: 'rpp_manage_modal',
@@ -11,9 +12,20 @@ export default {
         const userId = interaction.fields.getTextInputValue('user_id').trim();
         const acao = interaction.fields.getTextInputValue('acao').trim().toLowerCase();
         const motivo = interaction.fields.getTextInputValue('motivo')?.trim();
-        const hoje = new Date();
-        const retornoIso = hoje.toISOString().slice(0, 10);
-        if (!interaction.memberPermissions?.has('ManageGuild')) {
+        const diasCampo = interaction.fields.getTextInputValue('dias')?.trim();
+        let retornoIso: string | undefined;
+        let diasAusencia: number | undefined;
+        if (diasCampo) {
+            const d = parseInt(diasCampo,10);
+            if (!isNaN(d) && d>0 && d<=7) {
+                diasAusencia = d;
+                const target = new Date();
+                target.setUTCDate(target.getUTCDate() + d);
+                retornoIso = target.toISOString().slice(0,10);
+            }
+        }
+    const member = interaction.member as GuildMember | null;
+    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.editReply('Sem permissão.');
             return;
         }
@@ -27,8 +39,8 @@ export default {
                 return;
             }
             const created = await service.requestRPP(userId, motivo, retornoIso);
-            await sendRppLog(interaction.guild, 'solicitado', { id: created.id, userId, reason: motivo, returnDate: formatBrDate(retornoIso), createdAt: created.requested_at });
-            await interaction.editReply(`Solicitação de RPP criada (pendente) para ${userId}. Motivo: ${motivo} • Retorno: ${formatBrDate(retornoIso)}`);
+            await sendRppLog(interaction.guild, 'solicitado', { id: created.id, userId, reason: motivo, returnDate: diasAusencia ? `${diasAusencia} dia(s)` : formatBrDate(retornoIso), createdAt: created.requested_at });
+            await interaction.editReply(`Solicitação de RPP criada (pendente) para ${userId}. Motivo: ${motivo} • Ausência: ${diasAusencia ? diasAusencia + ' dia(s)' : formatBrDate(retornoIso)}`);
         }
         else {
             let active: any;
@@ -56,6 +68,7 @@ export default {
             }
             const startedAt = active?.processed_at ? new Date(active.processed_at).toLocaleString('pt-BR') : undefined;
             await sendRppLog(interaction.guild, 'removido', { userId, moderatorId: interaction.user.id, status: 'removido', area: areaName, startedAt });
+            await applyRppExitRoleRestore(interaction.client, userId);
             await interaction.editReply(`RPP removido para ${userId}.`);
         }
     }

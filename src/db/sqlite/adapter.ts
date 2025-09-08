@@ -45,6 +45,7 @@ export class SqliteAdapter {
             ,`CREATE TABLE IF NOT EXISTS staff_members (id INTEGER PRIMARY KEY AUTOINCREMENT, discord_id TEXT UNIQUE, added_at TEXT DEFAULT CURRENT_TIMESTAMP);`
             ,`ALTER TABLE staff_members ADD COLUMN rank_role_id TEXT;`
             ,`CREATE UNIQUE INDEX IF NOT EXISTS ux_staff_members_discord ON staff_members(discord_id);`
+            ,`CREATE TABLE IF NOT EXISTS rpp_role_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT UNIQUE, roles TEXT, stored_at TEXT DEFAULT CURRENT_TIMESTAMP);`
         ];
         for (const stmt of stmts) {
             if (stmt.startsWith('ALTER TABLE')) {

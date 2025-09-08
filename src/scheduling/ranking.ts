@@ -11,7 +11,7 @@ export function scheduleRankingUpdater(client: Client) {
     const designGuildId = '1183909149784952902';
     const designChannelId = '1299517485149716480';
     const eventsChannelId = '1283495783328518144';
-    const journalismChannelId = '1312598673980657737';
+    const journalismChannelId = '1414589956856483952'; // atualizado: novo canal de ranking jornalismo
     if (!supportChannelId && !recruitChannelId && !designChannelId && !eventsChannelId) {
         logger.warn('Nenhum canal de ranking configurado.');
         return;
