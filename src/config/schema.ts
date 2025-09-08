@@ -24,11 +24,20 @@ export interface GlobalChannelsConfig {
 }
 export interface ConfigRoot {
     mainGuildId: string;
+    botId?: string;
     owners?: string[];
     environment?: 'prod' | 'dev' | 'staging';
     roles: GlobalRolesConfig;
     channels: GlobalChannelsConfig;
     areas: AreaConfig[];
+    staffRankMirrors?: Record<string, Record<string, string>>; // guildId -> (rankName -> roleId)
+    support?: {
+        guildId: string;
+        roles?: Record<string,string>;
+        channels?: Record<string,string>;
+        categories?: Record<string,string>;
+        emojis?: Record<string,string>;
+    };
     emojis?: Record<string, string>;
     banca?: {
         supportGuildId: string;
@@ -81,5 +90,6 @@ export function validateConfig(cfg: any): ConfigRoot {
         throw new Error('mainGuildId ausente');
     if (!Array.isArray(cfg.areas))
         throw new Error('areas deve ser array');
+    if (!cfg.roles) cfg.roles = {}; // garante objeto roles
     return cfg as ConfigRoot;
 }

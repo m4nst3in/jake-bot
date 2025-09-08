@@ -16,3 +16,15 @@ export function getAreaByName(name: string) {
     return cfg.areas.find(a => a.name.toLowerCase() === name.toLowerCase());
 }
 export function reloadConfig() { cached = null; return loadConfig(); }
+
+function isValidId(id?: string) { return !!id && !/^0+$/.test(id); }
+
+export function resolvePrimaryGuildId(): string | undefined {
+    const cfg = loadConfig();
+    if (isValidId(cfg.mainGuildId)) return cfg.mainGuildId;
+    const support = (cfg as any).support?.guildId;
+    if (isValidId(support)) return support;
+    if (cfg.banca?.supportGuildId && isValidId(cfg.banca.supportGuildId)) return cfg.banca.supportGuildId;
+    const area = cfg.areas.find(a=>isValidId(a.guildId));
+    return area?.guildId;
+}
