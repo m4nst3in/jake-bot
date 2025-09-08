@@ -99,41 +99,53 @@ export default async function messageCreate(message: Message) {
         if (message.author.bot) return;
     const cfg = loadConfig();
     const supportCfg: any = (cfg as any).support;
+    const recruitCfg: any = (cfg as any).recruitBanca;
         const reportsChannelId = process.env.REPORTS_CHANNEL_ID;
                 const PLANTAO_CHANNEL = supportCfg?.channels?.plantao;
                 const SUPERVISAO_CHANNEL = supportCfg?.channels?.plantaoSupervisao;
                 const SUPERVISAO_ROLE = supportCfg?.roles?.supervisao;
                 const LOG_CHANNEL = supportCfg?.channels?.plantaoLog;
                 const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim;
-                if (message.guild && message.channelId === PLANTAO_CHANNEL) {
+                // Recruitment specific channels
+                const RECRUIT_PLANTAO_CHANNEL = '1230111166261493801';
+                const RECRUIT_SUPERVISAO_CHANNEL = '1414387744368492686';
+                const RECRUIT_LOG_CHANNEL = recruitCfg?.plantaoLogChannelId; // canal de log de plantão de recrutamento
+                const RECRUIT_LEADERSHIP_ROLE = recruitCfg?.leadershipRoleId; // role para menção na supervisão
+                const isRecruitGuild = message.guild?.id === recruitCfg?.guildId;
+
+                if (message.guild && (message.channelId === PLANTAO_CHANNEL || message.channelId === RECRUIT_PLANTAO_CHANNEL)) {
 
                         if (/(https?:\/\/\S+)/i.test(message.content)) {
                                 await message.react(ACCEPT_EMOJI).catch(() => {});
                                 try {
-                                        const supervisaoChannel: any = await message.client.channels.fetch(SUPERVISAO_CHANNEL).catch(()=>null);
+                                        const targetSupervisaoId = message.channelId === RECRUIT_PLANTAO_CHANNEL ? RECRUIT_SUPERVISAO_CHANNEL : SUPERVISAO_CHANNEL;
+                                        const supervisaoChannel: any = await message.client.channels.fetch(targetSupervisaoId).catch(()=>null);
                                         if (supervisaoChannel && supervisaoChannel.isTextBased()) {
                                                 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = await import('discord.js');
                                                 const ts = Math.floor(message.createdTimestamp/1000);
+                                                const targetRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? RECRUIT_LEADERSHIP_ROLE : SUPERVISAO_ROLE;
                                                 const embed = new EmbedBuilder()
                                                     .setTitle('🕒 Supervisão de Plantão')
                                                     .setColor(0x8e44ad)
-                                                    .setDescription(`Solicitação de supervisão registrada.\n\n👤 **Usuário**: <@${message.author.id}>\n🕘 **Horário**: <t:${ts}:F>\n\n<@&${SUPERVISAO_ROLE}> favor supervisionar.`)
+                                                    .setDescription(`Solicitação de supervisão registrada.\n\n👤 **Usuário**: <@${message.author.id}>\n🕘 **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
                                                     .setFooter({ text: `Msg ${message.id}` })
                                                     .setTimestamp();
                                                 const row = new ActionRowBuilder().addComponents(
                                                     new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3),
                                                     new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4)
                                                 );
-                                                await supervisaoChannel.send({ content: `<@&${SUPERVISAO_ROLE}>`, embeds:[embed], components:[row] });
+                                                const mentionRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? `<@&${RECRUIT_LEADERSHIP_ROLE}>` : `<@&${SUPERVISAO_ROLE}>`;
+                                                await supervisaoChannel.send({ content: mentionRole, embeds:[embed], components:[row] });
                                         }
 
-                                        const logChannel: any = await message.client.channels.fetch(LOG_CHANNEL).catch(()=>null);
+                                        const targetLogId = message.channelId === RECRUIT_PLANTAO_CHANNEL ? (RECRUIT_LOG_CHANNEL || LOG_CHANNEL) : LOG_CHANNEL;
+                                        const logChannel: any = await message.client.channels.fetch(targetLogId).catch(()=>null);
                                         if (logChannel && logChannel.isTextBased()) {
                                                 const { EmbedBuilder } = await import('discord.js');
                                                 const embed = new EmbedBuilder()
                                                     .setTitle('🗂️ Novo Plantão')
                                                     .setColor(0x34495e)
-                                                    .setDescription(`Usuário: <@${message.author.id}> (${message.author.id})\nCanal origem: <#${PLANTAO_CHANNEL}>\nMensagem: [Ir para a mensagem](${message.url})`)
+                                                    .setDescription(`Usuário: <@${message.author.id}> (${message.author.id})\nCanal origem: <#${message.channelId}>\nMensagem: [Ir para a mensagem](${message.url})`)
                                                     .setTimestamp();
                                                 await logChannel.send({ embeds:[embed] });
                                         }
@@ -141,7 +153,7 @@ export default async function messageCreate(message: Message) {
                         }
                 }
 
-                if (message.guild && [PLANTAO_CHANNEL, SUPERVISAO_CHANNEL, LOG_CHANNEL].includes(message.channelId)) {
+                if (message.guild && [PLANTAO_CHANNEL, SUPERVISAO_CHANNEL, LOG_CHANNEL, RECRUIT_PLANTAO_CHANNEL, RECRUIT_SUPERVISAO_CHANNEL, (recruitCfg?.plantaoLogChannelId||'none')].includes(message.channelId)) {
                     await replicateToBancaLog(message, supportCfg);
 
                     await replicateToPointsLog(message, supportCfg);
@@ -158,7 +170,7 @@ export default async function messageCreate(message: Message) {
         }
         if (!message.guild) return;
 
-        const recruitCfg: any = (cfg as any).recruitBanca;
+    // recruitCfg já definido anteriormente
         if (recruitCfg && message.guild.id === recruitCfg.guildId) {
 
             const banca = await bancaService.getByChannel(message.channel.id).catch(()=>null);

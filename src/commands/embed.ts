@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Guild } from 'discord.js';
 import { baseEmbed } from '../utils/embeds.ts';
 import { loadConfig, reloadConfig } from '../config/index.ts';
-const SUPPORTED = ['rpp','banca'];
+const SUPPORTED = ['rpp','banca','pedido'];
 
 function buildRppEmbed(guild: Guild) {
     let cfg: any = loadConfig();
@@ -44,7 +44,7 @@ export default {
         .setName('embed')
         .setDescription('Publica embeds pré-formatadas em um canal')
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
-    .addStringOption(o => o.setName('tipo').setDescription('Tipo de embed').setRequired(true).addChoices({ name: 'RPP', value: 'rpp' }, { name: 'Banca', value: 'banca' }))
+    .addStringOption(o => o.setName('tipo').setDescription('Tipo de embed').setRequired(true).addChoices({ name: 'RPP', value: 'rpp' }, { name: 'Banca', value: 'banca' }, { name: 'Pedido', value: 'pedido' }))
         .addChannelOption(o => o.setName('canal').setDescription('Canal de destino').setRequired(true)),
     async execute(interaction: ChatInputCommandInteraction) {
         const tipo = interaction.options.getString('tipo', true);
@@ -70,7 +70,7 @@ export default {
                 await interaction.editReply('Falha: ' + e.message);
             }
             return;
-        } else if (tipo === 'banca') {
+                } else if (tipo === 'banca') {
             const cfgAll:any = loadConfig();
             const bancaTitle = cfgAll.emojis?.bancaTitle || 'Banca';
             const rppAccept = cfgAll.emojis?.rppAccept || '';
@@ -79,6 +79,18 @@ export default {
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de banca publicada.');
             return;
+            } else if (tipo === 'pedido') {
+                        const embed = new EmbedBuilder()
+                            .setTitle('Solicitações de Arte')
+                            .setColor(0x111111)
+                            .setDescription('Clique no botão abaixo para fazer uma solicitação de arte.\nPreencha as informações necessárias para sua arte.')
+                            .setImage('https://i.imgur.com/U9lCIK7.gif')
+                            .setFooter({ text: 'Sistema de Pedidos de Design' });
+                        const openBtn = new ButtonBuilder().setCustomId('design_request_open').setLabel('Abrir pedido').setStyle(1).setEmoji('🎨');
+                        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openBtn);
+                        await (channel as any).send({ embeds:[embed], components:[row] });
+                        await interaction.editReply('Embed de pedido de design publicada.');
+                        return;
         }
     }
 };

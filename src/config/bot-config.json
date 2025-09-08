@@ -3,13 +3,7 @@
   "environment": "dev",
   "owners": ["1382506667211493429","511264305832919050","199242071507337216","418824536570593280"],
   "mainGuildId": "000000000000000000",
-  "roles": {
-    "staff": "000000000000000001",
-    "admin": "000000000000000002",
-    "mod": "000000000000000003",
-    "rppManager": "000000000000000004",
-    "recruiter": "000000000000000005"
-  },
+  
   "channels": {
   "rppLog": "1414091725483282555",
   "rppReview": "1271452939742875670",
@@ -60,12 +54,12 @@
     }
   },
   "areas": [
-    { "name": "MOVCALL", "guildId": "000000000000100001", "roleIds": { "lead": "000000000000110001", "member": "000000000000110002" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
-    { "name": "DESIGN", "guildId": "000000000000100002", "roleIds": { "lead": "000000000000120001", "member": "000000000000120002" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
-    { "name": "RECRUTAMENTO", "guildId": "000000000000100003", "roleIds": { "lead": "000000000000130001", "member": "000000000000130002" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
-    { "name": "JORNALISMO", "guildId": "000000000000100004", "roleIds": { "lead": "000000000000140001", "member": "000000000000140002" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
+  { "name": "MOVCALL", "guildId": "000000000000100001", "roleIds": { "lead": "1190390194579439669", "member": "000000000000110002" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
+  { "name": "DESIGN", "guildId": "000000000000100002", "roleIds": { "lead": "1183909149831086082", "member": "000000000000120002" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
+  { "name": "RECRUTAMENTO", "guildId": "000000000000100003", "roleIds": { "lead": "1182824023344812154", "member": "000000000000130002" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
+  { "name": "JORNALISMO", "guildId": "000000000000100004", "roleIds": { "lead": "1224414082975797304", "member": "000000000000140002" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
     { "name": "SUPORTE", "guildId": "1190515971035774996", "roleIds": { "lead": "1190515971144818760", "member": "1190515971069321238" }, "blacklistAreas": ["SUPORTE", "GLOBAL"] },
-    { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "000000000000160001", "member": "000000000000160002" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+  { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "000000000000160002" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
   ],
   "banca": {
   "supportGuildId": "1190515971035774996",
@@ -89,6 +83,8 @@
     "pointsPerMessage": 10,
     "keyword": "recrutamento",
     "pointsLogChannelId": "1263455658594926644",
+  "plantaoLogChannelId": "1414388997257429042",
+  "leadershipRoleId": "1182824023344812154", 
   "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
   "prefix": "🟢・",
   "categoryId": "1242538995649351820"
@@ -138,7 +134,7 @@
         "log": "1414141646202994890",
         "role": "1224414082975797302",
         "embed": {
-          "color": 16777215,
+          "color": 16755373,
           "tool": "<a:pink_butterfly2:1312933226666266634>",
           "section": "<a:pink_butterfly2:1312933226666266634>",
           "section2": "<:pink_dot:1312933271792910347>",
