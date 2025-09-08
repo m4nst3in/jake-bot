@@ -22,7 +22,7 @@ async function fetchAll(filter: any = {}) {
 }
 function resolveAreasForGuild(guildId: string) {
     const cfg = loadConfig();
-    const masterGuildId = '934635845460303882';
+    const masterGuildId = (cfg as any).mainGuildId || '934635845460303882';
     if (guildId === masterGuildId) {
         return cfg.areas.map(a => a.name.charAt(0) + a.name.slice(1).toLowerCase());
     }
@@ -42,13 +42,14 @@ export default {
             return interaction.reply({ content: 'Apenas administradores podem usar este comando.', ephemeral: true });
         }
         await interaction.deferReply({ ephemeral: true });
-        const guildId = interaction.guildId!;
+    const guildId = interaction.guildId!;
+    const masterGuildId = (loadConfig() as any).mainGuildId || '934635845460303882';
         const areas = resolveAreasForGuild(guildId);
         if (!areas.length) {
             await interaction.editReply('Nenhuma área associada a este servidor para backup.');
             return;
         }
-        const master = guildId === '934635845460303882';
+    const master = guildId === masterGuildId;
         const files: AttachmentBuilder[] = [];
         const summary: string[] = [];
         const csvHeader = 'user_id,area,points,reports_count,shifts_count,last_updated';

@@ -215,7 +215,10 @@
     "blacklistLog": "000000000000001002",
   "auditLog": "000000000000001003",
   "ranking": "1282445335620354131",
-  "recruitRanking": "1261861624998924301"
+  "recruitRanking": "1261861624998924301",
+  "designRanking": "1299517485149716480",
+  "eventsRanking": "1283495783328518144",
+  "journalismRanking": "1414589956856483952"
   },
   "emojis": {
     "flame": "<a:champion78:1312240136796242021>",
@@ -287,6 +290,8 @@
     "keyword": "recrutamento",
     "pointsLogChannelId": "1263455658594926644",
   "plantaoLogChannelId": "1414388997257429042",
+  "plantaoChannelId": "1230111166261493801",
+  "supervisaoChannelId": "1414387744368492686",
   "leadershipRoleId": "1182824023344812154", 
   "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
   "prefix": "🟢・",
@@ -374,6 +379,40 @@
           "image": "https://i.imgur.com/CtbNOhI.gif"
         }
       }
+    }
+  }
+  ,
+  "rppExtras": {
+    "mainLogChannelId": "1414539162106855476",
+    "membershipToLeadership": {
+      "1190390194533318715": "1136864678253969430",
+      "1180871634631020594": "1153690317262950400",
+      "1183909149784952908": "1136864742997250118",
+      "1283205107021774918": "1136864716434710608",
+      "1190515971069321238": "1136889351033344000",
+      "1224414082866745411": "1247610015787913360"
+    },
+    "permExclude": ["1156383581099274250","1080746284434071582","1104523865377488918","1136699869290041404"]
+  },
+  "protection": {
+    "botRoles": ["1080700822624686140","934635845846192162"],
+    "alertRole": "1411223951350435961",
+    "alertUsers": ["511264305832919050","418824536570593280"],
+    "logChannel": "1414540666171559966",
+    "blockedRoles": {
+      "1136861844540227624": { "name": "Design", "allowedLeaderRole": "1153690317262950400" },
+      "1136861840421425284": { "name": "Suporte", "allowedLeaderRole": "1136889351033344000" },
+      "1136868804677357608": { "name": "Recrutamento", "allowedLeaderRole": "1153690317262950400" },
+      "1136861814328668230": { "name": "Mov Call", "allowedLeaderRole": "1153690317262950400" },
+      "1170196352114901052": { "name": "Eventos", "allowedLeaderRole": "1153690317262950400" },
+      "1247967720427884587": { "name": "Jornalismo", "allowedLeaderRole": "1153690317262950400" },
+      "1136864742997250118": { "name": "Design", "allowedLeaderRole": "1411223951350435961" },
+      "1136889351033344000": { "name": "Suporte", "allowedLeaderRole": "1411223951350435961" },
+      "1136864716434710608": { "name": "Eventos", "allowedLeaderRole": "1411223951350435961" },
+      "1136864678253969430": { "name": "Mov Call", "allowedLeaderRole": "1411223951350435961" },
+      "1247610015787913360": { "name": "Jornalismo", "allowedLeaderRole": "1411223951350435961" },
+      "1153690317262950400": { "name": "Recrutamento", "allowedLeaderRole": "1411223951350435961" },
+      "1411223951350435961": { "name": "Líder Geral" }
     }
   }
 }

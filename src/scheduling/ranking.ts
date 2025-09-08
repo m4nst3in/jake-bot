@@ -8,10 +8,10 @@ export function scheduleRankingUpdater(client: Client) {
     const cfg = loadConfig();
     const supportChannelId = (cfg as any).support?.channels?.ranking || (cfg as any).channels?.ranking;
     const recruitChannelId = (cfg as any).channels?.recruitRanking;
-    const designGuildId = '1183909149784952902';
-    const designChannelId = '1299517485149716480';
-    const eventsChannelId = '1283495783328518144';
-    const journalismChannelId = '1414589956856483952'; // atualizado: novo canal de ranking jornalismo
+    const designGuildId = cfg.areas?.find?.((a:any)=> a.name === 'DESIGN')?.guildId || '1183909149784952902';
+    const designChannelId = (cfg.channels as any)?.designRanking || '1299517485149716480';
+    const eventsChannelId = (cfg.channels as any)?.eventsRanking || '1283495783328518144';
+    const journalismChannelId = (cfg.channels as any)?.journalismRanking || '1414589956856483952'; // atualizado via config
     if (!supportChannelId && !recruitChannelId && !designChannelId && !eventsChannelId) {
         logger.warn('Nenhum canal de ranking configurado.');
         return;

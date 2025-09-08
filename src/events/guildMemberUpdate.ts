@@ -5,27 +5,18 @@ import { loadConfig } from '../config/index.ts';
 // Proteção de cargos sensíveis
 // Remove cargos bloqueados se adicionados por alguém não autorizado.
 
-const BOT_ROLE_IDS = ['1080700822624686140','934635845846192162'];
-// Mentions fixas em toda log de proteção
-const PROTECTION_ALERT_ROLE = '1411223951350435961';
-const PROTECTION_ALERT_USERS = ['511264305832919050','418824536570593280'];
-// allowedLeaderRoles: permite múltiplos cargos de liderança autorizados.
-// allowedLeaderRole: legado (um único). Se ambos existirem, allowedLeaderRoles tem prioridade.
-const BLOCKED_ROLES: Record<string, { allowedLeaderRoles?: string[]; allowedLeaderRole?: string; name: string }> = {
-  '1136861844540227624': { name: 'Design', allowedLeaderRole: '1153690317262950400' }, // Design member, leader role id from config areas
-  '1136861840421425284': { name: 'Suporte', allowedLeaderRole: '1136889351033344000' },
-  '1136868804677357608': { name: 'Recrutamento', allowedLeaderRole: '1153690317262950400' },
-  '1136861814328668230': { name: 'Mov Call', allowedLeaderRole: '1153690317262950400' },
-  '1170196352114901052': { name: 'Eventos', allowedLeaderRole: '1153690317262950400' },
-  '1247967720427884587': { name: 'Jornalismo', allowedLeaderRole: '1153690317262950400' },
-  '1136864742997250118': { name: 'Design', allowedLeaderRole: '1411223951350435961' },
-  '1136889351033344000': { name: 'Suporte', allowedLeaderRole: '1411223951350435961' },
-  '1136864716434710608': { name: 'Eventos', allowedLeaderRole: '1411223951350435961' },
-  '1136864678253969430': { name: 'Mov Call', allowedLeaderRole: '1411223951350435961' },
-  '1247610015787913360': { name: 'Jornalismo', allowedLeaderRole: '1411223951350435961' },
-  '1153690317262950400': { name: 'Recrutamento', allowedLeaderRole: '1411223951350435961' },
-  '1411223951350435961': { name: 'Líder Geral' }
-};
+interface BlockedRoleInfo { name: string; allowedLeaderRole?: string; allowedLeaderRoles?: string[] }
+function getProtectionConfig() {
+  const cfg: any = loadConfig();
+  const p = cfg.protection || {};
+  return {
+    botRoles: p.botRoles || [],
+    alertRole: p.alertRole as string | undefined,
+    alertUsers: (p.alertUsers || []) as string[],
+    blockedRoles: (p.blockedRoles || {}) as Record<string, BlockedRoleInfo>,
+    logChannel: p.logChannel as string | undefined
+  };
+}
 
 function isOwner(userId: string): boolean {
   const cfg: any = loadConfig();
@@ -36,10 +27,11 @@ export function registerProtectionListener(client: any) {
   client.on(Events.GuildMemberUpdate, async (oldMember: GuildMember | any, newMember: GuildMember) => {
     try {
       if (!newMember || !newMember.guild) return;
+      const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
       const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
       if (!added.size) return;
       for (const role of added.values()) {
-        const blockInfo = BLOCKED_ROLES[role.id];
+        const blockInfo = blockedRoles[role.id];
         if (!blockInfo) continue;
         let executorId: string | null = null;
         try {
@@ -54,7 +46,7 @@ export function registerProtectionListener(client: any) {
           } else {
             const execMember = newMember.guild.members.cache.get(executorId) || await newMember.guild.members.fetch(executorId).catch(()=>null);
             if (execMember) {
-              if (BOT_ROLE_IDS.some(id => execMember.roles.cache.has(id))) {
+              if (botRoles.some((id: string) => execMember.roles.cache.has(id))) {
                 allowed = true;
               } else if (blockInfo.allowedLeaderRoles && blockInfo.allowedLeaderRoles.length) {
                 if (blockInfo.allowedLeaderRoles.some(rid => execMember.roles.cache.has(rid))) allowed = true;
@@ -69,7 +61,7 @@ export function registerProtectionListener(client: any) {
           logger.warn({ user: newMember.id, role: role.id, roleName: blockInfo.name, executorId }, 'Proteção: cargo bloqueado removido');
           const cfg: any = loadConfig();
           const mainGuildId = cfg.mainGuildId;
-            const logChannelId = '1414540666171559966';
+            const logChannelId = logChannel || '1414540666171559966';
           if (newMember.guild.id === mainGuildId) {
             try {
               const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(()=>null);
@@ -90,7 +82,7 @@ export function registerProtectionListener(client: any) {
                   .setTimestamp();
                 const execMember = executorId ? await newMember.guild.members.fetch(executorId).catch(()=>null) : null;
                 if (execMember?.user?.avatarURL()) embed.setThumbnail(execMember.user.avatarURL()!);
-                const mentionContent = `<@&${PROTECTION_ALERT_ROLE}> ${PROTECTION_ALERT_USERS.map(id => `<@${id}>`).join(' ')}`;
+                const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
                 ch.send({ content: mentionContent, embeds: [embed] }).catch(()=>{});
               }
             } catch {}

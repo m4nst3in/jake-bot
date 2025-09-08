@@ -178,7 +178,8 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     // Log adicional no servidor principal para eventos aceitos ou encerrados
     if (['ativado','removido'].includes(type)) {
         const mainGuildId = rootCfg.mainGuildId;
-        const mainLogChannelId = '1414539162106855476';
+    const extras = (rootCfg as any).rppExtras || {};
+    const mainLogChannelId = extras.mainLogChannelId || '1414539162106855476';
         const mainGuild = guild?.client.guilds.cache.get(mainGuildId) || await guild?.client.guilds.fetch(mainGuildId).catch(()=>null);
         if (mainGuild) {
             let channel = mainGuild.channels.cache.get(mainLogChannelId) as TextBasedChannel | undefined;
@@ -196,14 +197,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
                     const removedRoles = await resolveSnapshotRoles(payload.userId);
                     if (removedRoles.length) description += `\n\n${dot} **Cargos Removidos**\n${removedRoles.map((r: string)=>`<@&${r}>`).join(' ')}`;
                     // Mapeamento: cargo de membro em QUALQUER servidor de área -> cargo de liderança para mencionar
-                    const membershipToLeadership: Record<string,string> = {
-                        '1190390194533318715': '1136864678253969430', // Mov Call
-                        '1180871634631020594': '1153690317262950400', // Recrutamento
-                        '1183909149784952908': '1136864742997250118', // Design
-                        '1283205107021774918': '1136864716434710608', // Eventos
-                        '1190515971069321238': '1136889351033344000', // Suporte
-                        '1224414082866745411': '1247610015787913360'  // Jornalismo
-                    };
+                    const membershipToLeadership: Record<string,string> = extras.membershipToLeadership || {};
                     const mentioned = new Set<string>();
                     // Itera todos os guilds de RPP (exceto principal) e verifica se o membro possui algum cargo de membro
                     const areaGuildIds = Object.keys(rootCfg.rpp?.guilds || {}).filter(id=>id !== mainGuildId);
@@ -220,7 +214,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
                     if (mentioned.size) content = Array.from(mentioned).map(id=>`<@&${id}>`).join(' ');
                 } else if (type === 'removido') {
                     const all = await resolveSnapshotRoles(payload.userId);
-                    const permExclude = ['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404'];
+                    const permExclude = (extras.permExclude || ['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404']);
                     const restored = all.filter((r: string)=>!permExclude.includes(r));
                     if (restored.length) description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string)=>`<@&${r}>`).join(' ')}`;
                 }
