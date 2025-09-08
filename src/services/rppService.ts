@@ -67,97 +67,71 @@ export class RPPService {
         logger.warn('Todos os RPPs foram removidos!');
     }
 }
+
 export interface RppRoleSnapshot {
     userId: string;
     roles: string[];
     storedAt: string;
 }
+
 export const inMemorySnapshots: Record<string, RppRoleSnapshot> = {};
+
 export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
     const cfg: any = loadConfig();
     const mainGuildId = cfg.mainGuildId;
-    if (!mainGuildId)
-        return;
-    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(() => null);
-    if (!guild)
-        return;
-    const member = await guild.members.fetch(userId).catch(() => null);
-    if (!member)
-        return;
+    if (!mainGuildId) return;
+    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(()=>null);
+    if (!guild) return;
+    const member = await guild.members.fetch(userId).catch(()=>null);
+    if (!member) return;
     const staffGlobalRole = cfg.roles?.staff || '1135122929529659472';
     const recoveryRole = '1136856157835763783';
-    const permissionRoles = ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'];
+    const permissionRoles = ['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404'];
+    // Detecta cargo de área principal a partir dos mapeamentos MAIN_AREA_ROLES
     const MAIN_AREA_ROLES: string[] = [
-        '1136861840421425284', '1170196352114901052', '1136861814328668230', '1136868804677357608', '1136861844540227624', '1247967720427884587'
+        '1136861840421425284','1170196352114901052','1136861814328668230','1136868804677357608','1136861844540227624','1247967720427884587'
     ];
-    const rankRoleIds: string[] = Object.entries(cfg.roles || {}).filter(([k]) => k !== 'staff').map(([, v]) => String(v));
+    // Captura ranks espelháveis: qualquer role id presente em cfg.roles (exceto staff) que o membro possua
+        const rankRoleIds: string[] = Object.entries(cfg.roles || {}).filter(([k])=>k!=='staff').map(([,v])=>String(v));
     const toRemove: string[] = [];
-    if (member.roles.cache.has(staffGlobalRole))
-        toRemove.push(staffGlobalRole);
-    for (const rid of MAIN_AREA_ROLES)
-        if (member.roles.cache.has(rid))
-            toRemove.push(rid);
-    for (const rid of rankRoleIds)
-        if (member.roles.cache.has(rid))
-            toRemove.push(rid);
-    for (const rid of permissionRoles)
-        if (member.roles.cache.has(rid))
-            toRemove.push(rid);
+    if (member.roles.cache.has(staffGlobalRole)) toRemove.push(staffGlobalRole);
+    for (const rid of MAIN_AREA_ROLES) if (member.roles.cache.has(rid)) toRemove.push(rid);
+    for (const rid of rankRoleIds) if (member.roles.cache.has(rid)) toRemove.push(rid);
+    for (const rid of permissionRoles) if (member.roles.cache.has(rid)) toRemove.push(rid);
+    // Remove duplicados
     const unique = [...new Set(toRemove)];
-    inMemorySnapshots[userId] = { userId, roles: unique, storedAt: new Date().toISOString() };
-    try {
-        const repo = new RppSnapshotRepository();
-        await repo.upsert(userId, unique);
-    }
-    catch { }
+        inMemorySnapshots[userId] = { userId, roles: unique, storedAt: new Date().toISOString() };
+        try { const repo = new RppSnapshotRepository(); await repo.upsert(userId, unique); } catch {}
     for (const rid of unique) {
-        try {
-            await member.roles.remove(rid, 'RPP: removendo cargos temporariamente');
-        }
-        catch { }
+        try { await member.roles.remove(rid, 'RPP: removendo cargos temporariamente'); } catch {}
     }
     if (!member.roles.cache.has(recoveryRole)) {
-        try {
-            await member.roles.add(recoveryRole, 'RPP: cargo temporário');
-        }
-        catch { }
+        try { await member.roles.add(recoveryRole, 'RPP: cargo temporário'); } catch {}
     }
     return { removed: unique, added: recoveryRole };
 }
+
 export async function applyRppExitRoleRestore(client: Client, userId: string) {
     const cfg: any = loadConfig();
     const mainGuildId = cfg.mainGuildId;
-    if (!mainGuildId)
-        return;
-    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(() => null);
-    if (!guild)
-        return;
-    const member = await guild.members.fetch(userId).catch(() => null);
-    if (!member)
-        return;
+    if (!mainGuildId) return;
+    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(()=>null);
+    if (!guild) return;
+    const member = await guild.members.fetch(userId).catch(()=>null);
+    if (!member) return;
     const recoveryRole = '1136856157835763783';
-    const repo = new RppSnapshotRepository();
-    const snapshot = inMemorySnapshots[userId] || await repo.get(userId);
+        const repo = new RppSnapshotRepository();
+        const snapshot = inMemorySnapshots[userId] || await repo.get(userId);
     if (snapshot) {
         for (const rid of snapshot.roles) {
-            if (['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'].includes(rid))
-                continue;
-            try {
-                if (!member.roles.cache.has(rid))
-                    await member.roles.add(rid, 'RPP encerrado: restaurando cargos');
-            }
-            catch { }
+            // Não devolve cargos de permissão especiais (4 informados)
+            if (['1156383581099274250','1080746284434071582','1104523865377488918','1136699869290041404'].includes(rid)) continue;
+            try { if (!member.roles.cache.has(rid)) await member.roles.add(rid, 'RPP encerrado: restaurando cargos'); } catch {}
         }
         delete inMemorySnapshots[userId];
-        try {
-            await repo.delete(userId);
-        }
-        catch { }
+        try { await repo.delete(userId); } catch {}
     }
     if (member.roles.cache.has(recoveryRole)) {
-        try {
-            await member.roles.remove(recoveryRole, 'RPP encerrado: removendo cargo temporário');
-        }
-        catch { }
+        try { await member.roles.remove(recoveryRole, 'RPP encerrado: removendo cargo temporário'); } catch {}
     }
 }
