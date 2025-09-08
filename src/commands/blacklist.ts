@@ -1,23 +1,27 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { loadConfig } from '../config/index.ts';
-
-function isAdmin(i:ChatInputCommandInteraction){ return i.memberPermissions?.has(PermissionsBitField.Flags.Administrator) || false; }
-function isLeader(i:ChatInputCommandInteraction){
-    if(!i.guild) return false;
-    const cfg:any = loadConfig();
-    const area = cfg.areas?.find((a:any)=>a.guildId === i.guild!.id);
+function isAdmin(i: ChatInputCommandInteraction) { return i.memberPermissions?.has(PermissionsBitField.Flags.Administrator) || false; }
+function isLeader(i: ChatInputCommandInteraction) {
+    if (!i.guild)
+        return false;
+    const cfg: any = loadConfig();
+    const area = cfg.areas?.find((a: any) => a.guildId === i.guild!.id);
     const leaderRole = area?.roleIds?.lead;
-    if(!leaderRole) return false;
-    const m:any = i.member; return !!m?.roles?.cache?.has(leaderRole);
+    if (!leaderRole)
+        return false;
+    const m: any = i.member;
+    return !!m?.roles?.cache?.has(leaderRole);
 }
 export default {
     data: new SlashCommandBuilder()
         .setName('blacklist')
         .setDescription('Painel de blacklist para um staff')
-    .addUserOption(o => o.setName('staff').setDescription('Staff alvo').setRequired(true)),
+        .addUserOption(o => o.setName('staff').setDescription('Staff alvo').setRequired(true)),
     async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
-    if(!isAdmin(interaction) && !isLeader(interaction)) { return interaction.editReply('Apenas liderança ou administradores.'); }
+        await interaction.deferReply({ ephemeral: true });
+        if (!isAdmin(interaction) && !isLeader(interaction)) {
+            return interaction.editReply('Apenas liderança ou administradores.');
+        }
         const target = interaction.options.getUser('staff', true);
         const embed = new EmbedBuilder()
             .setTitle('<a:mov_call9:1193567633455456267> Painel de Blacklist')

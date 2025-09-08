@@ -27,11 +27,7 @@ export default {
             .setStyle(2)
             .setMinLength(3)
             .setRequired(false);
-        modal.addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(userIdInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(actionInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput)
-        );
+        modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(userIdInput), new ActionRowBuilder<TextInputBuilder>().addComponents(actionInput), new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput));
         await interaction.showModal(modal);
     }
 };

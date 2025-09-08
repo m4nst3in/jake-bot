@@ -15,9 +15,9 @@ export default {
     async execute(interaction: ButtonInteraction) {
         await interaction.deferReply({ ephemeral: true });
         const parts = interaction.customId.split(':');
-    const team = parts[1].toLowerCase();
+        const team = parts[1].toLowerCase();
         const userId = parts[2];
-    if (!RECRUIT_AREAS.find(a => a.key === team)) {
+        if (!RECRUIT_AREAS.find(a => a.key === team)) {
             await interaction.editReply('Equipe inválida.');
             return;
         }
@@ -26,8 +26,8 @@ export default {
             await interaction.editReply('Usuário não encontrado no servidor.');
             return;
         }
-    const areaCfg = cfg.areas.find(a => a.name.toLowerCase() === team);
-    const roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
+        const areaCfg = cfg.areas.find(a => a.name.toLowerCase() === team);
+        const roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
         if (!roleId.startsWith('ROLE_ID_')) {
             if (!member.roles.cache.has(roleId)) {
                 await member.roles.add(roleId).catch(() => { });
@@ -68,6 +68,6 @@ export default {
             }
             (logChannel as any).send({ embeds: [embed] }).catch(() => { });
         }
-    await interaction.editReply(`Recrutamento concluído para <@${userId}> em **${team.toUpperCase()}**.`);
+        await interaction.editReply(`Recrutamento concluído para <@${userId}> em **${team.toUpperCase()}**.`);
     }
 };

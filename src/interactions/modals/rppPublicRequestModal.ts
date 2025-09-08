@@ -7,7 +7,6 @@ export default {
     id: 'rpp_public_request_modal',
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true });
-
         const motivo = interaction.fields.getTextInputValue('motivo').trim();
         const retornoRaw = interaction.fields.getTextInputValue('retorno').trim();
         const retornoIso = parseBrDate(retornoRaw);

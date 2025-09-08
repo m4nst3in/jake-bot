@@ -37,40 +37,27 @@ function mapType(type: string, snow: string) {
     }
 }
 export async function sendRppLog(guild: Guild | null | undefined, type: string, payload: RppLogPayload) {
-    if (!guild) return;
+    if (!guild)
+        return;
+    const client = guild.client;
     const rootCfg: any = loadConfig();
-    const rppCfg = rootCfg.rpp?.guilds?.[guild.id];
-    if (!rppCfg) {
-        throw new Error('Config RPP ausente para o servidor ' + guild.id + ' na config do bot.');
+    const allRppGuildEntries: [
+        string,
+        any
+    ][] = Object.entries(rootCfg.rpp?.guilds || {});
+    if (!allRppGuildEntries.length)
+        return;
+    const targetGuilds: Guild[] = [];
+    for (const [gId, cfg] of allRppGuildEntries) {
+        const g = client.guilds.cache.get(gId);
+        if (!g)
+            continue;
+        const member = await g.members.fetch(payload.userId).catch(() => null);
+        if (member)
+            targetGuilds.push(g);
     }
-    const reviewChannelId = rppCfg.review;
-    const logChannelId = rppCfg.log;
-    const useReview = type === 'solicitado';
-    let channel = guild.channels.cache.get(useReview ? reviewChannelId : logChannelId) as TextBasedChannel | undefined;
-    if (!channel) {
-        try {
-            const fetched = await guild.channels.fetch(useReview ? reviewChannelId : logChannelId).catch(() => null);
-            if (fetched && fetched.isTextBased()) channel = fetched as TextBasedChannel;
-        } catch {}
-    }
-    if (!channel || !('send' in channel)) {
-    logger.warn({ channelId: useReview ? reviewChannelId : logChannelId, type }, 'Log dos erripepe: canal não encontrado ou inválido');
-
-        if (type === 'ativado') {
-            const fallbackId = reviewChannelId;
-            if (fallbackId) {
-                let fb = guild.channels.cache.get(fallbackId) as TextBasedChannel | undefined;
-                if (!fb) {
-                    try {
-                        const fetchedFb = await guild.channels.fetch(fallbackId).catch(() => null);
-                        if (fetchedFb && fetchedFb.isTextBased()) fb = fetchedFb as TextBasedChannel;
-                    } catch {}
-                }
-                if (fb && ('send' in fb)) channel = fb;
-            }
-        }
-        if (!channel) return;
-    }
+    if (!targetGuilds.length)
+        return;
     const snow = rootCfg.emojis?.rppSnowflake || '<a:snowflake:placeholder>';
     const dot = rootCfg.emojis?.dot || '•';
     const meta = mapType(type, snow);
@@ -94,39 +81,74 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     const parts: string[] = [];
     parts.push(`${dot} **Usuário**\n<@${payload.userId}> (${payload.userId})`);
     if (payload.moderatorId)
-    parts.push(`${dot} **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`);
+        parts.push(`${dot} **Staff**\n<@${payload.moderatorId}> (${payload.moderatorId})`);
     const friendlyStatus = mapStatus(payload.status);
     if (friendlyStatus)
-    parts.push(`${dot} **Status**\n${friendlyStatus}`);
+        parts.push(`${dot} **Status**\n${friendlyStatus}`);
     if (reason)
-    parts.push(`${dot} **Motivo**\n${reason}`);
+        parts.push(`${dot} **Motivo**\n${reason}`);
     if (payload.area)
-    parts.push(`${dot} **Área**\n${payload.area}`);
+        parts.push(`${dot} **Área**\n${payload.area}`);
     if (type === 'removido' && payload.startedAt)
-    parts.push(`${dot} **Início do RPP**\n${payload.startedAt}`);
+        parts.push(`${dot} **Início do RPP**\n${payload.startedAt}`);
     if (payload.returnDate) {
-    parts.push(`${dot} **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
+        parts.push(`${dot} **Retorno Previsto**\n${payload.returnDate}${days !== undefined ? ` (em ${days} dia${Math.abs(days) === 1 ? '' : 's'})` : ''}`);
     }
-    const embed = new EmbedBuilder()
-        .setTitle(meta.title)
-        .setDescription(parts.join('\n\n'))
-        .setColor(meta.color);
-    try {
-        const member = await guild.members.fetch(payload.userId).catch(() => null);
-        if (member?.user?.avatarURL())
-            embed.setThumbnail(member.user.avatarURL()!);
-    }
-    catch { }
     let components: any[] | undefined;
     if (type === 'solicitado' && payload.id !== undefined) {
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder().setCustomId(`rpp_accept:${payload.id}`).setLabel('Aceitar').setStyle(3).setEmoji(rootCfg.emojis?.rppAccept || '') ,
-            new ButtonBuilder().setCustomId(`rpp_reject:${payload.id}`).setLabel('Recusar').setStyle(4).setEmoji(rootCfg.emojis?.rppReject || '')
-        );
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`rpp_accept:${payload.id}`).setLabel('Aceitar').setStyle(3).setEmoji(rootCfg.emojis?.rppAccept || ''), new ButtonBuilder().setCustomId(`rpp_reject:${payload.id}`).setLabel('Recusar').setStyle(4).setEmoji(rootCfg.emojis?.rppReject || ''));
         components = [row];
     }
-    try {
-        await (channel as any).send({ embeds: [embed], components });
+    for (const g of targetGuilds) {
+        const rppCfg = rootCfg.rpp?.guilds?.[g.id];
+        if (!rppCfg)
+            continue;
+        const reviewChannelId = rppCfg.review;
+        const logChannelId = rppCfg.log;
+        const useReview = type === 'solicitado';
+        const primaryChannelId = useReview ? reviewChannelId : logChannelId;
+        let channel = g.channels.cache.get(primaryChannelId) as TextBasedChannel | undefined;
+        if (!channel) {
+            try {
+                const fetched = await g.channels.fetch(primaryChannelId).catch(() => null);
+                if (fetched && fetched.isTextBased())
+                    channel = fetched as TextBasedChannel;
+            }
+            catch { }
+        }
+        if (!channel || !('send' in channel)) {
+            logger.warn({ channelId: primaryChannelId, type }, 'RPP log: canal não encontrado ou inválido');
+            if (type === 'ativado') {
+                let fb = g.channels.cache.get(reviewChannelId) as TextBasedChannel | undefined;
+                if (!fb) {
+                    try {
+                        const fetchedFb = await g.channels.fetch(reviewChannelId).catch(() => null);
+                        if (fetchedFb && fetchedFb.isTextBased())
+                            fb = fetchedFb as TextBasedChannel;
+                    }
+                    catch { }
+                }
+                if (fb && ('send' in fb))
+                    channel = fb;
+                else
+                    continue;
+            }
+            else
+                continue;
+        }
+        const embed = new EmbedBuilder()
+            .setTitle(meta.title)
+            .setDescription(parts.join('\n\n'))
+            .setColor(meta.color);
+        try {
+            const member = await g.members.fetch(payload.userId).catch(() => null);
+            if (member?.user?.avatarURL())
+                embed.setThumbnail(member.user.avatarURL()!);
+        }
+        catch { }
+        try {
+            await (channel as any).send({ embeds: [embed], components });
+        }
+        catch { }
     }
-    catch { }
 }

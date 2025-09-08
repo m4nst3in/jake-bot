@@ -8,38 +8,35 @@ export default {
         .setName('rpp')
         .setDescription('Painel de RPP (use os botões)'),
     async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
-    const member = interaction.member as GuildMember | null;
-    const cfg:any = loadConfig();
-
-    const owner = isOwner(member);
-
-    const canManage = owner; 
-
+        await interaction.deferReply({ ephemeral: true });
+        const member = interaction.member as GuildMember | null;
+        const cfg: any = loadConfig();
+        const owner = isOwner(member);
+        const canManage = owner;
         const { total: activeTotal } = await service.listActivePaged(1, 1);
         let removedTotal: number | undefined;
         if (canManage) {
             const removed = await service.listRemovedPaged(1, 1);
             removedTotal = removed.total;
         }
-
-    const manageBtn = new ButtonBuilder().setCustomId('rpp_menu_manage').setLabel('🛠️ Gerenciar').setStyle(1).setDisabled(!canManage);
-    const listBtn = new ButtonBuilder().setCustomId('rpp_menu_list').setLabel('🟢 Ativos').setStyle(3);
-    const removedBtn = new ButtonBuilder().setCustomId('rpp_menu_removed').setLabel('📕 Encerrados').setStyle(4).setDisabled(!canManage);
-
-    const embedCfg = cfg.rpp?.guilds?.[interaction.guild!.id]?.embed;
-    const tool = embedCfg?.tool || '';
-    const dot = embedCfg?.bullet || '•';
-
+        const manageBtn = new ButtonBuilder().setCustomId('rpp_menu_manage').setLabel('🛠️ Gerenciar').setStyle(1).setDisabled(!canManage);
+        const listBtn = new ButtonBuilder().setCustomId('rpp_menu_list').setLabel('🟢 Ativos').setStyle(3);
+        const removedBtn = new ButtonBuilder().setCustomId('rpp_menu_removed').setLabel('📕 Encerrados').setStyle(4).setDisabled(!canManage);
+        const embedCfg = cfg.rpp?.guilds?.[interaction.guild!.id]?.embed;
+        const tool = embedCfg?.tool || '';
+        const dot = embedCfg?.bullet || '•';
         const descParts: string[] = [];
         descParts.push(`${tool} **Painel de RPP**`);
         descParts.push(`${dot} Use os botões abaixo para navegar.`);
         descParts.push(`${dot} 🟢 Ativos: lista de RPPs aceitos.`);
         descParts.push(`${dot} 📕 Encerrados: histórico finalizados.`);
-    if (canManage) descParts.push(`${dot} 🛠️ Gerenciar: criar / encerrar manualmente.`);
-    descParts.push(`${dot} Solicitações públicas: use o painel enviado com /embed.`);
-    if (canManage) descParts.push(`${tool} **Status**\n${dot} Ativos: **${activeTotal}**${removedTotal !== undefined ? `\n${dot} Encerrados: **${removedTotal}**` : ''}`); else descParts.push(`${tool} **Status**\n${dot} Ativos: **${activeTotal}**`);
-
+        if (canManage)
+            descParts.push(`${dot} 🛠️ Gerenciar: criar / encerrar manualmente.`);
+        descParts.push(`${dot} Solicitações públicas: use o painel enviado com /embed.`);
+        if (canManage)
+            descParts.push(`${tool} **Status**\n${dot} Ativos: **${activeTotal}**${removedTotal !== undefined ? `\n${dot} Encerrados: **${removedTotal}**` : ''}`);
+        else
+            descParts.push(`${tool} **Status**\n${dot} Ativos: **${activeTotal}**`);
         const embed = new EmbedBuilder()
             .setColor(0x101417)
             .setDescription(descParts.join('\n\n'))

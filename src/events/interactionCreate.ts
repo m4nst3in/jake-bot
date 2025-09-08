@@ -14,7 +14,13 @@ export default async function interactionCreate(interaction: Interaction) {
             if (!handler) {
                 for (const [k, h] of client.buttons.entries() as any) {
                     if (k && typeof k === 'object' && 'test' in k && typeof k.test === 'function') {
-                        try { if (k.test(interaction.customId)) { handler = h; break; } } catch {}
+                        try {
+                            if (k.test(interaction.customId)) {
+                                handler = h;
+                                break;
+                            }
+                        }
+                        catch { }
                     }
                 }
             }
@@ -22,14 +28,21 @@ export default async function interactionCreate(interaction: Interaction) {
                 const base = interaction.customId.split(':')[0];
                 handler = client.buttons.get(base);
             }
-            if (handler) await handler.execute(interaction);
+            if (handler)
+                await handler.execute(interaction);
         }
         else if (interaction.isStringSelectMenu()) {
             let handler: any = client.selects.get(interaction.customId);
             if (!handler) {
                 for (const [k, h] of client.selects.entries() as any) {
                     if (k && typeof k === 'object' && 'test' in k && typeof k.test === 'function') {
-                        try { if (k.test(interaction.customId)) { handler = h; break; } } catch {}
+                        try {
+                            if (k.test(interaction.customId)) {
+                                handler = h;
+                                break;
+                            }
+                        }
+                        catch { }
                     }
                 }
             }
@@ -37,14 +50,21 @@ export default async function interactionCreate(interaction: Interaction) {
                 const base = interaction.customId.split(':')[0];
                 handler = client.selects.get(base);
             }
-            if (handler) await handler.execute(interaction);
+            if (handler)
+                await handler.execute(interaction);
         }
         else if (interaction.isModalSubmit()) {
             let handler: any = client.modals.get(interaction.customId);
             if (!handler) {
                 for (const [k, h] of client.modals.entries() as any) {
                     if (k && typeof k === 'object' && 'test' in k && typeof k.test === 'function') {
-                        try { if (k.test(interaction.customId)) { handler = h; break; } } catch {}
+                        try {
+                            if (k.test(interaction.customId)) {
+                                handler = h;
+                                break;
+                            }
+                        }
+                        catch { }
                     }
                 }
             }
@@ -52,7 +72,8 @@ export default async function interactionCreate(interaction: Interaction) {
                 const base = interaction.customId.split(':')[0];
                 handler = client.modals.get(base);
             }
-            if (handler) await handler.execute(interaction);
+            if (handler)
+                await handler.execute(interaction);
         }
     }
     catch (err) {
