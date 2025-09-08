@@ -87,13 +87,15 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   const { primary, secondary } = areaAccent(area);
   const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
   const out: Buffer[] = [];
-  (doc as any).__pageIndex = 1;
+  // Page index starts at 0; every real page increments in pageAdded listener
+  (doc as any).__pageIndex = 0;
   doc.on('data', (d:any)=> out.push(d));
   const fonts = prepareFonts(doc);
 
   doc.on('pageAdded', ()=>{
     (doc as any).__pageIndex += 1;
-    addHeader(doc, area, primary, fonts);
+    // Header only after first page; first page has its own custom title layout
+    if ((doc as any).__pageIndex > 1) addHeader(doc, area, primary, fonts);
   });
 
   let version = 'unknown';
@@ -145,7 +147,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   doc.moveDown(0.4);
   const headerFontSize = 9;
   const tableX = doc.page.margins.left;
-  const colWidths = suporte ? [40, 170, 70, 70, 90, 90] : [40, 220, 80, 80, 120];
+  // Ajuste de larguras para melhor alinhamento visual; username um pouco maior e números consistentes
+  const colWidths = suporte ? [40, 200, 70, 70, 80, 80] : [40, 240, 70, 70, 110];
   const headers = suporte ? ['Pos','Usuário','Pontos','% Total','Relatórios','Plantões'] : ['Pos','Usuário','Pontos','% Total','Participação'];
   const tableStartY = doc.y;
   doc.save();
@@ -165,9 +168,10 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   ensureSpace(doc, 30);
     const pctTotal = totalPoints? (r.points/totalPoints*100):0;
     const partPct = (r.points / maxPoints)*100;
-    const user = await client.users.fetch(r.user_id).catch(()=>null);
-    let display = user ? (user.globalName || user.username) : r.user_id;
-    if (i === 0) display += ' (Staff Sensação)';
+  const user = await client.users.fetch(r.user_id).catch(()=>null);
+  // Forçar sempre username para evitar caracteres não suportados
+  let display = user ? user.username : r.user_id;
+  // Primeiro lugar já terá destaque em ribbon; não poluir linha do Top 10.
     doc.save();
     if (i %2 ===1){
       doc.rect(tableX, rowY, colWidths.reduce((a,b)=>a+b,0), 20).fill('#ffffff');
@@ -180,7 +184,9 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       : [String(i+1), display, formatNumber(r.points), pctTotal.toFixed(1)+'%', partPct.toFixed(1)+'% do líder'];
     rowValues.forEach((val,idx)=>{
       const w = colWidths[idx];
-  doc.font(fonts.regular).fontSize(9).fillColor('#222').text(val, cursorX, baseY, { width: w - 16, align: idx===0?'left':'center', ellipsis:true });
+      // Pos e Usuário alinhados à esquerda; restante centralizado
+      const align = (idx===0 || idx===1) ? 'left' : 'center';
+      doc.font(fonts.regular).fontSize(9).fillColor('#222').text(val, cursorX, baseY, { width: w - 16, align, ellipsis:true });
       cursorX += w;
     });
     rowY += 20;
@@ -188,21 +194,34 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   }
   doc.moveDown(1);
   doc.font(fonts.regular).fontSize(9).fillColor('#555').text('Tabela rápida – detalhes completos a seguir.');
-  doc.moveDown(0.8);
-
-  // Begin detailed cards section
+  // Só cria nova página se faltar espaço para título + primeiro card
+  const neededForFirstCard = 40 + (suporte ? 120 : 108);
+  const remainingAfterTable = doc.page.height - doc.page.margins.bottom - doc.y;
+  if (remainingAfterTable < neededForFirstCard){
+    addFooter(doc);
+    doc.addPage();
+  }
   doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', { align:'left' });
   doc.moveDown(0.6);
 
   let position = 0;
   const medalColors = ['#D4AF37','#C0C0C0','#CD7F32'];
 
+  // Paginação fixa: 4 cards por página
+  let cardsOnPage = 0;
   for (const r of rows){
-    // espaço adicional para o destaque do primeiro lugar
-    ensureSpace(doc, 135 + (position === 0 ? 30 : 0));
+    const cardHeight = suporte ? 120 : 108;
+    // Verifica espaço restante ou limite de 4 cards
+    const remaining = doc.page.height - doc.page.margins.bottom - doc.y;
+    if (cardsOnPage === 4 || remaining < cardHeight + 40){
+      addFooter(doc);
+      doc.addPage();
+      cardsOnPage = 0;
+      doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', { align:'left' });
+      doc.moveDown(0.6);
+    }
     const idx = ++position;
     const startY = doc.y;
-    const cardHeight = suporte ? 120 : 108;
 
     doc.save();
     const cardColor = idx %2 ===0 ? '#FFFFFF' : secondary;
@@ -220,7 +239,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       const ribbonY = startY - 18; // um pouco acima do card
       doc.save();
       doc.roundedRect(ribbonX, ribbonY, ribbonWidth, ribbonHeight, 8).fill('#9B59B6');
-      doc.fillColor('#FFFFFF').font(fonts.bold).fontSize(12).text('⭐ Staff Sensação', ribbonX, ribbonY + 7, { width: ribbonWidth, align: 'center' });
+      // Texto sem símbolo extra conforme solicitação
+      doc.fillColor('#FFFFFF').font(fonts.bold).fontSize(12).text('Staff Sensação', ribbonX, ribbonY + 7, { width: ribbonWidth, align: 'center' });
       doc.restore();
     }
 
@@ -248,7 +268,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
 
     const infoX = badgeX + 140;
     let cursorY = badgeY;
-    const display = user ? (user.globalName || user.username) : r.user_id;
+  const display = user ? user.username : r.user_id;
   doc.fillColor('#111').font(fonts.bold).fontSize(15).text(display, infoX, cursorY, { width: 300 });
     cursorY += 22;
   doc.font(fonts.regular).fontSize(9).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
@@ -263,17 +283,10 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       cursorY += 14;
     }
 
-    const barWidth = 260;
-    const pct = Math.max(0, Math.min(1, r.points / maxPoints));
-    const barX = infoX; const barY = startY + cardHeight - 30;
-    doc.save();
-    doc.roundedRect(barX, barY, barWidth, 12, 6).fill('#e5e5e5');
-    const gradientWidth = Math.max(4, barWidth * pct);
-    doc.roundedRect(barX, barY, gradientWidth, 12, 6).fill(primary);
-    doc.restore();
-  doc.font(fonts.regular).fontSize(8).fillColor('#444').text(`${(pct*100).toFixed(1)}% do líder`, barX + barWidth + 8, barY + 1);
+  // Barra de progresso e % do líder removidas conforme solicitação.
 
-    doc.y = startY + cardHeight + 14;
+  doc.y = startY + cardHeight + 14;
+  cardsOnPage++;
   }
 
   addFooter(doc);
