@@ -8,23 +8,23 @@ export interface RecruitAreaMeta {
 function buildAreas(): RecruitAreaMeta[] {
     const cfg = loadConfig();
     return cfg.areas
-        .filter(a => ['MOVCALL', 'DESIGN', 'RECRUTAMENTO', 'JORNALISMO', 'EVENTOS'].includes(a.name.toUpperCase())) // SUPORTE removido
+        .filter(a => ['MOVCALL', 'DESIGN', 'RECRUTAMENTO', 'JORNALISMO', 'EVENTOS'].includes(a.name.toUpperCase()))
         .map(a => ({
-            key: a.name.toLowerCase(),
-            label: a.name.toUpperCase() === 'MOVCALL' ? 'Mov Call' : a.name.charAt(0) + a.name.slice(1).toLowerCase()
-        }));
+        key: a.name.toLowerCase(),
+        label: a.name.toUpperCase() === 'MOVCALL' ? 'Mov Call' : a.name.charAt(0) + a.name.slice(1).toLowerCase()
+    }));
 }
 export const RECRUIT_AREAS = buildAreas();
 export default {
     data: new SlashCommandBuilder()
         .setName('recrutar')
         .setDescription('Recrutar um usuário para uma equipe')
-        .addUserOption(o => o.setName('usuario').setDescription('Usuário a ser recrutado').setRequired(true)), // visível a todos
+        .addUserOption(o => o.setName('usuario').setDescription('Usuário a ser recrutado').setRequired(true)),
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
         const member = interaction.member as GuildMember | null;
-        const allowedRoleIds = ['1136868804677357608','1153690317262950400'];
         const cfg: any = loadConfig();
+        const allowedRoleIds: string[] = cfg?.permissions?.recruit?.allowedRoles || [];
         const owners: string[] = Array.isArray(cfg.owners) ? cfg.owners : [];
         const isOwner = member ? owners.includes(member.id) : false;
         const hasAllowedRole = !!member?.roles?.cache?.some(r => allowedRoleIds.includes(r.id));

@@ -405,10 +405,12 @@ async function resetSupportOnly() {
     if (DatabaseManager.current === 'sqlite') {
         const db = DatabaseManager.getSqlite().connection;
         await new Promise<void>((resolve, reject) => {
-            db.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area = ?', ['Suporte'], function (err: Error | null) { if (err)
-                reject(err);
-            else
-                resolve(); });
+            db.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area = ?', ['Suporte'], function (err: Error | null) {
+                if (err)
+                    reject(err);
+                else
+                    resolve();
+            });
         });
     }
     else {
@@ -420,10 +422,12 @@ async function resetAreaPoints(area: string) {
     if (DatabaseManager.current === 'sqlite') {
         const db = DatabaseManager.getSqlite().connection;
         await new Promise<void>((resolve, reject) => {
-            db.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area = ?', [area], function (err: Error | null) { if (err)
-                reject(err);
-            else
-                resolve(); });
+            db.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area = ?', [area], function (err: Error | null) {
+                if (err)
+                    reject(err);
+                else
+                    resolve();
+            });
         });
     }
     else {

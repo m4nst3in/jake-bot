@@ -16,16 +16,16 @@ export default {
         let retornoIso: string | undefined;
         let diasAusencia: number | undefined;
         if (diasCampo) {
-            const d = parseInt(diasCampo,10);
-            if (!isNaN(d) && d>0 && d<=7) {
+            const d = parseInt(diasCampo, 10);
+            if (!isNaN(d) && d > 0 && d <= 7) {
                 diasAusencia = d;
                 const target = new Date();
                 target.setUTCDate(target.getUTCDate() + d);
-                retornoIso = target.toISOString().slice(0,10);
+                retornoIso = target.toISOString().slice(0, 10);
             }
         }
-    const member = interaction.member as GuildMember | null;
-    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
+        const member = interaction.member as GuildMember | null;
+        if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.editReply('Sem permissão.');
             return;
         }

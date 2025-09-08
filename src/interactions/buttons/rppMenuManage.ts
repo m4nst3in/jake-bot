@@ -3,8 +3,8 @@ import { isOwner } from '../../utils/permissions.ts';
 export default {
     id: 'rpp_menu_manage',
     async execute(interaction: ButtonInteraction) {
-    const member = interaction.member as GuildMember | null;
-    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
+        const member = interaction.member as GuildMember | null;
+        if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.reply({ content: 'Sem permissão.', ephemeral: true });
             return;
         }
@@ -34,12 +34,7 @@ export default {
             .setLabel('Dias (1-7) (não colocar se for remover)')
             .setStyle(1)
             .setRequired(false);
-        modal.addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(userIdInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(actionInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput),
-            new ActionRowBuilder<TextInputBuilder>().addComponents(daysInput)
-        );
+        modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(userIdInput), new ActionRowBuilder<TextInputBuilder>().addComponents(actionInput), new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput), new ActionRowBuilder<TextInputBuilder>().addComponents(daysInput));
         await interaction.showModal(modal);
     }
 };

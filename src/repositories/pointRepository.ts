@@ -63,16 +63,20 @@ export class PointRepository extends BaseRepo {
     async addPointsAndReport(userId: string, area: string, delta: number, reason: string, by: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, reports_count=points.reports_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.reports_count', 'points.reports_count'), [userId, area, delta, 1, 0], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, reports_count=points.reports_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.reports_count', 'points.reports_count'), [userId, area, delta, 1, 0], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO point_logs (user_id, change, reason, by, timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP)', [userId, delta, reason, by], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('INSERT INTO point_logs (user_id, change, reason, by, timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP)', [userId, delta, reason, by], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
         }
         else {
@@ -83,16 +87,20 @@ export class PointRepository extends BaseRepo {
     async addShift(userId: string, area: string, delta: number, reason: string, by: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, shifts_count=points.shifts_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.shifts_count', 'points.shifts_count'), [userId, area, delta, 0, 1], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, shifts_count=points.shifts_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.shifts_count', 'points.shifts_count'), [userId, area, delta, 0, 1], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO point_logs (user_id, change, reason, by, timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP)', [userId, delta, reason, by], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('INSERT INTO point_logs (user_id, change, reason, by, timestamp) VALUES (?,?,?,?,CURRENT_TIMESTAMP)', [userId, delta, reason, by], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
         }
         else {
@@ -103,10 +111,12 @@ export class PointRepository extends BaseRepo {
     async sumReports(area: string) {
         if (this.isSqlite()) {
             return new Promise<number>((resolve, reject) => {
-                this.sqlite.get('SELECT SUM(reports_count) t FROM points WHERE area=?', [area], function (err: Error | null, row: any) { if (err)
-                    reject(err);
-                else
-                    resolve(row?.t || 0); });
+                this.sqlite.get('SELECT SUM(reports_count) t FROM points WHERE area=?', [area], function (err: Error | null, row: any) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(row?.t || 0);
+                });
             });
         }
         const agg = await this.mongo.collection('points').aggregate([{ $match: { area } }, { $group: { _id: null, t: { $sum: '$reports_count' } } }]).toArray();
@@ -128,10 +138,12 @@ export class PointRepository extends BaseRepo {
     async resetAllPoints() {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP', [], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP', [], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
         }
         else {
@@ -141,10 +153,12 @@ export class PointRepository extends BaseRepo {
     async resetArea(area: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area=?', [area], function (err: Error | null) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('UPDATE points SET points=0, reports_count=0, shifts_count=0, last_updated=CURRENT_TIMESTAMP WHERE area=?', [area], function (err: Error | null) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
         }
         else {

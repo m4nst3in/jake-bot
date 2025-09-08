@@ -6,8 +6,8 @@ const service = new RPPService();
 export default {
     id: 'rpp_menu_removed',
     async execute(interaction: ButtonInteraction) {
-    const member = interaction.member as GuildMember | null;
-    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
+        const member = interaction.member as GuildMember | null;
+        if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.reply({ content: 'Sem permissão.', ephemeral: true });
             return;
         }

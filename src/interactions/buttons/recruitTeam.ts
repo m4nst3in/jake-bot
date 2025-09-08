@@ -27,22 +27,19 @@ export default {
             return;
         }
         const areaCfg = cfg.areas.find(a => a.name.toLowerCase() === team);
-        const roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER'; // real IDs agora no config
+        const roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
         if (!areaCfg) {
             await interaction.editReply('Config da equipe não encontrada.');
             return;
         }
         const inicianteRole = cfg.roles?.Iniciante;
-        const staffRole = cfg.roles?.staff; // 1135122929529659472
-        // Atribui cargo da equipe
+        const staffRole = cfg.roles?.staff;
         if (!roleId.startsWith('ROLE_ID_') && !member.roles.cache.has(roleId)) {
             await member.roles.add(roleId).catch(() => { });
         }
-        // Sempre garantir cargo Iniciante
         if (inicianteRole && !member.roles.cache.has(inicianteRole)) {
             await member.roles.add(inicianteRole).catch(() => { });
         }
-        // Sempre garantir cargo Staff
         if (staffRole && !member.roles.cache.has(staffRole)) {
             await member.roles.add(staffRole).catch(() => { });
         }
@@ -75,7 +72,8 @@ export default {
                 embed.setThumbnail(memberUser.avatarURL()!);
             if (roleId.startsWith('ROLE_ID_')) {
                 embed.addFields({ name: '⚠️ Cargo Equipe', value: 'Cargo ainda não configurado.', inline: false });
-            } else {
+            }
+            else {
                 embed.addFields({ name: '<a:z_estrelinha_cdw:935927437647314994> Cargos Atribuídos', value: [roleId.startsWith('ROLE_ID_') ? null : `<@&${roleId}>`, inicianteRole ? `<@&${inicianteRole}>` : null, staffRole ? `<@&${staffRole}>` : null].filter(Boolean).join(' ') || '—', inline: false });
             }
             (logChannel as any).send({ embeds: [embed] }).catch(() => { });

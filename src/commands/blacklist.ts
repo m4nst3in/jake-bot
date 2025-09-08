@@ -20,7 +20,6 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
         const hasTimeout = interaction.memberPermissions?.has(PermissionsBitField.Flags.ModerateMembers);
-        // Permitir visualização se tiver perm de timeout, mesmo sem ser líder/admin
         if (!isAdmin(interaction) && !isLeader(interaction) && !hasTimeout) {
             return interaction.editReply('Apenas liderança ou administradores.');
         }

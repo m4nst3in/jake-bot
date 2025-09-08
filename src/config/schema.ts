@@ -30,14 +30,17 @@ export interface ConfigRoot {
     roles: GlobalRolesConfig;
     channels: GlobalChannelsConfig;
     areas: AreaConfig[];
-    staffRankMirrors?: Record<string, Record<string, string>>; // guildId -> (rankName -> roleId)
-    progressionRoles?: Record<string,{ upa: string[]; naoUpa?: string[] }>; // guildId -> progression role classification
+    staffRankMirrors?: Record<string, Record<string, string>>;
+    progressionRoles?: Record<string, {
+        upa: string[];
+        naoUpa?: string[];
+    }>;
     support?: {
         guildId: string;
-        roles?: Record<string,string>;
-        channels?: Record<string,string>;
-        categories?: Record<string,string>;
-        emojis?: Record<string,string>;
+        roles?: Record<string, string>;
+        channels?: Record<string, string>;
+        categories?: Record<string, string>;
+        emojis?: Record<string, string>;
     };
     emojis?: Record<string, string>;
     banca?: {
@@ -91,6 +94,7 @@ export function validateConfig(cfg: any): ConfigRoot {
         throw new Error('mainGuildId ausente');
     if (!Array.isArray(cfg.areas))
         throw new Error('areas deve ser array');
-    if (!cfg.roles) cfg.roles = {}; // garante objeto roles
+    if (!cfg.roles)
+        cfg.roles = {};
     return cfg as ConfigRoot;
 }

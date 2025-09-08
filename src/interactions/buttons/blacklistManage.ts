@@ -3,8 +3,8 @@ import { isOwner } from '../../utils/permissions.ts';
 export default {
     id: 'bl_manage',
     async execute(interaction: ButtonInteraction) {
-    const member = interaction.member as GuildMember | null;
-    if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
+        const member = interaction.member as GuildMember | null;
+        if (!isOwner(member) && !interaction.memberPermissions?.has('ManageGuild')) {
             await interaction.reply({ content: 'Sem permissão.', ephemeral: true });
             return;
         }

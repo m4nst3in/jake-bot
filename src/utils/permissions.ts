@@ -5,8 +5,11 @@ function getOwners() {
     const cfg: any = loadConfig();
     return Array.isArray(cfg.owners) ? cfg.owners : [];
 }
-export function isOwner(member: GuildMember | null | undefined) { if (!member)
-    return false; return getOwners().includes(member.id); }
+export function isOwner(member: GuildMember | null | undefined) {
+    if (!member)
+        return false;
+    return getOwners().includes(member.id);
+}
 export function isAdminFromMember(member: GuildMember | null | undefined) {
     if (isOwner(member))
         return true;

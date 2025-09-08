@@ -8,10 +8,10 @@ export function scheduleRankingUpdater(client: Client) {
     const cfg = loadConfig();
     const supportChannelId = (cfg as any).support?.channels?.ranking || (cfg as any).channels?.ranking;
     const recruitChannelId = (cfg as any).channels?.recruitRanking;
-    const designGuildId = cfg.areas?.find?.((a:any)=> a.name === 'DESIGN')?.guildId || '1183909149784952902';
+    const designGuildId = cfg.areas?.find?.((a: any) => a.name === 'DESIGN')?.guildId || '1183909149784952902';
     const designChannelId = (cfg.channels as any)?.designRanking || '1299517485149716480';
     const eventsChannelId = (cfg.channels as any)?.eventsRanking || '1283495783328518144';
-    const journalismChannelId = (cfg.channels as any)?.journalismRanking || '1414589956856483952'; // atualizado via config
+    const journalismChannelId = (cfg.channels as any)?.journalismRanking || '1414589956856483952';
     if (!supportChannelId && !recruitChannelId && !designChannelId && !eventsChannelId) {
         logger.warn('Nenhum canal de ranking configurado.');
         return;
@@ -63,10 +63,15 @@ export function scheduleRankingUpdater(client: Client) {
                         (embed as any).data.description = withEmojis;
                     else
                         (embed as any).setDescription(withEmojis);
+                    (embed as any).setColor && (embed as any).setColor(0x39ff14);
                     const crown = '<a:white_coroacr:1414470662810112022>';
+                    const currentTitle = (embed as any).data?.title || (embed as any).title || '';
+                    const baseTitle = 'Ranking • Recrutamento';
                     if ((embed as any).setTitle) {
-                        const currentTitle = (embed as any).data?.title || 'Ranking Recrutamento';
-                        (embed as any).setTitle(`${crown} ${currentTitle.replace(/^.*?Ranking Recrutamento/i, 'Ranking Recrutamento')}`);
+                        (embed as any).setTitle(`${crown} ${baseTitle}`);
+                    }
+                    else if ((embed as any).data) {
+                        (embed as any).data.title = `${crown} ${baseTitle}`;
                     }
                 }
                 const msgs = await channel.messages.fetch({ limit: 20 }).catch(() => null);

@@ -17,8 +17,7 @@ export default {
         }
         const target = new Date();
         target.setUTCDate(target.getUTCDate() + dias);
-        const retornoIso = target.toISOString().slice(0,10);
-        // Nova lógica: se vindo do servidor principal, detectar área do usuário e redirecionar log para o(s) servidor(es) de área elegíveis
+        const retornoIso = target.toISOString().slice(0, 10);
         const cfg: any = loadConfig();
         const mainGuildId = cfg.mainGuildId;
         const userId = interaction.user.id;
@@ -26,25 +25,30 @@ export default {
         let dispatched = false;
         let dispatchedGuildName: string | undefined;
         if (interaction.guild?.id === mainGuildId) {
-            // Percorre guilds configuradas para RPP e verifica se o usuário é membro nelas
             const rppGuildIds: string[] = Object.keys(cfg.rpp?.guilds || {});
             const prog: any = cfg.progressionRoles || {};
-            const candidates: { guildId: string; hasUpa: boolean; memberObj: GuildMember }[] = [];
+            const candidates: {
+                guildId: string;
+                hasUpa: boolean;
+                memberObj: GuildMember;
+            }[] = [];
             for (const gid of rppGuildIds) {
-                if (gid === mainGuildId) continue; // pular principal
-                const g = await interaction.client.guilds.fetch(gid).catch(()=>null);
-                if (!g) continue;
-                const m = await g.members.fetch(userId).catch(()=>null) as GuildMember | null;
-                if (!m) continue;
+                if (gid === mainGuildId)
+                    continue;
+                const g = await interaction.client.guilds.fetch(gid).catch(() => null);
+                if (!g)
+                    continue;
+                const m = await g.members.fetch(userId).catch(() => null) as GuildMember | null;
+                if (!m)
+                    continue;
                 const pr = prog[gid];
                 const upaRoles: string[] = pr?.upa || [];
                 const hasUpa = upaRoles.some(r => m.roles.cache.has(r));
                 candidates.push({ guildId: gid, hasUpa, memberObj: m });
             }
             if (candidates.length) {
-                // Preferir quem tem cargo UPA
                 const preferred = candidates.find(c => c.hasUpa) || candidates[0];
-                const areaGuild = await interaction.client.guilds.fetch(preferred.guildId).catch(()=>null);
+                const areaGuild = await interaction.client.guilds.fetch(preferred.guildId).catch(() => null);
                 if (areaGuild) {
                     await sendRppLog(areaGuild, 'solicitado', { id: created.id, userId, reason: motivo, returnDate: `${dias} dia(s)`, createdAt: created.requested_at });
                     dispatched = true;

@@ -25,5 +25,8 @@ export function startRankingAutoUpdate(message: Message, area: string, svc = new
     }, 10.000);
     trackers.set(message.id, { interval, area, messageId: message.id, channelId: message.channel.id });
 }
-export function stopAllRankingAuto() { for (const t of trackers.values())
-    clearInterval(t.interval); trackers.clear(); }
+export function stopAllRankingAuto() {
+    for (const t of trackers.values())
+        clearInterval(t.interval);
+    trackers.clear();
+}

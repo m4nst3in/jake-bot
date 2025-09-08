@@ -2,8 +2,15 @@
   "version": 1,
   "environment": "dev",
   "botId": "934635845460303882",
-  "owners": ["1382506667211493429","511264305832919050","199242071507337216","418824536570593280","1016542932284747836"],
   "mainGuildId": "934635845460303882",
+  "owners": [
+    "1382506667211493429",
+    "511264305832919050",
+    "199242071507337216",
+    "418824536570593280",
+    "1016542932284747836"
+  ],
+
   "roles": {
     "staff": "1135122929529659472",
     "Iniciante": "1136850198618976296",
@@ -38,33 +45,40 @@
     "Almirante": "1411961026995290162",
     "Manager": "1134940087973593168"
   },
+
   "staffRankMirrors": {
-    "1190515971035774996": {  
-      "3 Sargento": "1190515971069321241",
-      "2 Sargento": "1190515971069321242",
-      "1 Sargento": "1190515971069321243",
-      "Sub Oficial": "1412103824608329738",
-      "Sub Tenente": "1190515971069321245",
-      "Aspirante a Oficial": "1190515971086094336",
-      "Intendente": "1412110085345251438",
-      "2 Tenente": "1190515971086094337",
-      "1 Tenente": "1190515971086094338",
-      "Capitão": "1190515971086094340",
-      "Capitão de Corveta": "1412104609610076280",
-      "Major": "1190515971086094341",
-      "Oficial de Guerra": "1412104939957649501",
-      "Tenente Coronel": "1190515971086094342",
-      "Coronel": "1190515971086094343",
-      "Sub Comandante": "1190515971086094345",
-      "Comandante": "1190515971119661066",
-      "General de Brigada": "1190515971119661067",
-      "General de Divisão": "1190515971119661068",
-      "General de Esquadra": "1412105124612014160",
-      "General de Exército": "1190515971119661069",
-      "Contra-Almirante": "1412105342258647040",
-      "Marechal": "1412105557560660129",
-      "Almirante": "1412105572958077089",
-      "Manager": "1190515971119661070"
+    "1183909149784952902": {
+      "Iniciante": "1183909149784952910",
+      "Aprendiz": "1412627422393667675",
+      "Recruta": "1183909149784952911",
+      "Cadete": "1412627774753214625",
+      "Soldado": "1183909149797531709",
+      "Cabo": "1183909149797531710",
+      "3 Sargento": "1183909149797531711",
+      "2 Sargento": "1183909149797531712",
+      "1 Sargento": "1183909149797531713",
+      "Sub Oficial": "1412629229383843964",
+      "Sub Tenente": "1183909149797531714",
+      "Aspirante a Oficial": "1183909149797531715",
+      "Intendente": "1412630348109713518",
+      "2 Tenente": "1183909149797531716",
+      "1 Tenente": "1183909149797531717",
+      "Capitão": "1183909149797531718",
+      "Capitão de Corveta": "1412631484321497220",
+      "Major": "1183909149810110484",
+      "Oficial de Guerra": "1412632024962961488",
+      "Tenente Coronel": "1183909149810110485",
+      "Coronel": "1183909149810110486",
+      "Sub Comandante": "1183909149810110487",
+      "Comandante": "1183909149810110488",
+      "General de Brigada": "1183909149810110489",
+      "General de Divisão": "1183909149810110490",
+      "General de Esquadra": "1412633130879160420",
+      "General de Exército": "1183909149810110491",
+      "Contra-Almirante": "1412633458710417470",
+      "Marechal": "1412633924638740541",
+      "Almirante": "1302415691365879860",
+      "Manager": "1183909149818507366"
     },
     "1190390194533318706": {
       "Iniciante": "1190390194541691153",
@@ -99,6 +113,33 @@
       "Almirante": "1412201046100541644",
       "Manager": "1190390194566873152"
     },
+    "1190515971035774996": {
+      "3 Sargento": "1190515971069321241",
+      "2 Sargento": "1190515971069321242",
+      "1 Sargento": "1190515971069321243",
+      "Sub Oficial": "1412103824608329738",
+      "Sub Tenente": "1190515971069321245",
+      "Aspirante a Oficial": "1190515971086094336",
+      "Intendente": "1412110085345251438",
+      "2 Tenente": "1190515971086094337",
+      "1 Tenente": "1190515971086094338",
+      "Capitão": "1190515971086094340",
+      "Capitão de Corveta": "1412104609610076280",
+      "Major": "1190515971086094341",
+      "Oficial de Guerra": "1412104939957649501",
+      "Tenente Coronel": "1190515971086094342",
+      "Coronel": "1190515971086094343",
+      "Sub Comandante": "1190515971086094345",
+      "Comandante": "1190515971119661066",
+      "General de Brigada": "1190515971119661067",
+      "General de Divisão": "1190515971119661068",
+      "General de Esquadra": "1412105124612014160",
+      "General de Exército": "1190515971119661069",
+      "Contra-Almirante": "1412105342258647040",
+      "Marechal": "1412105557560660129",
+      "Almirante": "1412105572958077089",
+      "Manager": "1190515971119661070"
+    },
     "1224414082866745405": {
       "Iniciante": "1224414082866745413",
       "Aprendiz": "1412263355820933190",
@@ -131,39 +172,6 @@
       "Marechal": "1224414082975797299",
       "Almirante": "1412485382070599821",
       "Manager": "1412485447866646628"
-    },
-    "1183909149784952902": {
-      "Iniciante": "1183909149784952910",
-      "Aprendiz": "1412627422393667675",
-      "Recruta": "1183909149784952911",
-      "Cadete": "1412627774753214625",
-      "Soldado": "1183909149797531709",
-      "Cabo": "1183909149797531710",
-      "3 Sargento": "1183909149797531711",
-      "2 Sargento": "1183909149797531712",
-      "1 Sargento": "1183909149797531713",
-      "Sub Oficial": "1412629229383843964",
-      "Sub Tenente": "1183909149797531714",
-      "Aspirante a Oficial": "1183909149797531715",
-      "Intendente": "1412630348109713518",
-      "2 Tenente": "1183909149797531716",
-      "1 Tenente": "1183909149797531717",
-      "Capitão": "1183909149797531718",
-      "Capitão de Corveta": "1412631484321497220",
-      "Major": "1183909149810110484",
-      "Oficial de Guerra": "1412632024962961488",
-      "Tenente Coronel": "1183909149810110485",
-      "Coronel": "1183909149810110486",
-      "Sub Comandante": "1183909149810110487",
-      "Comandante": "1183909149810110488",
-      "General de Brigada": "1183909149810110489",
-      "General de Divisão": "1183909149810110490",
-      "General de Esquadra": "1412633130879160420",
-      "General de Exército": "1183909149810110491",
-      "Contra-Almirante": "1412633458710417470",
-      "Marechal": "1412633924638740541",
-      "Almirante": "1302415691365879860",
-      "Manager": "1183909149818507366"
     },
     "1405418716258111580": {
       "Iniciante": "1283179751627817051",
@@ -199,39 +207,42 @@
       "Manager": "1283178329913954485"
     }
   },
+
   "progressionRoles": {
-    "1190390194533318706": { "upa": ["1190390194533318714"], "naoUpa": ["1190390194533318713"] },
     "1180721287476289596": { "upa": ["1180871635662819498"], "naoUpa": ["1180871637491523626"] },
-    "1190515971035774996": { "upa": ["1190515971069321236"], "naoUpa": ["1190515971035775005"] },
-    "1283125240368730132": { "upa": ["1283205780983648278"], "naoUpa": ["1283205781831024640"] },
     "1183909149784952902": { "upa": ["1183909149784952907"], "naoUpa": ["1183909149784952906"] },
-    "1224414082866745405": { "upa": ["1224414082866745410"], "naoUpa": ["1224414082866745409"] }
+    "1190390194533318706": { "upa": ["1190390194533318714"], "naoUpa": ["1190390194533318713"] },
+    "1190515971035774996": { "upa": ["1190515971069321236"], "naoUpa": ["1190515971035775005"] },
+    "1224414082866745405": { "upa": ["1224414082866745410"], "naoUpa": ["1224414082866745409"] },
+    "1283125240368730132": { "upa": ["1283205780983648278"], "naoUpa": ["1283205781831024640"] }
   },
-  
+
   "channels": {
-  "rppLog": "1414091725483282555",
-  "rppReview": "1271452939742875670",
-    "recruitLog": "000000000000001001",
+    "auditLog": "000000000000001003",
     "blacklistLog": "000000000000001002",
-  "auditLog": "000000000000001003",
-  "ranking": "1282445335620354131",
-  "recruitRanking": "1261861624998924301",
-  "designRanking": "1299517485149716480",
-  "eventsRanking": "1283495783328518144",
-  "journalismRanking": "1414589956856483952"
+    "designRanking": "1299517485149716480",
+    "eventsRanking": "1283495783328518144",
+    "journalismRanking": "1414589956856483952",
+    "ranking": "1282445335620354131",
+    "recruitLog": "000000000000001001",
+    "recruitRanking": "1261861624998924301",
+    "rppLog": "1414091725483282555",
+    "rppReview": "1271452939742875670"
   },
+
   "emojis": {
-    "flame": "<a:champion78:1312240136796242021>",
-    "design": "<:Designsemnome:1311826417624813598>",
+    "bancaTitle": "<:bregblakk:1347017024412455026>",
     "champion": "<a:champion78:1312240136796242021>",
-    "recruitPrimary": "<a:champion78:1312240136796242021>",
+    "design": "<:Designsemnome:1311826417624813598>",
+    "dot": "<:white_ponto:1218673656679628942>",
+    "flame": "<a:champion78:1312240136796242021>",
     "recruitArrow": "<a:vSETAverdeclaro:1386504186396676141>",
-    "rppSnowflake": "<a:snowflake:1313280806235672656>",
+    "recruitPrimary": "<a:champion78:1312240136796242021>",
     "rppAccept": "<:white_certocr:1345874948589096980>",
     "rppReject": "<:waterrado:1377911729199255602>",
-    "dot": "<:white_ponto:1218673656679628942>",
-    "bancaTitle": "<:bregblakk:1347017024412455026>"
+    "rppSnowflake": "<a:snowflake:1313280806235672656>"
   },
+
   "support": {
     "guildId": "1190515971035774996",
     "roles": {
@@ -239,36 +250,38 @@
       "supervisao": "1190515971144818760"
     },
     "channels": {
+      "bancaBonus": "1190515972239528004",
+      "bancaLog": "1307017660260810762",
+      "bancaSupervisao": "1288659402588422165",
+      "plantao": "1294070656194838529",
+      "plantaoLog": "1414103437657767986",
+      "plantaoSupervisao": "1332541696608571505",
+      "pointsLog": "1414487730330796112",
       "ranking": "1282445335620354131",
       "rppLog": "1414091725483282555",
-      "rppReview": "1271452939742875670",
-      "plantao": "1294070656194838529",
-      "plantaoSupervisao": "1332541696608571505",
-      "plantaoLog": "1414103437657767986",
-  "pointsLog": "1414487730330796112",
-      "bancaBonus": "1190515972239528004",
-  "bancaSupervisao": "1288659402588422165",
-  "bancaLog": "1307017660260810762"
+      "rppReview": "1271452939742875670"
     },
     "categories": {
       "banca": "1190515972239528001"
     },
     "emojis": {
       "checkAnim": "<a:check2:1413993680313909350>",
+      "dot": "<:white_ponto:1218673656679628942>",
       "fail": "<:waterrado:1413997059853516932>",
-      "tool": "<:a_staff_40SBR:1377912584484946012>",
-      "dot": "<:white_ponto:1218673656679628942>"
+      "tool": "<:a_staff_40SBR:1377912584484946012>"
     }
   },
+
   "areas": [
-  { "name": "MOVCALL", "guildId": "1190390194533318706", "roleIds": { "lead": "1190390194579439669", "member": "1136861814328668230" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
-  { "name": "DESIGN", "guildId": "1183909149784952902", "roleIds": { "lead": "1183909149831086082", "member": "1136861844540227624" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
-  { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1136868804677357608" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
-  { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1247967720427884587" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
-  { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "1170196352114901052" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+    { "name": "MOVCALL", "guildId": "1190390194533318706", "roleIds": { "lead": "1190390194579439669", "member": "1136861814328668230" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
+    { "name": "DESIGN", "guildId": "1183909149784952902", "roleIds": { "lead": "1183909149831086082", "member": "1136861844540227624" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
+    { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1136868804677357608" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
+    { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1247967720427884587" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
+    { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "1170196352114901052" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
   ],
+
   "banca": {
-  "supportGuildId": "1190515971035774996",
+    "supportGuildId": "1190515971035774996",
     "supportOrderReferenceChannelId": "1307015943590903878",
     "bonusChannelId": "1190515972239528004",
     "supervisionChannelId": "1288659402588422165",
@@ -278,77 +291,42 @@
     "bonusPoints": 15,
     "supervisionPoints": 10
   },
+
   "journalismBanca": {
     "guildId": "1224414082866745405",
     "categoryId": "1224414084980805756",
     "prefix": "💕・"
   },
+
   "recruitBanca": {
     "guildId": "1180721287476289596",
     "reactionEmoji": "<a:Check:1217789508939157515>",
     "pointsPerMessage": 10,
     "keyword": "recrutamento",
     "pointsLogChannelId": "1263455658594926644",
-  "plantaoLogChannelId": "1414388997257429042",
-  "plantaoChannelId": "1230111166261493801",
-  "supervisaoChannelId": "1414387744368492686",
-  "leadershipRoleId": "1182824023344812154", 
-  "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
-  "prefix": "🟢・",
-  "categoryId": "1242538995649351820"
+    "plantaoLogChannelId": "1414388997257429042",
+    "plantaoChannelId": "1230111166261493801",
+    "supervisaoChannelId": "1414387744368492686",
+    "leadershipRoleId": "1182824023344812154",
+    "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
+    "prefix": "🟢・",
+    "categoryId": "1242538995649351820"
   },
+
   "rpp": {
     "guilds": {
-      "1190515971035774996": {
-        "review": "1271452939742875670",
-        "log": "1414091725483282555",
+      "1180721287476289596": {
+        "review": "1269418489056198760",
+        "log": "1414146840487788624",
+        "role": "1180871609272246302",
         "embed": {
-          "color": 16777215,
-          "tool": "<:a_staff_40SBR:1377912584484946012>",
-          "section": "<:a_staff_40SBR:1377912584484946012>",
-          "bullet": "<:white_ponto:1218673656679628942>",
-          "button": "<:white_rules:1313284978397941812>",
-          "image": "https://media.discordapp.net/attachments/1190515971706863619/1395923578976866404/IMG_1872.png?ex=68be21a4&is=68bcd024&hm=b0ffd7c75851be3cb8c65d577b741617ac42ffe0352a9e23bbbcab0893791a8b&=&format=webp&quality=lossless"
-        }
-      },
-      "1190390194533318706": {
-        "review": "1283094730833661972",
-        "log": "1414130590575497358",
-  "role": "1190390194566873155",
-        "embed": {
-          "color": 16711680,
-          "tool": "<:c_picareta_red:1327422479555104828>",
-          "section": "<:mov_call20:1193710198615977985>",
-          "bullet": "<:mov_call26:1193566513727295548>",
-          "button": "<:mov_call20:1193710198615977985>",
-          "image": "https://images-ext-1.discordapp.net/external/FGEIWi2SDLPLpeWlMOmo_BCqbfrC9X5n6JtFn1h3Cn4/https/i.imgur.com/BcrMaWu.png?format=webp&quality=lossless"
-        }
-      },
-      "1283125240368730132": {
-        "review": "1283496059330498592",
-        "log": "1414139296386125866",
-        "role": "1283201521835839539", 
-        "embed": {
-          "color": 10181046,
-          "tool": "<:emoji_72:1406097314283786271>",
-          "section": "<:purple7_emoji:1283759067269042228>",
-          "bullet": "<:aqopontogg:1406099395405021265>",
-          "button": "<:purple3_emoji:1283759122210361434>",
-          "image": "https://i.imgur.com/BJxsxtt.png" 
-        }
-      },
-      "1224414082866745405": {
-        "review": "1414142417233383424",
-        "log": "1414141646202994890",
-        "role": "1224414082975797302",
-        "embed": {
-          "color": 16755373,
-          "tool": "<a:pink_butterfly2:1312933226666266634>",
-          "section": "<a:pink_butterfly2:1312933226666266634>",
-          "section2": "<:pink_dot:1312933271792910347>",
-          "bullet": "<:pink_dot:1312933271792910347>",
-          "button": "<:pink_dot:1312933271792910347>",
-          "image": "https://images-ext-1.discordapp.net/external/oXhFBQ1_D75dquVDcMbOgFLNisGvBdboX4BAGsAznQU/https/i.imgur.com/94gDPHh.gif"
+          "color": 65433,
+          "tool": "<a:m_heartpuff:1185784962910269522>",
+          "section": "<a:m_heartpuff:1185784962910269522>",
+          "section2": "<:pontogreen2:1180875332186816543>",
+          "bullet": "<:pontogreen2:1180875332186816543>",
+          "button": "<:recpranc:1244060044081889503>",
+          "image": "https://i.imgur.com/CtbNOhI.gif"
         }
       },
       "1183909149784952902": {
@@ -365,54 +343,129 @@
           "image": "https://i.imgur.com/AfWt9Oi.gif"
         }
       },
-      "1180721287476289596": {
-        "review": "1269418489056198760",
-        "log": "1414146840487788624",
-        "role": "1180871609272246302",
+      "1190390194533318706": {
+        "review": "1283094730833661972",
+        "log": "1414130590575497358",
+        "role": "1190390194566873155",
         "embed": {
-          "color": 65433,
-          "tool": "<a:m_heartpuff:1185784962910269522>",
-          "section": "<a:m_heartpuff:1185784962910269522>",
-          "section2": "<:pontogreen2:1180875332186816543>",
-          "bullet": "<:pontogreen2:1180875332186816543>",
-          "button": "<:recpranc:1244060044081889503>",
-          "image": "https://i.imgur.com/CtbNOhI.gif"
+          "color": 16711680,
+          "tool": "<:c_picareta_red:1327422479555104828>",
+          "section": "<:mov_call20:1193710198615977985>",
+          "bullet": "<:mov_call26:1193566513727295548>",
+          "button": "<:mov_call20:1193710198615977985>",
+          "image": "https://images-ext-1.discordapp.net/external/FGEIWi2SDLPLpeWlMOmo_BCqbfrC9X5n6JtFn1h3Cn4/https/i.imgur.com/BcrMaWu.png?format=webp&quality=lossless"
+        }
+      },
+      "1190515971035774996": {
+        "review": "1271452939742875670",
+        "log": "1414091725483282555",
+        "embed": {
+          "color": 16777215,
+          "tool": "<:a_staff_40SBR:1377912584484946012>",
+          "section": "<:a_staff_40SBR:1377912584484946012>",
+          "bullet": "<:white_ponto:1218673656679628942>",
+          "button": "<:white_rules:1313284978397941812>",
+          "image": "https://media.discordapp.net/attachments/1190515971706863619/1395923578976866404/IMG_1872.png?ex=68be21a4&is=68bcd024&hm=b0ffd7c75851be3cb8c65d577b741617ac42ffe0352a9e23bbbcab0893791a8b&=&format=webp&quality=lossless"
+        }
+      },
+      "1224414082866745405": {
+        "review": "1414142417233383424",
+        "log": "1414141646202994890",
+        "role": "1224414082975797302",
+        "embed": {
+          "color": 16755373,
+          "tool": "<a:pink_butterfly2:1312933226666266634>",
+          "section": "<a:pink_butterfly2:1312933226666266634>",
+          "section2": "<:pink_dot:1312933271792910347>",
+          "bullet": "<:pink_dot:1312933271792910347>",
+          "button": "<:pink_dot:1312933271792910347>",
+          "image": "https://images-ext-1.discordapp.net/external/oXhFBQ1_D75dquVDcMbOgFLNisGvBdboX4BAGsAznQU/https/i.imgur.com/94gDPHh.gif"
+        }
+      },
+      "1283125240368730132": {
+        "review": "1283496059330498592",
+        "log": "1414139296386125866",
+        "role": "1283201521835839539",
+        "embed": {
+          "color": 10181046,
+          "tool": "<:emoji_72:1406097314283786271>",
+          "section": "<:purple7_emoji:1283759067269042228>",
+          "bullet": "<:aqopontogg:1406099395405021265>",
+          "button": "<:purple3_emoji:1283759122210361434>",
+          "image": "https://i.imgur.com/BJxsxtt.png"
         }
       }
     }
-  }
-  ,
+  },
+
   "rppExtras": {
     "mainLogChannelId": "1414539162106855476",
     "membershipToLeadership": {
-      "1190390194533318715": "1136864678253969430",
       "1180871634631020594": "1153690317262950400",
       "1183909149784952908": "1136864742997250118",
-      "1283205107021774918": "1136864716434710608",
+      "1190390194533318715": "1136864678253969430",
       "1190515971069321238": "1136889351033344000",
-      "1224414082866745411": "1247610015787913360"
+      "1224414082866745411": "1247610015787913360",
+      "1283205107021774918": "1136864716434710608"
     },
-    "permExclude": ["1156383581099274250","1080746284434071582","1104523865377488918","1136699869290041404"]
+    "permExclude": [
+      "1156383581099274250",
+      "1080746284434071582",
+      "1104523865377488918",
+      "1136699869290041404"
+    ]
   },
+
   "protection": {
-    "botRoles": ["1080700822624686140","934635845846192162"],
+    "botRoles": ["1080700822624686140", "934635845846192162"],
     "alertRole": "1411223951350435961",
-    "alertUsers": ["511264305832919050","418824536570593280"],
+    "alertUsers": ["511264305832919050", "418824536570593280"],
     "logChannel": "1414540666171559966",
     "blockedRoles": {
-      "1136861844540227624": { "name": "Design", "allowedLeaderRole": "1153690317262950400" },
-      "1136861840421425284": { "name": "Suporte", "allowedLeaderRole": "1136889351033344000" },
-      "1136868804677357608": { "name": "Recrutamento", "allowedLeaderRole": "1153690317262950400" },
       "1136861814328668230": { "name": "Mov Call", "allowedLeaderRole": "1153690317262950400" },
-      "1170196352114901052": { "name": "Eventos", "allowedLeaderRole": "1153690317262950400" },
-      "1247967720427884587": { "name": "Jornalismo", "allowedLeaderRole": "1153690317262950400" },
-      "1136864742997250118": { "name": "Design", "allowedLeaderRole": "1411223951350435961" },
-      "1136889351033344000": { "name": "Suporte", "allowedLeaderRole": "1411223951350435961" },
-      "1136864716434710608": { "name": "Eventos", "allowedLeaderRole": "1411223951350435961" },
+      "1136861840421425284": { "name": "Suporte", "allowedLeaderRole": "1136889351033344000" },
+      "1136861844540227624": { "name": "Design", "allowedLeaderRole": "1153690317262950400" },
       "1136864678253969430": { "name": "Mov Call", "allowedLeaderRole": "1411223951350435961" },
-      "1247610015787913360": { "name": "Jornalismo", "allowedLeaderRole": "1411223951350435961" },
+      "1136864716434710608": { "name": "Eventos", "allowedLeaderRole": "1411223951350435961" },
+      "1136864742997250118": { "name": "Design", "allowedLeaderRole": "1411223951350435961" },
+      "1136868804677357608": { "name": "Recrutamento", "allowedLeaderRole": "1153690317262950400" },
+      "1136889351033344000": { "name": "Suporte", "allowedLeaderRole": "1411223951350435961" },
       "1153690317262950400": { "name": "Recrutamento", "allowedLeaderRole": "1411223951350435961" },
+      "1170196352114901052": { "name": "Eventos", "allowedLeaderRole": "1153690317262950400" },
+      "1247610015787913360": { "name": "Jornalismo", "allowedLeaderRole": "1411223951350435961" },
+      "1247967720427884587": { "name": "Jornalismo", "allowedLeaderRole": "1153690317262950400" },
       "1411223951350435961": { "name": "Líder Geral" }
+    },
+    "leaderUsers": [
+      "1180560326593364009",
+      "272114407998226434",
+      "279719800702369794",
+      "1156245195344592948",
+      "1025603723579375637"
+    ],
+    "areaLeaderRoles": {
+      "1180721287476289596": "1180871591530352742",
+      "1183909149784952902": "1183909149843664898",
+      "1190390194533318706": "1190390194579439673",
+      "1190515971035774996": "1190515971144818765",
+      "1224414082866745405": "1224414082975797307",
+      "1283125240368730132": "1283201071631826974"
+    }
+  },
+
+  "permissions": {
+    "recruit": {
+      "allowedRoles": [
+        "1153690317262950400",
+        "1136868804677357608",
+        "1411223951350435961"
+      ]
+    },
+    "rpp": {
+      "allowedRoles": [
+        "1411223951350435961",
+        "1153690317262950400"
+      ]
     }
   }
 }

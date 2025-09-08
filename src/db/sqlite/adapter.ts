@@ -41,11 +41,11 @@ export class SqliteAdapter {
             `CREATE TABLE IF NOT EXISTS role_transfers (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user TEXT, to_user TEXT, roles TEXT, by TEXT, timestamp TEXT);`,
             `CREATE TABLE IF NOT EXISTS audits (id INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, payload TEXT, by TEXT, timestamp TEXT);`,
             `CREATE TABLE IF NOT EXISTS config (guild_id TEXT PRIMARY KEY, area_settings TEXT, roles_config TEXT, channels_config TEXT);`,
-            `CREATE TABLE IF NOT EXISTS bancas (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT UNIQUE, name TEXT, staff_id TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);`
-            ,`CREATE TABLE IF NOT EXISTS staff_members (id INTEGER PRIMARY KEY AUTOINCREMENT, discord_id TEXT UNIQUE, added_at TEXT DEFAULT CURRENT_TIMESTAMP);`
-            ,`ALTER TABLE staff_members ADD COLUMN rank_role_id TEXT;`
-            ,`CREATE UNIQUE INDEX IF NOT EXISTS ux_staff_members_discord ON staff_members(discord_id);`
-            ,`CREATE TABLE IF NOT EXISTS rpp_role_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT UNIQUE, roles TEXT, stored_at TEXT DEFAULT CURRENT_TIMESTAMP);`
+            `CREATE TABLE IF NOT EXISTS bancas (id INTEGER PRIMARY KEY AUTOINCREMENT, channel_id TEXT UNIQUE, name TEXT, staff_id TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);`,
+            `CREATE TABLE IF NOT EXISTS staff_members (id INTEGER PRIMARY KEY AUTOINCREMENT, discord_id TEXT UNIQUE, added_at TEXT DEFAULT CURRENT_TIMESTAMP);`,
+            `ALTER TABLE staff_members ADD COLUMN rank_role_id TEXT;`,
+            `CREATE UNIQUE INDEX IF NOT EXISTS ux_staff_members_discord ON staff_members(discord_id);`,
+            `CREATE TABLE IF NOT EXISTS rpp_role_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT UNIQUE, roles TEXT, stored_at TEXT DEFAULT CURRENT_TIMESTAMP);`
         ];
         for (const stmt of stmts) {
             if (stmt.startsWith('ALTER TABLE')) {

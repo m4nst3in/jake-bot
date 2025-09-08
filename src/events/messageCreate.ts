@@ -122,8 +122,8 @@ export default async function messageCreate(message: Message) {
         const SUPERVISAO_ROLE = supportCfg?.roles?.supervisao;
         const LOG_CHANNEL = supportCfg?.channels?.plantaoLog;
         const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim;
-    const RECRUIT_PLANTAO_CHANNEL = recruitCfg?.plantaoChannelId || '1230111166261493801';
-    const RECRUIT_SUPERVISAO_CHANNEL = recruitCfg?.supervisaoChannelId || '1414387744368492686';
+        const RECRUIT_PLANTAO_CHANNEL = recruitCfg?.plantaoChannelId || '1230111166261493801';
+        const RECRUIT_SUPERVISAO_CHANNEL = recruitCfg?.supervisaoChannelId || '1414387744368492686';
         const RECRUIT_LOG_CHANNEL = recruitCfg?.plantaoLogChannelId;
         const RECRUIT_LEADERSHIP_ROLE = recruitCfg?.leadershipRoleId;
         const isRecruitGuild = message.guild?.id === recruitCfg?.guildId;

@@ -42,7 +42,7 @@ export default {
         .setName('embed')
         .setDescription('Publica embeds pré-formatadas em um canal')
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
-    .addStringOption(o => o.setName('tipo').setDescription('Tipo de embed').setRequired(true).addChoices({ name: 'RPP', value: 'rpp' }, { name: 'Banca', value: 'banca' }, { name: 'Pedido', value: 'pedido' }, { name: 'Verificar', value: 'verificar' }))
+        .addStringOption(o => o.setName('tipo').setDescription('Tipo de embed').setRequired(true).addChoices({ name: 'RPP', value: 'rpp' }, { name: 'Banca', value: 'banca' }, { name: 'Pedido', value: 'pedido' }, { name: 'Verificar', value: 'verificar' }))
         .addChannelOption(o => o.setName('canal').setDescription('Canal de destino').setRequired(true)),
     async execute(interaction: ChatInputCommandInteraction) {
         const tipo = interaction.options.getString('tipo', true);
@@ -56,7 +56,7 @@ export default {
             return;
         }
         await interaction.deferReply({ ephemeral: true });
-    if (tipo === 'rpp') {
+        if (tipo === 'rpp') {
             try {
                 const embed = buildRppEmbed(interaction.guild!);
                 const cfg: any = loadConfig();
@@ -80,7 +80,7 @@ export default {
             await interaction.editReply('Embed de banca publicada.');
             return;
         }
-    else if (tipo === 'pedido') {
+        else if (tipo === 'pedido') {
             const embed = new EmbedBuilder()
                 .setTitle('Solicitações de Arte')
                 .setColor(0x111111)
@@ -92,33 +92,32 @@ export default {
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de pedido de design publicada.');
             return;
-                }
-                else if (tipo === 'verificar') {
-                    const desc = [
-                        'Clique em Verificar para validar seu cargo no servidor principal e configurar seu perfil.',
-                        'Se você já possui o cargo oficial da área no servidor principal, poderá escolher se **upa** na área (Sim) ou se **não upa** (Não).'
-                    ].join('\n\n');
-                    const banners: Record<string,string> = {
-                        '1190390194533318706': 'https://media.discordapp.net/attachments/1116897156163448863/1327409279619305652/Verifique-se.png?ex=68c0067a&is=68beb4fa&hm=2a15d9ece1eb4f9996ef71a014f228ef6b3189b392af69fa2e7de3127323c74f&format=webp&quality=lossless&width=687&height=286&',
-                        '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?ex=68bf732e&is=68be21ae&hm=87687c524f13ddde66d5c0f404c8ae74df3b793075ba7838a9b3653b9e89bb1f&=&format=webp&quality=lossless',
-                        '1183909149784952902': 'https://i.imgur.com/8IT7TcG.gif',
-                        '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png?ex=68bfb01e&is=68be5e9e&hm=739d605b01d58e6e443ac2bccdb6a5aab11bb9742ca5f3e4bcf61ae70afd1262&',
-                        '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png?ex=68bf9025&is=68be3ea5&hm=b69d5f3ca112a43f11c9e9918130cc46629bcd74306b08c68d9b102262c10d31&',
-                        '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif?ex=68bfee06&is=68be9c86&hm=90d55932762e812347c32febf12dc0af1ffc433eceedfc22037142917e9c5664&',
-                    };
-                    const banner = banners[interaction.guildId!];
-                    const embed = new EmbedBuilder()
-                        .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Acesso')
-                        .setColor(0x2ecc71)
-                        .setDescription(desc)
-                        .setFooter({ text: 'Sistema de Verificação • Central da Web' });
-                    if (banner) embed.setImage(banner);
-                    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-                        new ButtonBuilder().setCustomId('verify_area').setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>')
-                    );
-                    await (channel as any).send({ embeds: [embed], components: [row] });
-                    await interaction.editReply('Embed de verificação publicada.');
-                    return;
-                }
+        }
+        else if (tipo === 'verificar') {
+            const desc = [
+                'Clique em Verificar para validar seu cargo no servidor principal e configurar seu perfil.',
+                'Se você já possui o cargo oficial da área no servidor principal, poderá escolher se **upa** na área (Sim) ou se **não upa** (Não).'
+            ].join('\n\n');
+            const banners: Record<string, string> = {
+                '1190390194533318706': 'https://media.discordapp.net/attachments/1116897156163448863/1327409279619305652/Verifique-se.png?ex=68c0067a&is=68beb4fa&hm=2a15d9ece1eb4f9996ef71a014f228ef6b3189b392af69fa2e7de3127323c74f&format=webp&quality=lossless&width=687&height=286&',
+                '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?ex=68bf732e&is=68be21ae&hm=87687c524f13ddde66d5c0f404c8ae74df3b793075ba7838a9b3653b9e89bb1f&=&format=webp&quality=lossless',
+                '1183909149784952902': 'https://i.imgur.com/8IT7TcG.gif',
+                '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png?ex=68bfb01e&is=68be5e9e&hm=739d605b01d58e6e443ac2bccdb6a5aab11bb9742ca5f3e4bcf61ae70afd1262&',
+                '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png?ex=68bf9025&is=68be3ea5&hm=b69d5f3ca112a43f11c9e9918130cc46629bcd74306b08c68d9b102262c10d31&',
+                '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif?ex=68bfee06&is=68be9c86&hm=90d55932762e812347c32febf12dc0af1ffc433eceedfc22037142917e9c5664&',
+            };
+            const banner = banners[interaction.guildId!];
+            const embed = new EmbedBuilder()
+                .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Acesso')
+                .setColor(0x2ecc71)
+                .setDescription(desc)
+                .setFooter({ text: 'Sistema de Verificação • Central da Web' });
+            if (banner)
+                embed.setImage(banner);
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('verify_area').setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));
+            await (channel as any).send({ embeds: [embed], components: [row] });
+            await interaction.editReply('Embed de verificação publicada.');
+            return;
+        }
     }
 };
