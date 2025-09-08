@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, PermissionsBitField } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, PermissionsBitField, GuildMember } from 'discord.js';
 import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
 import { loadConfig } from '../config/index.ts';
 export interface RecruitAreaMeta {
@@ -8,21 +8,30 @@ export interface RecruitAreaMeta {
 function buildAreas(): RecruitAreaMeta[] {
     const cfg = loadConfig();
     return cfg.areas
-        .filter(a => ['MOVCALL', 'DESIGN', 'RECRUTAMENTO', 'JORNALISMO', 'SUPORTE', 'EVENTOS'].includes(a.name.toUpperCase()))
+        .filter(a => ['MOVCALL', 'DESIGN', 'RECRUTAMENTO', 'JORNALISMO', 'EVENTOS'].includes(a.name.toUpperCase())) // SUPORTE removido
         .map(a => ({
-        key: a.name.toLowerCase(),
-        label: a.name.toUpperCase() === 'MOVCALL' ? 'Mov Call' : a.name.charAt(0) + a.name.slice(1).toLowerCase()
-    }));
+            key: a.name.toLowerCase(),
+            label: a.name.toUpperCase() === 'MOVCALL' ? 'Mov Call' : a.name.charAt(0) + a.name.slice(1).toLowerCase()
+        }));
 }
 export const RECRUIT_AREAS = buildAreas();
 export default {
     data: new SlashCommandBuilder()
         .setName('recrutar')
         .setDescription('Recrutar um usuário para uma equipe')
-        .addUserOption(o => o.setName('usuario').setDescription('Usuário a ser recrutado').setRequired(true))
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild),
+        .addUserOption(o => o.setName('usuario').setDescription('Usuário a ser recrutado').setRequired(true)), // visível a todos
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
+        const member = interaction.member as GuildMember | null;
+        const allowedRoleIds = ['1136868804677357608','1153690317262950400'];
+        const cfg: any = loadConfig();
+        const owners: string[] = Array.isArray(cfg.owners) ? cfg.owners : [];
+        const isOwner = member ? owners.includes(member.id) : false;
+        const hasAllowedRole = !!member?.roles?.cache?.some(r => allowedRoleIds.includes(r.id));
+        if (!isOwner && !hasAllowedRole) {
+            await interaction.editReply('Sem permissão para usar este comando.');
+            return;
+        }
         const target = interaction.options.getUser('usuario', true);
         const blRepo = new BlacklistRepository();
         let active: any[] = [];
@@ -35,7 +44,7 @@ export default {
         if (isGlobal) {
             const reasons = active.filter(a => a.area_or_global?.toUpperCase() === 'GLOBAL').map(a => `• ${a.reason || 'Sem motivo'}`).join('\n') || '—';
             const blockedEmbed = new EmbedBuilder()
-                .setTitle('🚫 Recrutamento Bloqueado')
+                .setTitle('<:purple13_emoji:1283758963418202125> Recrutamento Bloqueado')
                 .setColor(0xe74c3c)
                 .setDescription(`O usuário **${target.tag}** está na **Blacklist GLOBAL** e não pode ser recrutado para nenhuma equipe no momento.`)
                 .addFields({ name: 'Motivos', value: reasons })
@@ -44,7 +53,7 @@ export default {
             return;
         }
         const embed = new EmbedBuilder()
-            .setTitle('🧩 Recrutamento de Usuário')
+            .setTitle('<a:c_estrelar:1385143839743934496> Recrutamento de Usuário')
             .setDescription(`Selecione a equipe para recrutar **${target.tag}**.\n\nÁreas indisponíveis (blacklist): ${byArea.size ? [...byArea].join(', ') : 'Nenhuma'}`)
             .setColor(0x3498db)
             .setFooter({ text: 'Clique em apenas uma equipe' });

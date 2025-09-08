@@ -2,7 +2,7 @@
   "version": 1,
   "environment": "dev",
   "botId": "934635845460303882",
-  "owners": ["1382506667211493429","511264305832919050","199242071507337216","418824536570593280"],
+  "owners": ["1382506667211493429","511264305832919050","199242071507337216","418824536570593280","1016542932284747836"],
   "mainGuildId": "934635845460303882",
   "roles": {
     "staff": "1135122929529659472",
@@ -258,12 +258,11 @@
     }
   },
   "areas": [
-  { "name": "MOVCALL", "guildId": "000000000000100001", "roleIds": { "lead": "1190390194579439669", "member": "000000000000110002" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
-  { "name": "DESIGN", "guildId": "000000000000100002", "roleIds": { "lead": "1183909149831086082", "member": "000000000000120002" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
-  { "name": "RECRUTAMENTO", "guildId": "000000000000100003", "roleIds": { "lead": "1182824023344812154", "member": "000000000000130002" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
-  { "name": "JORNALISMO", "guildId": "000000000000100004", "roleIds": { "lead": "1224414082975797304", "member": "000000000000140002" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
-    { "name": "SUPORTE", "guildId": "1190515971035774996", "roleIds": { "lead": "1190515971144818760", "member": "1190515971069321238" }, "blacklistAreas": ["SUPORTE", "GLOBAL"] },
-  { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "000000000000160002" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+  { "name": "MOVCALL", "guildId": "1190390194533318706", "roleIds": { "lead": "1190390194579439669", "member": "1136861814328668230" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
+  { "name": "DESIGN", "guildId": "1183909149784952902", "roleIds": { "lead": "1183909149831086082", "member": "1136861844540227624" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
+  { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1136868804677357608" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
+  { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1247967720427884587" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
+  { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "1170196352114901052" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
   ],
   "banca": {
   "supportGuildId": "1190515971035774996",
