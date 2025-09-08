@@ -15,7 +15,8 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
     return;
   }
   const recruitCfg: any = (config as any).recruitBanca;
-  const recruitPrefix = recruitCfg?.prefix || '🟢・';
+  // Forçar novo prefixo padrão solicitado: 📖・
+  const recruitPrefix = '�・';
   const supportPrefix = '📖・';
   const journalismCfg:any = (config as any).journalismBanca;
   const journalismGuildId = journalismCfg?.guildId;
@@ -102,32 +103,35 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
   if (interaction.guild.id === recruitCfg?.guildId){
     await interaction.editReply(`Banca criada: <#${channel.id}>`);
     const textChannel = channel as TextChannel;
-    const HEART = '<a:heart:1259213859537813638>';
-    const GREEN = '<a:green:1407051781879627797>';
-    const ARROW = '<a:vSETAverdeclaro:1386504186396676141>';
+    const STAR = '<a:green_star02:1180891460875325560>';
+    const BOW = '<a:bow_green:1414415189335478352>';
+    const BUNNY = '<:c_:1414415181739720764>';
+
     const observacoes = [
       'Não informe o ID errado.',
-      'Mencione a liderança da área recrutada.',
-      'O "Recrutamento" no início do modelo faz você receber os pontos.'
+      'Mencione a liderança da área recrutada. O "Recrutamento" no início do modelo faz você receber os pontos.'
     ].map(l=>`> ${l}`).join('\n');
-    const modelo = [
-      '**Modelo de Relatório Rec:**',
-      'Recrutamento',
-      '♡ ID do membro:',
-      '♡ <@ID do membro>',
-      '♡ Área:',
-      '♡ Upado por:',
-      '♡ Idade:',
-      '♡ Menção de liderança da área:'
-    ].join('\n');
-    const desc = [
-      `**Banca de ${nome.toLowerCase()}**`,
-      `${GREEN} Bem vindo a equipe de Recrutamento, ${ARROW}\n<@${staffId}>! Siga o exemplo abaixo para seus relatórios de recrutamento.`,
-      `${HEART} **Observações:**\n${observacoes}`,
-      `${HEART} ${modelo}`,
-      'Liderança de Recrutamento - CDW Jake'
-    ].join('\n\n');
-    const embed = new EmbedBuilder().setColor(0x2ecc71).setDescription(desc);
+
+    const modeloLinhas = [
+      'Recrutamento.',
+      'ID do membro:',
+      '<@ID do membro>',
+      'Área:',
+      'Upa por:',
+      'Idade:',
+      'Menção de liderança da área:'
+    ].map(l=>`${STAR} ${l}`).join('\n');
+
+    const partes = [
+      `${BUNNY} Banca do <@${staffId}>`,
+      `**Bem vindo a equipe de Recrutamento, <@${staffId}>!** Siga o exemplo abaixo para seus relatórios de recrutamento.`,
+      `${BOW} **Observações:**\n${observacoes}`,
+      `${BOW} **Modelo de Relatório Rec:**\n${modeloLinhas}`,
+      `${BUNNY} *Liderança de Recrutamento - CDW*`
+    ];
+    const embed = new EmbedBuilder()
+      .setColor(0x2ecc71)
+      .setDescription(partes.join('\n\n'));
     await textChannel.send({ content: `<@${staffId}>`, embeds:[embed] });
     return;
   }

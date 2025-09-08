@@ -33,18 +33,19 @@ async function fetchImageBuffer(url: string): Promise<Buffer|null>{
   try { const res = await fetch(url); if(!res.ok) return null; const arr = await res.arrayBuffer(); return Buffer.from(arr); } catch { return null; }
 }
 
-function ensureSpace(doc: any, needed: number){
+function ensureSpace(doc: any, needed: number, pageNum: number){
   if (doc.y + needed > doc.page.height - doc.page.margins.bottom){
-    addFooter(doc);
+    addFooter(doc, pageNum);
     doc.addPage();
+    return pageNum + 1;
   }
+  return pageNum;
 }
 
-function addFooter(doc: any){
-  const anyDoc: any = doc as any;
+function addFooter(doc: any, pageNum: number){
   doc.fontSize(8).fillColor('#888');
   const footerY = doc.page.height - doc.page.margins.bottom + 10;
-  doc.text(`Página ${anyDoc.__pageIndex}`, doc.page.margins.left, footerY, { width: doc.page.width - doc.page.margins.left*2, align:'center' });
+  doc.text(`Página ${pageNum}`, doc.page.margins.left, footerY, { width: doc.page.width - doc.page.margins.left*2, align:'center' });
 }
 
 function addHeader(doc: any, area: string, primary: string, fonts: Fonts){
@@ -87,32 +88,28 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   const { primary, secondary } = areaAccent(area);
   const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
   const out: Buffer[] = [];
-  // Page index starts at 0; every real page increments in pageAdded listener
-  (doc as any).__pageIndex = 0;
+  let pageNumber = 1;
   doc.on('data', (d:any)=> out.push(d));
   const fonts = prepareFonts(doc);
 
-  doc.on('pageAdded', ()=>{
-    (doc as any).__pageIndex += 1;
-    // Header only after first page; first page has its own custom title layout
-    if ((doc as any).__pageIndex > 1) addHeader(doc, area, primary, fonts);
-  });
+  // Simple manual page management without pageAdded listener
 
   let version = 'unknown';
   try { const pkg = JSON.parse(readFileSync('package.json','utf8')); version = pkg.version || version; } catch {}
 
-  doc.font(fonts.bold).fontSize(26).fillColor(primary).text(`Relatório de Pontos`, { align:'center' });
+  const contentWidth = doc.page.width - doc.page.margins.left*2;
+  doc.font(fonts.bold).fontSize(26).fillColor(primary).text(`Relatório de Pontos`, doc.page.margins.left, doc.y, { align:'center', width: contentWidth });
   doc.moveDown(0.2);
-  doc.font(fonts.medium).fontSize(18).fillColor('#222').text(area, { align:'center' });
+  doc.font(fonts.medium).fontSize(18).fillColor('#222').text(area, doc.page.margins.left, doc.y, { align:'center', width: contentWidth });
   doc.moveDown(0.5);
-  doc.font(fonts.regular).fontSize(10).fillColor('#555').text(`Gerado em ${new Date().toLocaleString('pt-BR')}  |  Versão do Bot ${version}`, { align:'center' });
+  doc.font(fonts.regular).fontSize(10).fillColor('#555').text(`Gerado em ${new Date().toLocaleString('pt-BR')}  |  Versão do Bot ${version}`, doc.page.margins.left, doc.y, { align:'center', width: contentWidth });
   doc.moveDown(0.8);
   doc.save().rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left*2, 5).fill(primary).restore();
   doc.moveDown(1.2);
 
   if (!rows.length){
-  doc.font(fonts.regular).fontSize(14).fillColor('#777').text('Nenhum participante ainda.');
-  addFooter(doc);
+    doc.font(fonts.regular).fontSize(14).fillColor('#777').text('Nenhum participante ainda.');
+    addFooter(doc, pageNumber);
     doc.end();
     return await new Promise(res=> doc.on('end', ()=> res(Buffer.concat(out))));
   }
@@ -123,7 +120,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   const maxPoints = rows[0].points || 1;
   const suporte = area.toLowerCase()==='suporte';
 
-  doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Resumo');
+  doc.x = doc.page.margins.left;
+  doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Resumo', { width: contentWidth, align:'left' });
   doc.moveDown(0.4);
   doc.fontSize(11).fillColor('#222');
   const summaryData = [
@@ -143,16 +141,18 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   doc.y = startYSummary + summaryData.length*16 + 10;
 
   const topN = rows.slice(0, 10);
-  doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Top 10');
+  doc.x = doc.page.margins.left;
+  doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Top 10', doc.page.margins.left, doc.y, { width: contentWidth, align:'left' });
   doc.moveDown(0.4);
   const headerFontSize = 9;
   const tableX = doc.page.margins.left;
-  // Ajuste de larguras para melhor alinhamento visual; username um pouco maior e números consistentes
-  const colWidths = suporte ? [40, 200, 70, 70, 80, 80] : [40, 240, 70, 70, 110];
+  // Colunas ajustadas para ocupar exatamente a largura de conteúdo (contentWidth)
+  const colWidths = suporte ? [32, 190, 70, 70, 85, 85] : [32, 240, 80, 80, 100];
   const headers = suporte ? ['Pos','Usuário','Pontos','% Total','Relatórios','Plantões'] : ['Pos','Usuário','Pontos','% Total','Participação'];
   const tableStartY = doc.y;
   doc.save();
-  doc.roundedRect(tableX, tableStartY, colWidths.reduce((a,b)=>a+b,0), 22, 6).fill(secondary);
+  const tableWidth = colWidths.reduce((a,b)=>a+b,0);
+  doc.roundedRect(tableX, tableStartY, tableWidth, 22, 6).fill(secondary);
   doc.fillColor('#111').font(fonts.medium).fontSize(headerFontSize);
   let cursorX = tableX + 8; let headerY = tableStartY + 7;
   headers.forEach((h,i)=>{
@@ -165,13 +165,11 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
   let rowY = tableStartY + 22;
   for (let i=0;i<topN.length;i++){
     const r = topN[i];
-  ensureSpace(doc, 30);
+    pageNumber = ensureSpace(doc, 30, pageNumber);
     const pctTotal = totalPoints? (r.points/totalPoints*100):0;
     const partPct = (r.points / maxPoints)*100;
-  const user = await client.users.fetch(r.user_id).catch(()=>null);
-  // Forçar sempre username para evitar caracteres não suportados
-  let display = user ? user.username : r.user_id;
-  // Primeiro lugar já terá destaque em ribbon; não poluir linha do Top 10.
+    const user = await client.users.fetch(r.user_id).catch(()=>null);
+    let display = user ? user.username : r.user_id;
     doc.save();
     if (i %2 ===1){
       doc.rect(tableX, rowY, colWidths.reduce((a,b)=>a+b,0), 20).fill('#ffffff');
@@ -184,42 +182,79 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       : [String(i+1), display, formatNumber(r.points), pctTotal.toFixed(1)+'%', partPct.toFixed(1)+'% do líder'];
     rowValues.forEach((val,idx)=>{
       const w = colWidths[idx];
-      // Pos e Usuário alinhados à esquerda; restante centralizado
-      const align = (idx===0 || idx===1) ? 'left' : 'center';
-      doc.font(fonts.regular).fontSize(9).fillColor('#222').text(val, cursorX, baseY, { width: w - 16, align, ellipsis:true });
+      let align: 'left' | 'center' = 'center';
+      let textX = cursorX;
+      if (idx === 0) {
+        align = 'left';
+        textX += 4; 
+      } else if (idx === 1) {
+        align = 'left';
+        textX += 8;
+      }
+      doc.font(fonts.regular).fontSize(9).fillColor('#222').text(val, textX, baseY, { width: w - 16, align, ellipsis:true });
       cursorX += w;
     });
     rowY += 20;
     doc.y = rowY;
   }
   doc.moveDown(1);
-  doc.font(fonts.regular).fontSize(9).fillColor('#555').text('Tabela rápida – detalhes completos a seguir.');
-  // Só cria nova página se faltar espaço para título + primeiro card
-  const neededForFirstCard = 40 + (suporte ? 120 : 108);
-  const remainingAfterTable = doc.page.height - doc.page.margins.bottom - doc.y;
-  if (remainingAfterTable < neededForFirstCard){
-    addFooter(doc);
+  doc.font(fonts.regular).fontSize(9).fillColor('#555').text('Tabela rápida – detalhes completos a seguir.', doc.page.margins.left, doc.y, { width: contentWidth, align:'left' });
+  
+  // Decisão inteligente de quebra: só iniciar detalhamento nesta página se couber título + pelo menos 3 cards
+  const cardHeightRef = suporte ? 120 : 108;
+  const perCardExtra = 20; // margem vertical pós-card
+  const titleBlock = 40; // espaço do título + espaçamento inicial
+  const minCardsHere = 3;
+  const requiredForThree = titleBlock + (cardHeightRef + perCardExtra) * minCardsHere;
+  const remainingSpace = doc.page.height - doc.page.margins.bottom - doc.y;
+  if (remainingSpace < requiredForThree) {
+    addFooter(doc, pageNumber);
     doc.addPage();
+    pageNumber++;
   }
-  doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', { align:'left' });
+
+  doc.moveDown(0.4);
+  doc.x = doc.page.margins.left;
+  doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align:'left' });
   doc.moveDown(0.6);
 
   let position = 0;
   const medalColors = ['#D4AF37','#C0C0C0','#CD7F32'];
+  let cardsOnCurrentPage = 0;
+  const maxCardsPerPage = 4;
 
-  // Paginação fixa: 4 cards por página
-  let cardsOnPage = 0;
   for (const r of rows){
     const cardHeight = suporte ? 120 : 108;
-    // Verifica espaço restante ou limite de 4 cards
-    const remaining = doc.page.height - doc.page.margins.bottom - doc.y;
-    if (cardsOnPage === 4 || remaining < cardHeight + 40){
-      addFooter(doc);
-      doc.addPage();
-      cardsOnPage = 0;
-      doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', { align:'left' });
-      doc.moveDown(0.6);
+    const cardWithMargin = cardHeight + 20;
+    
+    const spaceNeeded = cardWithMargin + (position === 0 ? 30 : 0);
+    const currentSpace = doc.page.height - doc.page.margins.bottom - doc.y;
+    
+    // Se este é o primeiro card na página e só ele cabe (não cabe o segundo), quebra antes para evitar página "solitária"
+    if (cardsOnCurrentPage === 0) {
+      const spaceForTwo = spaceNeeded + cardWithMargin; // atual + próximo
+      if (currentSpace < spaceForTwo) {
+        addFooter(doc, pageNumber);
+        doc.addPage();
+        pageNumber++;
+        addHeader(doc, area, primary, fonts);
+        doc.x = doc.page.margins.left;
+        doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align:'left' });
+        doc.moveDown(0.6);
+      }
     }
+
+    if (cardsOnCurrentPage >= maxCardsPerPage || currentSpace < spaceNeeded) {
+  addFooter(doc, pageNumber);
+  doc.addPage();
+  pageNumber++;
+  cardsOnCurrentPage = 0;
+  addHeader(doc, area, primary, fonts);
+  doc.x = doc.page.margins.left;
+  doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align:'left' });
+  doc.moveDown(0.6);
+    }
+    
     const idx = ++position;
     const startY = doc.y;
 
@@ -231,16 +266,15 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     }
     doc.restore();
 
-    // Destaque especial para o primeiro lugar
     if (idx === 1) {
       const ribbonWidth = 170;
-      const ribbonHeight = 28;
-      const ribbonX = doc.page.width - doc.page.margins.left - ribbonWidth - 10;
-      const ribbonY = startY - 18; // um pouco acima do card
+      const ribbonHeight = 26;
+      const cardRight = doc.page.margins.left + contentWidth;
+      const ribbonX = cardRight - ribbonWidth - 14; // padding inside card
+      const ribbonY = startY - 14; // slightly above card corner
       doc.save();
       doc.roundedRect(ribbonX, ribbonY, ribbonWidth, ribbonHeight, 8).fill('#9B59B6');
-      // Texto sem símbolo extra conforme solicitação
-      doc.fillColor('#FFFFFF').font(fonts.bold).fontSize(12).text('Staff Sensação', ribbonX, ribbonY + 7, { width: ribbonWidth, align: 'center' });
+      doc.fillColor('#FFFFFF').font(fonts.bold).fontSize(11).text('Staff Sensação', ribbonX, ribbonY + 6, { width: ribbonWidth, align: 'center' });
       doc.restore();
     }
 
@@ -266,30 +300,30 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
       doc.fillColor('#666').fontSize(10).text('Sem foto', badgeX+67, badgeY+40, { width:36, align:'center' });
     }
 
-    const infoX = badgeX + 140;
-    let cursorY = badgeY;
-  const display = user ? user.username : r.user_id;
-  doc.fillColor('#111').font(fonts.bold).fontSize(15).text(display, infoX, cursorY, { width: 300 });
-    cursorY += 22;
-  doc.font(fonts.regular).fontSize(9).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
-    cursorY += 14;
-  doc.font(fonts.medium).fontSize(12).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}`, infoX, cursorY);
-    cursorY += 18;
+  const infoX = badgeX + 140;
+    let cursorY = badgeY + 2;
+    const display = user ? user.username : r.user_id;
+  doc.fillColor('#111').font(fonts.bold).fontSize(14).text(display, infoX, cursorY, { width: contentWidth - (infoX - doc.page.margins.left) - 20, ellipsis: true });
+    cursorY += 20;
+    doc.font(fonts.regular).fontSize(8).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
+    cursorY += 12;
+    doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}`, infoX, cursorY);
+    cursorY += 16;
     const pctTotal = totalPoints? (r.points/totalPoints*100):0;
-  doc.font(fonts.regular).fontSize(9).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
-    cursorY += 14;
+    doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
+    cursorY += 12;
     if (suporte){
-  doc.font(fonts.regular).fontSize(9).fillColor('#333').text(`Relatórios: ${r.reports_count || 0}  •  Plantões: ${r.shifts_count || 0}`, infoX, cursorY);
-      cursorY += 14;
+      doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Relatórios: ${r.reports_count || 0}  •  Plantões: ${r.shifts_count || 0}`, infoX, cursorY);
+      cursorY += 12;
     }
 
-  // Barra de progresso e % do líder removidas conforme solicitação.
+    // Barra de progresso e % do líder removidas conforme solicitação.
 
-  doc.y = startY + cardHeight + 14;
-  cardsOnPage++;
+    doc.y = startY + cardHeight + 14;
+    cardsOnCurrentPage++;
   }
 
-  addFooter(doc);
+  addFooter(doc, pageNumber);
   doc.end();
   return await new Promise<Buffer>(res=> doc.on('end', ()=> res(Buffer.concat(out))));
 }

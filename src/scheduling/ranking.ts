@@ -37,7 +37,7 @@ export function scheduleRankingUpdater(client: Client){
         if (area.toLowerCase() !== 'recrutamento') {
           (embed as any).setImage && (embed as any).setImage('https://i.imgur.com/MaXRcNR.gif');
         }
-        if (area.toLowerCase() === 'recrutamento') {
+  if (area.toLowerCase() === 'recrutamento') {
           const primary = cfg.emojis?.recruitPrimary || '★';
           const arrow = cfg.emojis?.recruitArrow || '→';
           const dOrig = (embed as any).data?.description || (embed as any).description || '';
@@ -55,6 +55,12 @@ export function scheduleRankingUpdater(client: Client){
             return line.replace(/^.*?\*\*(\d+)\.\*\*/,(m,idx)=>`${primary} **${idx}.**`).replace(/—/, `${arrow}`);
           }).join('\n');
           if ((embed as any).data) (embed as any).data.description = withEmojis; else (embed as any).setDescription(withEmojis);
+          // Ajustar título com emoji solicitado
+          const crown = '<a:white_coroacr:1414470662810112022>';
+          if ((embed as any).setTitle) {
+            const currentTitle = (embed as any).data?.title || 'Ranking Recrutamento';
+            (embed as any).setTitle(`${crown} ${currentTitle.replace(/^.*?Ranking Recrutamento/i,'Ranking Recrutamento')}`);
+          }
         }
         const msgs = await channel.messages.fetch({ limit: 20 }).catch(()=>null);
         if(msgs){

@@ -27,17 +27,21 @@ export async function sendPointsLog(client: Client, type: 'adicionado' | 'removi
   const cfg: any = loadConfig();
   const recruitChannelId = cfg.recruitBanca?.pointsLogChannelId || cfg.channels?.recruitPointsLog || cfg.channels?.recruitRanking;
 
+  const areaLower = payload.area.toLowerCase();
   const targetGuilds = guilds.filter(g => {
-    if (payload.area.toLowerCase() === 'recrutamento') return true;
-
-    if (payload.area.toLowerCase() === 'suporte' && cfg.banca?.supportGuildId) return g.id === cfg.banca.supportGuildId;
-    return true;
+    // Recrutamento: mantém comportamento (usa canal específico configurado)
+    if (areaLower === 'recrutamento') return true;
+    // Suporte: somente guild de suporte
+    if (areaLower === 'suporte' && cfg.banca?.supportGuildId) return g.id === cfg.banca.supportGuildId;
+    // Outras áreas: não enviar para canal de suporte (sem canal específico configurado aqui)
+    return false;
   });
 
   function pickChannel(g:any): TextBasedChannel | undefined {
     let id: string | undefined;
-    if (payload.area.toLowerCase() === 'recrutamento') id = recruitChannelId;
-  else id = getSupportPointsLog(cfg) || undefined;
+  if (areaLower === 'recrutamento') id = recruitChannelId;
+  else if (areaLower === 'suporte') id = getSupportPointsLog(cfg) || undefined;
+  else id = undefined; // nenhuma outra área deve usar canal de suporte
     if (!id) return undefined;
     const ch = g.channels.cache.get(id);
     return ch && 'send' in ch ? ch as TextBasedChannel : undefined;
