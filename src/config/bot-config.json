@@ -53,6 +53,21 @@
     "Manager": "1134940087973593168"
   },
 
+  "__comment_vipRoles": "Cargos VIP do servidor principal (benefícios pagos).",
+  "vipRoles": {
+    "Vip Classic": "934635845770682368",
+    "Vip Instinct": "934635845800058917",
+    "Vip God": "934635845829423189",
+    "Vip Highest": "962046581811601508"
+  },
+
+  "__comment_purchasableRoles": "Cargos compráveis especiais (loja/pacotes).",
+  "purchasableRoles": {
+    "Presidencial": "1136850373383045121",
+    "Owner": "1134927238391935027",
+    "Global Owner": "1136857095950581800"
+  },
+
   "__comment_staffRankMirrors": "Espelhos de ranks: guildId(area) -> cargos equivalentes por nome de rank global.",
   "staffRankMirrors": {
     "1183909149784952902": {
@@ -474,12 +489,22 @@
   },
   "__comment_permissionRoles": "Cargos de permissão que NÃO devem ser transferidos pelo comando /transferir-cargos.",
   "permissionRoles": [
+    "1241784746997055518",
     "1136699869290041404",
     "1104523865377488918",
     "1080746284434071582",
     "1156383581099274250",
     "1271086030984052788"
   ],
+  "__comment_permissionRoleMap": "Mapeamento legível dos cargos de permissão (referência somente; lógica usa 'permissionRoles').",
+  "permissionRoleMap": {
+    "Partner": "1241784746997055518",
+    "★★": "1136699869290041404",
+    "op": "1104523865377488918",
+    "gm": "1080746284434071582",
+    "Admin": "1156383581099274250",
+    "🍃": "1271086030984052788"
+  },
   "__comment_baseMemberRole": "Cargo base aplicado se após transferência o usuário origem ficar sem nenhum cargo transferido.",
   "baseMemberRoleId": "934635845690990632"
   ,

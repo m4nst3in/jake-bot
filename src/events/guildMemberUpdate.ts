@@ -92,6 +92,41 @@ export function registerProtectionListener(client: any) {
             ]);
 
             for (const role of added.values()) {
+                // Log passivo para cargos VIP ou de permissão (não remove)
+                const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
+                const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
+                const isVip = vipRoleIds.has(role.id);
+                const isPerm = permissionRoleIds.has(role.id);
+                if (isVip || isPerm) {
+                    const executorIdPassive = roleExecutorMap[role.id] ?? null;
+                    const cfg: any = loadConfig();
+                    const mainGuildId = cfg.mainGuildId;
+                    if (newMember.guild.id === mainGuildId) {
+                        const logChannelId = getProtectionConfig().logChannel || '1414540666171559966';
+                        try {
+                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                            if (ch && ch.isTextBased()) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
+                                    .setColor(isVip ? 0x9B59B6 : 0x3498DB)
+                                    .setDescription('Um cargo monitorado (VIP ou Permissão) foi adicionado e apenas registrado.')
+                                    .addFields(
+                                        { name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
+                                        { name: 'Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' },
+                                        { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
+                                        { name: 'Tipo', value: isVip ? 'VIP' : 'Permissão' },
+                                        { name: 'Ação', value: 'Não fiz nada, apenas registrei' },
+                                        { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
+                                    )
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos' })
+                                    .setTimestamp();
+                                ch.send({ embeds: [embed] }).catch(() => { });
+                            }
+                        } catch { }
+                    }
+                    // Não executar remoção para estes cargos
+                    continue;
+                }
                 let blockInfo = blockedRoles[role.id];
                 const isGlobalHierarchy = globalProtectedRoleIds.has(role.id);
                 if (!blockInfo && isGlobalHierarchy) {
