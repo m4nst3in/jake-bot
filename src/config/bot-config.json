@@ -53,6 +53,11 @@
     "Manager": "1134940087973593168"
   },
 
+  "__comment_hierarchyOrder": "Ordem global das patentes (menor -> maior). Pode ser ajustada sem alterar código.",
+  "hierarchyOrder": [
+    "Iniciante","Aprendiz","Recruta","Cadete","Soldado","Cabo","3 Sargento","2 Sargento","1 Sargento","Sub Oficial","Sub Tenente","Aspirante a Oficial","Intendente","2 Tenente","1 Tenente","Capitão","Capitão de Corveta","Major","Oficial de Guerra","Tenente Coronel","Coronel","Sub Comandante","Comandante","General de Brigada","General de Divisão","General de Esquadra","General de Exército","Contra-Almirante","Marechal","Almirante","Manager"
+  ],
+
   "__comment_vipRoles": "Cargos VIP do servidor principal (benefícios pagos).",
   "vipRoles": {
     "Vip Classic": "934635845770682368",
@@ -195,7 +200,24 @@
       "Marechal": "1224414082975797299",
       "Almirante": "1412485382070599821",
       "Manager": "1412485447866646628"
-  }
+    },
+    "1355239902169796881": {
+      "Sub Comandante": "1355616567005548617",
+      "Comandante": "1355616689072378010",
+      "General de Brigada": "1355616848816767087",
+      "General de Divisão": "1355617565329854745",
+      "General de Esquadra": "1412199775016849418",
+      "General de Exército": "1355617634195865680",
+      "Contra-Almirante": "1412199902875746444",
+      "Marechal": "1412200106136174777",
+      "Almirante": "1412200233181380783",
+      "Manager": "1355617763535622215"
+    }
+  },
+
+  "__comment_staffRankFallbacks": "Fallback de patente por guild (aplicado passivamente quando Migração concede cargo abaixo de Sub Comandante sem espelho explícito).",
+  "staffRankFallbacks": {
+    "1355239902169796881": "1355242772575289616"
   },
 
   "__comment_progressionRoles": "Progressão: para cada guild, cargos que sobem (upa) e exceções (naoUpa).",
@@ -205,7 +227,8 @@
     "1190390194533318706": { "upa": ["1190390194533318714"], "naoUpa": ["1190390194533318713"] },
     "1190515971035774996": { "upa": ["1190515971069321236"], "naoUpa": ["1190515971035775005"] },
     "1224414082866745405": { "upa": ["1224414082866745410"], "naoUpa": ["1224414082866745409"] },
-    "1283125240368730132": { "upa": ["1283205780983648278"], "naoUpa": ["1283205781831024640"] }
+  "1283125240368730132": { "upa": ["1283205780983648278"], "naoUpa": ["1283205781831024640"] },
+  "1355239902169796881": { "upa": ["1355242772575289616"], "naoUpa": [] }
   },
 
   "__comment_channels": "Canais globais para logs/rankings consolidados.",
@@ -282,7 +305,8 @@
     { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1180871634631020594" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
     { "name": "SUPORTE", "guildId": "1190515971035774996", "roleIds": { "lead": "1190515971144818760", "member": "1190515971069321238" }, "blacklistAreas": ["SUPORTE", "GLOBAL"] },
     { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1224414082866745411" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
-    { "name": "EVENTOS", "guildId": "1283125240368730132", "roleIds": { "lead": "1284629218738569228", "member": "1283205107021774918" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+  { "name": "EVENTOS", "guildId": "1283125240368730132", "roleIds": { "lead": "1284629218738569228", "member": "1283205107021774918" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] },
+  { "name": "MIG", "guildId": "1355239902169796881", "roleIds": { "lead": "1355243896971464895", "member": "1355242772575289616" }, "blacklistAreas": ["MIG", "GLOBAL"] }
   ],
 
   "__comment_banca": "Banca: pontos base, bônus e canais de referência para pedidos.",
@@ -445,6 +469,7 @@
       "1170196352114901052": { "name": "Eventos", "allowedLeaderRole": "1153690317262950400" },
       "1247610015787913360": { "name": "Jornalismo", "allowedLeaderRole": "1411223951350435961" },
       "1247967720427884587": { "name": "Jornalismo", "allowedLeaderRole": "1153690317262950400" },
+  "1346223411289919558": { "name": "Migração" },
       "1411223951350435961": { "name": "Líder Geral" }
     },
     "leaderUsers": [
@@ -460,7 +485,8 @@
       "1190390194533318706": "1190390194579439673",
       "1190515971035774996": "1190515971144818765",
       "1224414082866745405": "1224414082975797307",
-      "1283125240368730132": "1283201071631826974"
+      "1283125240368730132": "1283201071631826974",
+      "1355239902169796881": "1355243896971464895"
     }
   },
 

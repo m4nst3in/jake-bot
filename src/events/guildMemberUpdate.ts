@@ -119,6 +119,22 @@ export function registerProtectionListener(client: any) {
                 return null;
             }
 
+            const MIG_GLOBAL_ROLE = '1346223411289919558'; // cargo migração no servidor principal
+            // Conjunto de cargos da hierarquia global ordenada (menor -> maior) agora configurável
+            const hierarchyOrder: string[] = Array.isArray(rootCfg.hierarchyOrder) && rootCfg.hierarchyOrder.length
+                ? rootCfg.hierarchyOrder
+                : [
+                    'Iniciante','Aprendiz','Recruta','Cadete','Soldado','Cabo','3 Sargento','2 Sargento','1 Sargento','Sub Oficial','Sub Tenente','Aspirante a Oficial','Intendente','2 Tenente','1 Tenente','Capitão','Capitão de Corveta','Major','Oficial de Guerra','Tenente Coronel','Coronel','Sub Comandante','Comandante','General de Brigada','General de Divisão','General de Esquadra','General de Exército','Contra-Almirante','Marechal','Almirante','Manager'
+                ];
+            const globalRoleNameById: Record<string,string> = (() => {
+                const map: Record<string,string> = {};
+                for (const [key, val] of Object.entries(rootCfg.roles || {})) {
+                    map[String(val)] = key; // val = roleId, key = rank name
+                }
+                return map;
+            })();
+            const staffRankFallbacks: Record<string,string> = rootCfg.staffRankFallbacks || {}; // guildId -> roleId fallback
+
             for (const role of added.values()) {
                 // Log passivo para cargos VIP ou de permissão (não remove)
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
@@ -165,6 +181,8 @@ export function registerProtectionListener(client: any) {
                 if (!blockInfo) continue; // nada a proteger
                 let executorId: string | null = roleExecutorMap[role.id] ?? null;
                 let allowed = false;
+                // Regra especial: cargo Migração só pode ser aplicado por owners
+                const isMigrationGlobal = role.id === MIG_GLOBAL_ROLE;
                 if (executorId) {
                     if (isOwner(executorId)) {
                         allowed = true;
@@ -172,6 +190,7 @@ export function registerProtectionListener(client: any) {
                     else {
                         const execMember = newMember.guild.members.cache.get(executorId) || await newMember.guild.members.fetch(executorId).catch(() => null);
                         if (execMember) {
+                            const execHasMigration = execMember.roles.cache.has(MIG_GLOBAL_ROLE);
                             const botId = (loadConfig() as any).botId;
                             if (botId && executorId === botId) {
                                 allowed = true;
@@ -195,6 +214,48 @@ export function registerProtectionListener(client: any) {
                                 if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                     allowed = true;
                                 }
+                            }
+                            // Permissão: quem tem cargo Migração pode aplicar apenas cargos abaixo de Sub Comandante (registro passivo)
+                            if (!allowed && execHasMigration && isGlobalHierarchy) {
+                                const roleName = globalRoleNameById[role.id];
+                                if (roleName) {
+                                    const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
+                                    const targetIdx = hierarchyOrder.indexOf(roleName);
+                                    if (targetIdx !== -1 && targetIdx < subCmdIndex) {
+                                        // permitir passivamente (sem remover) mas não marcar allowed para cair no ramo de log passivo
+                                        allowed = true;
+                                        // Log passivo explícito
+                                        const logChannelId = logChannel || '1414540666171559966';
+                                        if (newMember.guild.id === (loadConfig() as any).mainGuildId) {
+                                            try {
+                                                const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                                                if (ch && ch.isTextBased()) {
+                                                    const embed = new EmbedBuilder()
+                                                        .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
+                                                        .setColor(0x34495E)
+                                                        .setDescription('Cargo de hierarquia aplicado por Migração (abaixo de Sub Comandante) – somente registro.')
+                                                        .addFields(
+                                                            { name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
+                                                            { name: 'Executor', value: `<@${executorId}>\n\`${executorId}\`` },
+                                                            { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
+                                                            { name: 'Ação', value: 'Não fiz nada, apenas registrei' }
+                                                        )
+                                                        .setTimestamp();
+                                                    ch.send({ embeds: [embed] }).catch(()=>{});
+                                                }
+                                            } catch {}
+                                        }
+                                        // Se existir fallback para ranks inferiores ainda não mapeados nas áreas, aplicar (apenas registro passivo) - lógica: atribuir cargo fallback se membro não possuir
+                                        const fbRoleId = staffRankFallbacks[newMember.guild.id];
+                                        if (fbRoleId && !newMember.roles.cache.has(fbRoleId)) {
+                                            await newMember.roles.add(fbRoleId, 'Fallback de patente (Migração abaixo de Sub Comandante)').catch(()=>{});
+                                        }
+                                    }
+                                }
+                            }
+                            // Se é cargo migração e executor não é owner => invalidar
+                            if (isMigrationGlobal && !isOwner(executorId)) {
+                                allowed = false; // força remoção abaixo
                             }
                         }
                     }

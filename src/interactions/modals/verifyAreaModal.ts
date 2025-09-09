@@ -96,7 +96,10 @@ export default {
         }
         const cfg = loadConfig();
         const mainRanks = cfg.roles || {};
-        const mirrorMap = cfg.staffRankMirrors?.[interaction.guildId!] || {};
+    const mirrorMap = cfg.staffRankMirrors?.[interaction.guildId!] || {};
+    const hierarchyOrder: string[] = Array.isArray(cfg.hierarchyOrder) ? cfg.hierarchyOrder : [];
+    const fallbackMap: Record<string,string> = cfg.staffRankFallbacks || {};
+    const fallbackRoleId = fallbackMap[interaction.guildId!];
         let mirroredRankName: string | null = null;
         for (const [rankName, mainRoleId] of Object.entries(mainRanks)) {
             if (rankName === 'staff')
@@ -108,6 +111,17 @@ export default {
                         await (gm.roles as any).add(areaRankId, 'Espelhamento de patente staff');
                     }
                     mirroredRankName = rankName;
+                }
+                else if (fallbackRoleId) {
+                    // Aplica fallback se rank está abaixo de Sub Comandante e não há espelho direto
+                    const subCmdIdx = hierarchyOrder.indexOf('Sub Comandante');
+                    const rIdx = hierarchyOrder.indexOf(rankName);
+                    if (subCmdIdx !== -1 && rIdx !== -1 && rIdx < subCmdIdx) {
+                        if (!(gm.roles as any).cache.has(fallbackRoleId)) {
+                            await (gm.roles as any).add(fallbackRoleId, 'Fallback de patente staff');
+                        }
+                        mirroredRankName = rankName + ' (fallback)';
+                    }
                 }
                 break;
             }
