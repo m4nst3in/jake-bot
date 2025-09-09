@@ -31,12 +31,10 @@ export function registerProtectionListener(client: any) {
             const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
             if (!added.size) return;
 
-            // Aguarda um curto período para garantir que o audit log já foi persistido pela API
             await new Promise(res => setTimeout(res, 750));
 
-            // Mapeia roleId -> executorId usando um único fetch de audit log para reduzir chamadas e evitar condições de corrida
             const roleExecutorMap: Record<string, string | null> = {};
-            const MEMBER_ROLE_UPDATE_TYPE: any = 25; // Fallback para tipo de atualização de cargos em versões estáveis
+            const MEMBER_ROLE_UPDATE_TYPE: any = 25;
             try {
                 const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
                 for (const entry of audit.entries.values()) {
@@ -56,7 +54,6 @@ export function registerProtectionListener(client: any) {
                     }
                 }
             } catch {
-                // fallback silent
             }
 
             // Fallback adicional: se nenhum executor detectado, tenta outra busca após pequeno delay
@@ -91,6 +88,37 @@ export function registerProtectionListener(client: any) {
                 '1411223951350435961' // Líder Geral (fixo no config atual)
             ]);
 
+            // helper para tentar resolver executor especificamente para um cargo recém adicionado
+            async function resolveExecutorForRole(roleId: string): Promise<string | null> {
+                // Se já mapeado, retorna
+                if (roleExecutorMap[roleId]) return roleExecutorMap[roleId];
+                const MEMBER_ROLE_UPDATE_TYPE: any = 25;
+                const delays = [500, 1200, 2500]; // atrasos progressivos
+                for (const d of delays) {
+                    await new Promise(r => setTimeout(r, d));
+                    try {
+                        const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 50 });
+                        for (const entry of audit.entries.values()) {
+                            if ((entry as any).target?.id !== newMember.id) continue;
+                            const changes: any[] = (entry as any).changes || [];
+                            for (const c of changes) {
+                                if (c.key === '$add') {
+                                    const arr = c['new'] || c['new_value'];
+                                    if (Array.isArray(arr) && arr.some((r: any) => r.id === roleId)) {
+                                        const execId = entry.executor?.id || null;
+                                        if (execId) {
+                                            roleExecutorMap[roleId] = execId;
+                                            return execId;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch { }
+                }
+                return null;
+            }
+
             for (const role of added.values()) {
                 // Log passivo para cargos VIP ou de permissão (não remove)
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
@@ -98,7 +126,10 @@ export function registerProtectionListener(client: any) {
                 const isVip = vipRoleIds.has(role.id);
                 const isPerm = permissionRoleIds.has(role.id);
                 if (isVip || isPerm) {
-                    const executorIdPassive = roleExecutorMap[role.id] ?? null;
+                    let executorIdPassive = roleExecutorMap[role.id] ?? null;
+                    if (!executorIdPassive) {
+                        executorIdPassive = await resolveExecutorForRole(role.id);
+                    }
                     const cfg: any = loadConfig();
                     const mainGuildId = cfg.mainGuildId;
                     if (newMember.guild.id === mainGuildId) {
@@ -124,13 +155,11 @@ export function registerProtectionListener(client: any) {
                             }
                         } catch { }
                     }
-                    // Não executar remoção para estes cargos
                     continue;
                 }
                 let blockInfo = blockedRoles[role.id];
                 const isGlobalHierarchy = globalProtectedRoleIds.has(role.id);
                 if (!blockInfo && isGlobalHierarchy) {
-                    // Cria info sintética para aplicar fluxo de proteção
                     blockInfo = { name: 'Hierarquia Global' } as BlockedRoleInfo;
                 }
                 if (!blockInfo) continue; // nada a proteger

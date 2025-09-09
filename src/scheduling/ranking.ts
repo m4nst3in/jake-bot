@@ -163,19 +163,20 @@ export function scheduleRankingUpdater(client: Client) {
                     const rawDesc = (rankingEmbed as any).data?.description || (rankingEmbed as any).description || '';
                     const champion = '<a:champion78:1312240136796242021>';
                     const arrow = '<a:8_white_arrow:1313295533963481122>';
+                    // Reescreve mantendo referência ao usuário; fallback se regex não bater
                     const cleaned = rawDesc.split('\n')
                         .filter((l: string) => l.trim())
                         .map((line: string) => {
-                        const m = line.match(/\*\*(\d+)\.\*\* <@(?:(\d+))> — (\d+) pts/i);
-                        if (m) {
-                            const pos = m[1];
-                            const pts = m[3];
-                            const prefix = pos === '1' ? champion : arrow;
-                            return `${prefix} **${pos}.** ${pts} pts`;
-                        }
-                        return undefined;
-                    })
-                        .filter(Boolean)
+                            const m = line.match(/\*\*(\d+)\.\*\* <@(\d+)> — (\*\*?)(\d+)(?:\*\*)? pts/i);
+                            if (m) {
+                                const pos = m[1];
+                                const userId = m[2];
+                                const pts = m[4];
+                                const prefix = pos === '1' ? champion : arrow;
+                                return `${prefix} **${pos}.** <@${userId}> — ${pts} pts`;
+                            }
+                            return line; // mantém linha original se não casar
+                        })
                         .join('\n');
                     (rankingEmbed as any).setTitle && (rankingEmbed as any).setTitle('Ranking Design');
                     if ((rankingEmbed as any).data)
