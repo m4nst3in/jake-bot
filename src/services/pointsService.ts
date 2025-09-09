@@ -2,12 +2,11 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { baseEmbed } from '../utils/embeds.ts';
 import { sendPointsLog } from '../utils/pointsLogger.ts';
 import { loadConfig } from '../config/index.ts';
-import { client } from '../index.ts';
 export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
         await this.repo.addPoints(userId, area, quantidade, reason, by);
-        const record = await this.repo.getUserArea(userId, area);
+    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'adicionado', { userId, moderatorId: by, area, delta: quantidade, reason, total: record?.points || 0 });
@@ -15,14 +14,14 @@ export class PointsService {
     async remover(userId: string, area: string, quantidade: number, reason: string, by: string) {
         const delta = -Math.abs(quantidade);
         await this.repo.addPoints(userId, area, delta, reason, by);
-        const record = await this.repo.getUserArea(userId, area);
+    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'removido', { userId, moderatorId: by, area, delta, reason, total: record?.points || 0 });
     }
     async registrarReport(userId: string, area: string, pontos: number, by: string) {
         await this.repo.addPoints(userId, area, pontos, 'report', by);
-        const record = await this.repo.getUserArea(userId, area);
+    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'adicionado', { userId, moderatorId: by, area, delta: pontos, reason: 'report', total: record?.points || 0 });
@@ -51,7 +50,8 @@ export class PointsService {
         try {
             const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
             if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
-                const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+                const c: any = (globalThis as any).client;
+                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(()=>null);
                 if (g) {
                     await g.members.fetch();
                     // Regra: somente membros que ainda estão no servidor devem aparecer no ranking
@@ -62,7 +62,7 @@ export class PointsService {
                     const owners: string[] = cfg.owners || [];
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
                     const existingIds = new Set(extended.map(r=>r.user_id));
-                    g.members.cache.forEach(m => {
+                    g.members.cache.forEach((m: any) => {
                         if (!m.roles.cache.has(memberRoleId)) return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return; // excluir liderança se zero pontos
                         if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && !alwaysShow.includes(m.id)) return; // excluir owners zero, exceto whitelist
@@ -123,7 +123,8 @@ export class PointsService {
         try {
             const areaCfg = (cfg.areas || []).find((a: any) => a.name === 'SUPORTE');
             if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
-                const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+                const c: any = (globalThis as any).client;
+                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(()=>null);
                 if (g) {
                     await g.members.fetch();
                     // Regra: excluir usuários que não estão mais presentes no servidor da área
@@ -133,7 +134,7 @@ export class PointsService {
                     const owners: string[] = cfg.owners || [];
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
                     const existingIds = new Set(extended.map(r=>r.user_id));
-                    g.members.cache.forEach(m => {
+                    g.members.cache.forEach((m: any) => {
                         if (!m.roles.cache.has(memberRoleId)) return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return;
                         if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && !alwaysShow.includes(m.id)) return;
