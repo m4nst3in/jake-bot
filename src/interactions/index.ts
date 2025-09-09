@@ -10,44 +10,18 @@ export async function loadInteractions(client: Client) {
         const folderPath = path.join(base, folder);
         if (!fs.existsSync(folderPath))
             continue;
-        const entries = fs.readdirSync(folderPath, { withFileTypes: true });
-        const files: string[] = [];
-        for (const ent of entries) {
-            if (!ent.isFile())
-                continue;
-            const name = ent.name;
-            if (!name.endsWith('.ts'))
-                continue;
-            if (!/^[-a-zA-Z0-9_.]+$/.test(name)) {
-                logger.warn({ file: name }, 'Ignorando interação com nome inválido');
-                continue;
-            }
-            files.push(name);
-        }
+        const files = fs.readdirSync(folderPath).filter(f => f.endsWith('.ts'));
         for (const file of files) {
-            const full = path.join(folderPath, file);
-            let real: string;
-            try {
-                real = fs.realpathSync(full);
-            }
-            catch {
-                real = full;
-            }
-            try {
-                const mod = await import(pathToFileURL(real).href);
-                const handler = mod.default;
-                if (!handler?.id)
-                    continue;
-                if (folder === 'buttons')
-                    client.buttons.set(handler.id, handler);
-                if (folder === 'modals')
-                    client.modals.set(handler.id, handler);
-                if (folder === 'selects')
-                    client.selects.set(handler.id, handler);
-            }
-            catch (err) {
-                logger.error({ err, file, folder }, 'Falha ao importar interação');
-            }
+            const mod = await import(pathToFileURL(path.join(folderPath, file)).href);
+            const handler = mod.default;
+            if (!handler?.id)
+                continue;
+            if (folder === 'buttons')
+                client.buttons.set(handler.id, handler);
+            if (folder === 'modals')
+                client.modals.set(handler.id, handler);
+            if (folder === 'selects')
+                client.selects.set(handler.id, handler);
         }
     }
     logger.info('Carreguei as interações, pdc?');
