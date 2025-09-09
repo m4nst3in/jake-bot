@@ -83,9 +83,22 @@ export function registerProtectionListener(client: any) {
                 } catch {}
             }
 
+            // Pré-carrega lista dinâmica de cargos protegidos globais (hierarquia principal)
+            const rootCfg: any = loadConfig();
+            const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
+            const leadershipRoleIds: Set<string> = new Set([
+                ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
+                '1411223951350435961' // Líder Geral (fixo no config atual)
+            ]);
+
             for (const role of added.values()) {
-                const blockInfo = blockedRoles[role.id];
-                if (!blockInfo) continue;
+                let blockInfo = blockedRoles[role.id];
+                const isGlobalHierarchy = globalProtectedRoleIds.has(role.id);
+                if (!blockInfo && isGlobalHierarchy) {
+                    // Cria info sintética para aplicar fluxo de proteção
+                    blockInfo = { name: 'Hierarquia Global' } as BlockedRoleInfo;
+                }
+                if (!blockInfo) continue; // nada a proteger
                 let executorId: string | null = roleExecutorMap[role.id] ?? null;
                 let allowed = false;
                 if (executorId) {
@@ -112,6 +125,12 @@ export function registerProtectionListener(client: any) {
                             else if (blockInfo.allowedLeaderRole) {
                                 if (execMember.roles.cache.has(blockInfo.allowedLeaderRole))
                                     allowed = true;
+                            }
+                            // Regra especial: qualquer cargo da hierarquia global só pode ser aplicado por liderança (todas) ou líder geral
+                            if (!allowed && isGlobalHierarchy) {
+                                if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                    allowed = true;
+                                }
                             }
                         }
                     }
