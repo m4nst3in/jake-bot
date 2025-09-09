@@ -6,7 +6,7 @@ export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
         await this.repo.addPoints(userId, area, quantidade, reason, by);
-    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
+        const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'adicionado', { userId, moderatorId: by, area, delta: quantidade, reason, total: record?.points || 0 });
@@ -14,14 +14,14 @@ export class PointsService {
     async remover(userId: string, area: string, quantidade: number, reason: string, by: string) {
         const delta = -Math.abs(quantidade);
         await this.repo.addPoints(userId, area, delta, reason, by);
-    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
+        const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'removido', { userId, moderatorId: by, area, delta, reason, total: record?.points || 0 });
     }
     async registrarReport(userId: string, area: string, pontos: number, by: string) {
         await this.repo.addPoints(userId, area, pontos, 'report', by);
-    const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
+        const record = (this.repo as any).getUserArea ? await (this.repo as any).getUserArea(userId, area) : null;
         const c: any = (globalThis as any).client || undefined;
         if (c)
             await sendPointsLog(c, 'adicionado', { userId, moderatorId: by, area, delta: pontos, reason: 'report', total: record?.points || 0 });
@@ -45,46 +45,50 @@ export class PointsService {
         const cfg: any = loadConfig();
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
-        // coletar membros da área (guild específica) para incluir zeros
         let extended: any[] = [...top];
         try {
             const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
             if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
                 const c: any = (globalThis as any).client;
-                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(()=>null);
+                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(() => null);
                 if (g) {
                     await g.members.fetch();
-                    // Regra: somente membros que ainda estão no servidor devem aparecer no ranking
-                    // Remove registros de usuários que não estão mais no servidor da área
                     extended = extended.filter(r => g.members.cache.has(r.user_id));
                     const memberRoleId = areaCfg.roleIds.member;
                     const leadRoleId = areaCfg.roleIds.lead;
                     const owners: string[] = cfg.owners || [];
-                    const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
-                    const existingIds = new Set(extended.map(r=>r.user_id));
+                    const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
+                    const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (!m.roles.cache.has(memberRoleId)) return;
-                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return; // excluir liderança se zero pontos
-                        if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && !alwaysShow.includes(m.id)) return; // excluir owners zero, exceto whitelist
+                        if (!m.roles.cache.has(memberRoleId))
+                            return;
+                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
+                            return;
+                        if (owners.includes(m.id) && !(extended.find(r => r.user_id === m.id && r.points > 0)) && !alwaysShow.includes(m.id))
+                            return;
                         if (!existingIds.has(m.id)) {
                             extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                             existingIds.add(m.id);
                         }
                     });
-                    // Remover líderes / owners já existentes com 0 pts
                     extended = extended.filter(r => {
-                        if (r.points > 0) return true;
+                        if (r.points > 0)
+                            return true;
                         const mem = g.members.cache.get(r.user_id);
-                        if (!mem) return true;
-                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
-                        if ((cfg.owners||[]).includes(r.user_id) && !alwaysShow.includes(r.user_id)) return false;
+                        if (!mem)
+                            return true;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId))
+                            return false;
+                        if ((cfg.owners || []).includes(r.user_id) && !alwaysShow.includes(r.user_id))
+                            return false;
                         return true;
                     });
                 }
             }
-        } catch {}
-        extended.sort((a,b)=> (b.points||0)-(a.points||0));
-        const filtered = extended; // já inclui zeros após regras
+        }
+        catch { }
+        extended.sort((a, b) => (b.points || 0) - (a.points || 0));
+        const filtered = extended;
         const lines = filtered.map((r: any, i: number) => {
             const base = `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts`;
             if (area === 'Recrutamento') {
@@ -124,37 +128,44 @@ export class PointsService {
             const areaCfg = (cfg.areas || []).find((a: any) => a.name === 'SUPORTE');
             if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
                 const c: any = (globalThis as any).client;
-                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(()=>null);
+                const g = c?.guilds?.cache?.get(areaCfg.guildId) || await c?.guilds?.fetch?.(areaCfg.guildId).catch(() => null);
                 if (g) {
                     await g.members.fetch();
-                    // Regra: excluir usuários que não estão mais presentes no servidor da área
                     extended = extended.filter(r => g.members.cache.has(r.user_id));
                     const memberRoleId = areaCfg.roleIds.member;
                     const leadRoleId = areaCfg.roleIds.lead;
                     const owners: string[] = cfg.owners || [];
-                    const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
-                    const existingIds = new Set(extended.map(r=>r.user_id));
+                    const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
+                    const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (!m.roles.cache.has(memberRoleId)) return;
-                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return;
-                        if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && !alwaysShow.includes(m.id)) return;
+                        if (!m.roles.cache.has(memberRoleId))
+                            return;
+                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
+                            return;
+                        if (owners.includes(m.id) && !(extended.find(r => r.user_id === m.id && r.points > 0)) && !alwaysShow.includes(m.id))
+                            return;
                         if (!existingIds.has(m.id)) {
                             extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                             existingIds.add(m.id);
                         }
                     });
                     extended = extended.filter(r => {
-                        if (r.points > 0) return true;
+                        if (r.points > 0)
+                            return true;
                         const mem = g.members.cache.get(r.user_id);
-                        if (!mem) return true;
-                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
-                        if ((cfg.owners||[]).includes(r.user_id) && !alwaysShow.includes(r.user_id)) return false;
+                        if (!mem)
+                            return true;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId))
+                            return false;
+                        if ((cfg.owners || []).includes(r.user_id) && !alwaysShow.includes(r.user_id))
+                            return false;
                         return true;
                     });
                 }
             }
-        } catch {}
-        extended.sort((a,b)=> (b.points||0)-(a.points||0));
+        }
+        catch { }
+        extended.sort((a, b) => (b.points || 0) - (a.points || 0));
         const filtered = extended;
         const lines = filtered.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts • 🧾 ${r.reports_count || 0} rel. • 🕒 ${r.shifts_count || 0} plant.`);
         return baseEmbed({

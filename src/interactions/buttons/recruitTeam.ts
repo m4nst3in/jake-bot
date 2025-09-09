@@ -18,14 +18,13 @@ export default {
         const parts = interaction.customId.split(':');
         const team = parts[1].toLowerCase();
         const userId = parts[2];
-        // Se o botão foi enviado desabilitado (ex: blacklist global) o Discord não permitiria clique normalmente,
-        // mas se por algum motivo chegar aqui, aborta.
         try {
             if ((interaction.component as any)?.disabled) {
                 await interaction.editReply('Esta ação está bloqueada no momento.');
                 return;
             }
-        } catch {}
+        }
+        catch { }
         if (!RECRUIT_AREAS.find(a => a.key === team)) {
             await interaction.editReply('Equipe inválida.');
             return;
@@ -34,7 +33,8 @@ export default {
         let isGloballyBlacklisted = false;
         try {
             isGloballyBlacklisted = await blRepo.isBlacklisted(userId, 'GLOBAL');
-        } catch {}
+        }
+        catch { }
         if (isGloballyBlacklisted) {
             await interaction.editReply('Usuário está na Blacklist GLOBAL e não pode ser recrutado.');
             return;
@@ -55,18 +55,22 @@ export default {
         if (!roleId.startsWith('ROLE_ID_') && !member.roles.cache.has(roleId)) {
             await member.roles.add(roleId).catch(() => { });
         }
-        // Detecta se já possui algum cargo de hierarquia (qualquer um diferente de Iniciante e staff) OU já é staff
         let hasHigherRank = false;
         const alreadyStaff = staffRole ? member.roles.cache.has(staffRole) : false;
         try {
             for (const [name, id] of Object.entries(cfg.roles || {})) {
-                if (!id) continue;
-                if (name === 'Iniciante' || name === 'staff') continue;
-                if (member.roles.cache.has(id)) { hasHigherRank = true; break; }
+                if (!id)
+                    continue;
+                if (name === 'Iniciante' || name === 'staff')
+                    continue;
+                if (member.roles.cache.has(id)) {
+                    hasHigherRank = true;
+                    break;
+                }
             }
-        } catch {}
+        }
+        catch { }
         if (!(hasHigherRank || alreadyStaff)) {
-            // Usuário realmente novo: atribui Iniciante e staff (se existirem)
             if (inicianteRole && !member.roles.cache.has(inicianteRole)) {
                 await member.roles.add(inicianteRole).catch(() => { });
             }

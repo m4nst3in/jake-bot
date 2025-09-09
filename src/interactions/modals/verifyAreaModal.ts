@@ -1,6 +1,12 @@
 import { ModalSubmitInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { resolvePrimaryGuildId, loadConfig } from '../../config/index.ts';
-interface AreaAssign { area: string; areaRole: string; waitingRole?: string; upYes: string; upNo: string; }
+interface AreaAssign {
+    area: string;
+    areaRole: string;
+    waitingRole?: string;
+    upYes: string;
+    upNo: string;
+}
 function buildAreaAssignMap(): Record<string, AreaAssign> {
     const cfg: any = loadConfig();
     const map: Record<string, AreaAssign> = {};
@@ -13,7 +19,8 @@ function buildAreaAssignMap(): Record<string, AreaAssign> {
         const areaRole = a.roleIds?.member;
         const upRoles = prog[guildId]?.upa || [];
         const naoUpaRoles = prog[guildId]?.naoUpa || [];
-        if (!guildId || !areaRole || !upRoles[0] || !naoUpaRoles[0]) continue;
+        if (!guildId || !areaRole || !upRoles[0] || !naoUpaRoles[0])
+            continue;
         map[guildId] = {
             area: areaName,
             areaRole,
@@ -28,8 +35,8 @@ export default {
     id: 'verify_area_modal',
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true });
-    const AREA_GUILD_ASSIGN = buildAreaAssignMap();
-    const assign = AREA_GUILD_ASSIGN[interaction.guildId!];
+        const AREA_GUILD_ASSIGN = buildAreaAssignMap();
+        const assign = AREA_GUILD_ASSIGN[interaction.guildId!];
         if (!assign) {
             await interaction.editReply('Configuração desta área não encontrada.');
             return;
@@ -96,10 +103,10 @@ export default {
         }
         const cfg = loadConfig();
         const mainRanks = cfg.roles || {};
-    const mirrorMap = cfg.staffRankMirrors?.[interaction.guildId!] || {};
-    const hierarchyOrder: string[] = Array.isArray(cfg.hierarchyOrder) ? cfg.hierarchyOrder : [];
-    const fallbackMap: Record<string,string> = cfg.staffRankFallbacks || {};
-    const fallbackRoleId = fallbackMap[interaction.guildId!];
+        const mirrorMap = cfg.staffRankMirrors?.[interaction.guildId!] || {};
+        const hierarchyOrder: string[] = Array.isArray(cfg.hierarchyOrder) ? cfg.hierarchyOrder : [];
+        const fallbackMap: Record<string, string> = cfg.staffRankFallbacks || {};
+        const fallbackRoleId = fallbackMap[interaction.guildId!];
         let mirroredRankName: string | null = null;
         for (const [rankName, mainRoleId] of Object.entries(mainRanks)) {
             if (rankName === 'staff')
@@ -113,7 +120,6 @@ export default {
                     mirroredRankName = rankName;
                 }
                 else if (fallbackRoleId) {
-                    // Aplica fallback se rank está abaixo de Sub Comandante e não há espelho direto
                     const subCmdIdx = hierarchyOrder.indexOf('Sub Comandante');
                     const rIdx = hierarchyOrder.indexOf(rankName);
                     if (subCmdIdx !== -1 && rIdx !== -1 && rIdx < subCmdIdx) {

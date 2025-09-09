@@ -29,16 +29,16 @@ export function registerProtectionListener(client: any) {
             const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
             const leaderUsers: string[] = (loadConfig() as any).protection?.leaderUsers || [];
             const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
-            if (!added.size) return;
-
+            if (!added.size)
+                return;
             await new Promise(res => setTimeout(res, 750));
-
             const roleExecutorMap: Record<string, string | null> = {};
             const MEMBER_ROLE_UPDATE_TYPE: any = 25;
             try {
                 const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
                 for (const entry of audit.entries.values()) {
-                    if ((entry as any).target?.id !== newMember.id) continue;
+                    if ((entry as any).target?.id !== newMember.id)
+                        continue;
                     const changes: any[] = (entry as any).changes || [];
                     for (const c of changes) {
                         if (c.key === '$add') {
@@ -53,16 +53,16 @@ export function registerProtectionListener(client: any) {
                         }
                     }
                 }
-            } catch {
             }
-
-            // Fallback adicional: se nenhum executor detectado, tenta outra busca após pequeno delay
+            catch {
+            }
             if (Object.keys(roleExecutorMap).length === 0) {
                 await new Promise(res => setTimeout(res, 1200));
                 try {
                     const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
                     for (const entry of audit2.entries.values()) {
-                        if ((entry as any).target?.id !== newMember.id) continue;
+                        if ((entry as any).target?.id !== newMember.id)
+                            continue;
                         const changes: any[] = (entry as any).changes || [];
                         for (const c of changes) {
                             if (c.key === '$add') {
@@ -77,29 +77,27 @@ export function registerProtectionListener(client: any) {
                             }
                         }
                     }
-                } catch {}
+                }
+                catch { }
             }
-
-            // Pré-carrega lista dinâmica de cargos protegidos globais (hierarquia principal)
             const rootCfg: any = loadConfig();
             const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
             const leadershipRoleIds: Set<string> = new Set([
                 ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
-                '1411223951350435961' // Líder Geral (fixo no config atual)
+                '1411223951350435961'
             ]);
-
-            // helper para tentar resolver executor especificamente para um cargo recém adicionado
             async function resolveExecutorForRole(roleId: string): Promise<string | null> {
-                // Se já mapeado, retorna
-                if (roleExecutorMap[roleId]) return roleExecutorMap[roleId];
+                if (roleExecutorMap[roleId])
+                    return roleExecutorMap[roleId];
                 const MEMBER_ROLE_UPDATE_TYPE: any = 25;
-                const delays = [500, 1200, 2500]; // atrasos progressivos
+                const delays = [500, 1200, 2500];
                 for (const d of delays) {
                     await new Promise(r => setTimeout(r, d));
                     try {
                         const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 50 });
                         for (const entry of audit.entries.values()) {
-                            if ((entry as any).target?.id !== newMember.id) continue;
+                            if ((entry as any).target?.id !== newMember.id)
+                                continue;
                             const changes: any[] = (entry as any).changes || [];
                             for (const c of changes) {
                                 if (c.key === '$add') {
@@ -114,29 +112,26 @@ export function registerProtectionListener(client: any) {
                                 }
                             }
                         }
-                    } catch { }
+                    }
+                    catch { }
                 }
                 return null;
             }
-
-            const MIG_GLOBAL_ROLE = '1346223411289919558'; // cargo migração no servidor principal
-            // Conjunto de cargos da hierarquia global ordenada (menor -> maior) agora configurável
+            const MIG_GLOBAL_ROLE = '1346223411289919558';
             const hierarchyOrder: string[] = Array.isArray(rootCfg.hierarchyOrder) && rootCfg.hierarchyOrder.length
                 ? rootCfg.hierarchyOrder
                 : [
-                    'Iniciante','Aprendiz','Recruta','Cadete','Soldado','Cabo','3 Sargento','2 Sargento','1 Sargento','Sub Oficial','Sub Tenente','Aspirante a Oficial','Intendente','2 Tenente','1 Tenente','Capitão','Capitão de Corveta','Major','Oficial de Guerra','Tenente Coronel','Coronel','Sub Comandante','Comandante','General de Brigada','General de Divisão','General de Esquadra','General de Exército','Contra-Almirante','Marechal','Almirante','Manager'
+                    'Iniciante', 'Aprendiz', 'Recruta', 'Cadete', 'Soldado', 'Cabo', '3 Sargento', '2 Sargento', '1 Sargento', 'Sub Oficial', 'Sub Tenente', 'Aspirante a Oficial', 'Intendente', '2 Tenente', '1 Tenente', 'Capitão', 'Capitão de Corveta', 'Major', 'Oficial de Guerra', 'Tenente Coronel', 'Coronel', 'Sub Comandante', 'Comandante', 'General de Brigada', 'General de Divisão', 'General de Esquadra', 'General de Exército', 'Contra-Almirante', 'Marechal', 'Almirante', 'Manager'
                 ];
-            const globalRoleNameById: Record<string,string> = (() => {
-                const map: Record<string,string> = {};
+            const globalRoleNameById: Record<string, string> = (() => {
+                const map: Record<string, string> = {};
                 for (const [key, val] of Object.entries(rootCfg.roles || {})) {
-                    map[String(val)] = key; // val = roleId, key = rank name
+                    map[String(val)] = key;
                 }
                 return map;
             })();
-            const staffRankFallbacks: Record<string,string> = rootCfg.staffRankFallbacks || {}; // guildId -> roleId fallback
-
+            const staffRankFallbacks: Record<string, string> = rootCfg.staffRankFallbacks || {};
             for (const role of added.values()) {
-                // Log passivo para cargos VIP ou de permissão (não remove)
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
                 const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
                 const isVip = vipRoleIds.has(role.id);
@@ -157,19 +152,13 @@ export function registerProtectionListener(client: any) {
                                     .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
                                     .setColor(isVip ? 0x9B59B6 : 0x3498DB)
                                     .setDescription('Um cargo monitorado (VIP ou Permissão) foi adicionado e apenas registrado.')
-                                    .addFields(
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isVip ? 'VIP' : 'Permissão' },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Não fiz nada, apenas registrei' },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
-                                    )
+                                    .addFields({ name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isVip ? 'VIP' : 'Permissão' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Não fiz nada, apenas registrei' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
                                     .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch(() => { });
                             }
-                        } catch { }
+                        }
+                        catch { }
                     }
                     continue;
                 }
@@ -178,10 +167,10 @@ export function registerProtectionListener(client: any) {
                 if (!blockInfo && isGlobalHierarchy) {
                     blockInfo = { name: 'Hierarquia Global' } as BlockedRoleInfo;
                 }
-                if (!blockInfo) continue; // nada a proteger
+                if (!blockInfo)
+                    continue;
                 let executorId: string | null = roleExecutorMap[role.id] ?? null;
                 let allowed = false;
-                // Regra especial: cargo Migração só pode ser aplicado por owners
                 const isMigrationGlobal = role.id === MIG_GLOBAL_ROLE;
                 if (executorId) {
                     if (isOwner(executorId)) {
@@ -209,22 +198,18 @@ export function registerProtectionListener(client: any) {
                                 if (execMember.roles.cache.has(blockInfo.allowedLeaderRole))
                                     allowed = true;
                             }
-                            // Regra especial: qualquer cargo da hierarquia global só pode ser aplicado por liderança (todas) ou líder geral
                             if (!allowed && isGlobalHierarchy) {
                                 if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                     allowed = true;
                                 }
                             }
-                            // Permissão: quem tem cargo Migração pode aplicar apenas cargos abaixo de Sub Comandante (registro passivo)
                             if (!allowed && execHasMigration && isGlobalHierarchy) {
                                 const roleName = globalRoleNameById[role.id];
                                 if (roleName) {
                                     const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
                                     const targetIdx = hierarchyOrder.indexOf(roleName);
                                     if (targetIdx !== -1 && targetIdx < subCmdIndex) {
-                                        // permitir passivamente (sem remover) mas não marcar allowed para cair no ramo de log passivo
                                         allowed = true;
-                                        // Log passivo explícito
                                         const logChannelId = logChannel || '1414540666171559966';
                                         if (newMember.guild.id === (loadConfig() as any).mainGuildId) {
                                             try {
@@ -234,28 +219,22 @@ export function registerProtectionListener(client: any) {
                                                         .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
                                                         .setColor(0x34495E)
                                                         .setDescription('Cargo de hierarquia aplicado por Migração (abaixo de Sub Comandante) – somente registro.')
-                                                        .addFields(
-                                                            { name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
-                                                            { name: 'Executor', value: `<@${executorId}>\n\`${executorId}\`` },
-                                                            { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
-                                                            { name: 'Ação', value: 'Não fiz nada, apenas registrei' }
-                                                        )
+                                                        .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: `<@${executorId}>\n\`${executorId}\`` }, { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: 'Ação', value: 'Não fiz nada, apenas registrei' })
                                                         .setTimestamp();
-                                                    ch.send({ embeds: [embed] }).catch(()=>{});
+                                                    ch.send({ embeds: [embed] }).catch(() => { });
                                                 }
-                                            } catch {}
+                                            }
+                                            catch { }
                                         }
-                                        // Se existir fallback para ranks inferiores ainda não mapeados nas áreas, aplicar (apenas registro passivo) - lógica: atribuir cargo fallback se membro não possuir
                                         const fbRoleId = staffRankFallbacks[newMember.guild.id];
                                         if (fbRoleId && !newMember.roles.cache.has(fbRoleId)) {
-                                            await newMember.roles.add(fbRoleId, 'Fallback de patente (Migração abaixo de Sub Comandante)').catch(()=>{});
+                                            await newMember.roles.add(fbRoleId, 'Fallback de patente (Migração abaixo de Sub Comandante)').catch(() => { });
                                         }
                                     }
                                 }
                             }
-                            // Se é cargo migração e executor não é owner => invalidar
                             if (isMigrationGlobal && !isOwner(executorId)) {
-                                allowed = false; // força remoção abaixo
+                                allowed = false;
                             }
                         }
                     }

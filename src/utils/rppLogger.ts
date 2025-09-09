@@ -204,7 +204,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     if (['ativado', 'removido'].includes(type)) {
         const mainGuildId = rootCfg.mainGuildId;
         const extras = (rootCfg as any).rppExtras || {};
-    const mainLogChannelId = extras.mainLogChannelId;
+        const mainLogChannelId = extras.mainLogChannelId;
         const mainGuild = guild?.client.guilds.cache.get(mainGuildId) || await guild?.client.guilds.fetch(mainGuildId).catch(() => null);
         if (mainGuild) {
             let channel = mainGuild.channels.cache.get(mainLogChannelId) as TextBasedChannel | undefined;

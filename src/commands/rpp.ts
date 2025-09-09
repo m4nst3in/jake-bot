@@ -14,7 +14,7 @@ export default {
         const owner = isOwner(member);
         const leadershipRoleId: string | undefined = cfg?.protection?.alertRole;
         const rppAllowed: string[] = cfg?.permissions?.rpp?.allowedRoles || [];
-    const isLeaderGeneral = !!(leadershipRoleId && member?.roles.cache.has(leadershipRoleId));
+        const isLeaderGeneral = !!(leadershipRoleId && member?.roles.cache.has(leadershipRoleId));
         let isAnyAreaLeader = hasAnyLeadership(member);
         if (!isAnyAreaLeader && member) {
             isAnyAreaLeader = await hasCrossGuildLeadership(interaction.client, member.id);

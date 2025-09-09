@@ -9,11 +9,7 @@ export default {
         .addStringOption(o => o.setName('tipo')
         .setDescription('O que resetar')
         .setRequired(true)
-        .addChoices(
-        { name: 'Pontos', value: 'pontos' },
-        { name: 'RPP', value: 'rpp' },
-        { name: 'Blacklist', value: 'blacklist' }
-    ))
+        .addChoices({ name: 'Pontos', value: 'pontos' }, { name: 'RPP', value: 'rpp' }, { name: 'Blacklist', value: 'blacklist' }))
         .addStringOption(o => {
         let opt = o.setName('area').setDescription('Área (para pontos ou blacklist)').setRequired(false);
         for (const a of AREAS)
@@ -39,13 +35,11 @@ export default {
             return interaction.reply({ content: 'Área inválida para blacklist.', ephemeral: true });
         }
         const modal = new ModalBuilder()
-            .setCustomId(
-            tipo === 'pontos'
-                ? `reset_points_modal:${area || '__all__'}`
-                : tipo === 'rpp'
-                    ? 'reset_rpp_modal:__all__'
-                    : `reset_blacklist_modal:${area || '__all__'}`
-        )
+            .setCustomId(tipo === 'pontos'
+            ? `reset_points_modal:${area || '__all__'}`
+            : tipo === 'rpp'
+                ? 'reset_rpp_modal:__all__'
+                : `reset_blacklist_modal:${area || '__all__'}`)
             .setTitle(`Confirmar Reset ${tipo.toUpperCase()}`);
         const input = new TextInputBuilder()
             .setCustomId('confirm')

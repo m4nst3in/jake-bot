@@ -3,10 +3,12 @@ export class StaffRepository extends BaseRepo {
     async clearAll() {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('DELETE FROM staff_members', [], function (err) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('DELETE FROM staff_members', [], function (err) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
         }
         else {
@@ -39,10 +41,12 @@ export class StaffRepository extends BaseRepo {
     }[]) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('DELETE FROM staff_members', [], function (err) { if (err)
-                    reject(err);
-                else
-                    resolve(); });
+                this.sqlite.run('DELETE FROM staff_members', [], function (err) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
+                });
             });
             await this.upsertMany(map);
         }
@@ -54,10 +58,12 @@ export class StaffRepository extends BaseRepo {
     async isStaff(id: string) {
         if (this.isSqlite()) {
             return await new Promise<boolean>((resolve, reject) => {
-                this.sqlite.get('SELECT 1 FROM staff_members WHERE discord_id=?', [id], function (err, row) { if (err)
-                    reject(err);
-                else
-                    resolve(!!row); });
+                this.sqlite.get('SELECT 1 FROM staff_members WHERE discord_id=?', [id], function (err, row) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(!!row);
+                });
             });
         }
         const doc = await this.mongo.collection('staff_members').findOne({ discord_id: id });
@@ -66,10 +72,12 @@ export class StaffRepository extends BaseRepo {
     async listAll() {
         if (this.isSqlite()) {
             return await new Promise<any[]>((resolve, reject) => {
-                this.sqlite.all('SELECT discord_id, rank_role_id FROM staff_members', [], function (err, rows) { if (err)
-                    reject(err);
-                else
-                    resolve(rows); });
+                this.sqlite.all('SELECT discord_id, rank_role_id FROM staff_members', [], function (err, rows) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(rows);
+                });
             });
         }
         return await this.mongo.collection('staff_members').find({}, { projection: { discord_id: 1, rank_role_id: 1, _id: 0 } }).toArray();

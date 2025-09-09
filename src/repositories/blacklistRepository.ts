@@ -16,10 +16,14 @@ export class BlacklistRepository extends BaseRepo {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
                 this.sqlite.run('INSERT INTO blacklist (discord_id, reason, area_or_global, added_by, added_at) VALUES (?,?,?,?,CURRENT_TIMESTAMP)', [record.discord_id, record.reason, record.area_or_global, record.added_by], function (err: Error | null) {
-                    if (err) reject(err); else resolve();
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
                 });
             });
-        } else {
+        }
+        else {
             await this.mongo.collection('blacklist').insertOne({ ...record, added_at: new Date().toISOString() });
         }
     }
@@ -28,10 +32,14 @@ export class BlacklistRepository extends BaseRepo {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
                 this.sqlite.run('UPDATE blacklist SET removed_by=?, removed_at=CURRENT_TIMESTAMP WHERE discord_id=? AND UPPER(area_or_global)=? AND removed_at IS NULL', [by, discordId, area], function (err: Error | null) {
-                    if (err) reject(err); else resolve();
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
                 });
             });
-        } else {
+        }
+        else {
             await this.mongo.collection('blacklist').updateOne({ discord_id: discordId, area_or_global: area, removed_at: { $exists: false } }, { $set: { removed_by: by, removed_at: new Date().toISOString() } });
         }
     }
@@ -40,13 +48,16 @@ export class BlacklistRepository extends BaseRepo {
         if (this.isSqlite()) {
             return new Promise<boolean>((resolve, reject) => {
                 this.sqlite.get('SELECT 1 FROM blacklist WHERE discord_id=? AND UPPER(area_or_global)=? AND removed_at IS NULL', [discordId, area], function (err: Error | null, row: any) {
-                    if (err) reject(err); else resolve(!!row);
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(!!row);
                 });
             });
         }
         const doc = await this.mongo.collection('blacklist').findOne({ discord_id: discordId, area_or_global: area, removed_at: { $exists: false } });
-        if (doc) return true;
-        // fallback case-insensitive (se houver dados antigos em minúsculo)
+        if (doc)
+            return true;
         const legacy = await this.mongo.collection('blacklist').findOne({ discord_id: discordId, removed_at: { $exists: false }, area_or_global: new RegExp(`^${area}$`, 'i') });
         return !!legacy;
     }
@@ -82,10 +93,14 @@ export class BlacklistRepository extends BaseRepo {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
                 this.sqlite.run('UPDATE blacklist SET removed_by="RESET", removed_at=CURRENT_TIMESTAMP WHERE removed_at IS NULL', function (err: Error | null) {
-                    if (err) reject(err); else resolve();
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
                 });
             });
-        } else {
+        }
+        else {
             await this.mongo.collection('blacklist').updateMany({ removed_at: { $exists: false } }, { $set: { removed_by: 'RESET', removed_at: new Date().toISOString() } });
         }
     }
@@ -94,10 +109,14 @@ export class BlacklistRepository extends BaseRepo {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
                 this.sqlite.run('UPDATE blacklist SET removed_by="RESET", removed_at=CURRENT_TIMESTAMP WHERE removed_at IS NULL AND UPPER(area_or_global)=?', [areaUpper], function (err: Error | null) {
-                    if (err) reject(err); else resolve();
+                    if (err)
+                        reject(err);
+                    else
+                        resolve();
                 });
             });
-        } else {
+        }
+        else {
             await this.mongo.collection('blacklist').updateMany({ area_or_global: areaUpper, removed_at: { $exists: false } }, { $set: { removed_by: 'RESET', removed_at: new Date().toISOString() } });
         }
     }

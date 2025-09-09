@@ -121,7 +121,8 @@ export default {
                     .setThumbnail(MIG_HEADER)
                     .setImage(MIG_BANNER)
                     .setFooter({ text: 'CDW - MIGRAÇÃO, todos os direitos reservados.' });
-            } else if (interaction.guildId === EVENTOS_GUILD_ID) {
+            }
+            else if (interaction.guildId === EVENTOS_GUILD_ID) {
                 const ev = {
                     bullet: '<:emoji_72:1406097314283786271>',
                     title: '<:purple7_emoji:1283759067269042228>',
@@ -133,8 +134,10 @@ export default {
                     .setDescription(`${ev.bullet} **Seja muito bem-vindo(a) ao servidor da Equipe de Eventos - Cdw!**\n\n• Clique no botão abaixo para iniciar a verificação e informar se você UPA ou NÃO UPA pela área.`)
                     .addFields({ name: `${ev.recruiters} RECRUTADORES`, value: '*Escreva `rec`, envie e marque a liderança quando solicitado.*' })
                     .setFooter({ text: 'Sistema de Verificação • Eventos' });
-                if (banner) embed.setImage(banner);
-            } else {
+                if (banner)
+                    embed.setImage(banner);
+            }
+            else {
                 const desc = [
                     'Clique em Verificar para validar seu cargo no servidor principal e configurar seu perfil.',
                     'Se você já possui o cargo oficial da área no servidor principal, poderá escolher se **upa** na área (Sim) ou se **não upa** (Não).'
@@ -144,7 +147,8 @@ export default {
                     .setColor(0x2ecc71)
                     .setDescription(desc)
                     .setFooter({ text: 'Sistema de Verificação • Central da Web' });
-                if (banner) embed.setImage(banner);
+                if (banner)
+                    embed.setImage(banner);
             }
             const buttonId = interaction.guildId === MIG_GUILD_ID ? 'verify_mig' : 'verify_area';
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(buttonId).setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));

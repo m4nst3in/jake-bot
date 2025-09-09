@@ -7,13 +7,20 @@ import path from 'node:path';
 import { loadConfig } from '../config/index.ts';
 import { PointsService } from '../services/pointsService.ts';
 import { generateAreaPdf } from '../utils/pdf.ts';
-// ---- MOV ORG close/open scheduling ----
-interface MovWindowConfig { channelId: string; roleId: string; closeGif: string; openGif: string; windows: string[]; reopenAfterMinutes: number; }
+interface MovWindowConfig {
+    channelId: string;
+    roleId: string;
+    closeGif: string;
+    openGif: string;
+    windows: string[];
+    reopenAfterMinutes: number;
+}
 function loadMovConfig(): MovWindowConfig | null {
     try {
         const cfg: any = loadConfig();
         const m = cfg.movOrg;
-        if (!m?.channelId || !m?.roleId) return null;
+        if (!m?.channelId || !m?.roleId)
+            return null;
         return {
             channelId: m.channelId,
             roleId: m.roleId,
@@ -22,15 +29,23 @@ function loadMovConfig(): MovWindowConfig | null {
             windows: m.windows || [],
             reopenAfterMinutes: m.reopenAfterMinutes || 60
         };
-    } catch { return null; }
+    }
+    catch {
+        return null;
+    }
 }
 let movCfgCache: MovWindowConfig | null = null;
-let movState: { lastClose?: number; lastOpen?: number } = {};
+let movState: {
+    lastClose?: number;
+    lastOpen?: number;
+} = {};
 async function sendMovEmbed(client: Client, type: 'close' | 'open') {
     movCfgCache = movCfgCache || loadMovConfig();
-    if (!movCfgCache) return;
-    const ch: any = await client.channels.fetch(movCfgCache.channelId).catch(()=>null);
-    if (!ch || !ch.isTextBased()) return;
+    if (!movCfgCache)
+        return;
+    const ch: any = await client.channels.fetch(movCfgCache.channelId).catch(() => null);
+    if (!ch || !ch.isTextBased())
+        return;
     const mention = `<@&${movCfgCache.roleId}>`;
     const closeTitle = '<a:emoji_415:1282771322555994245> ORG-MOV FECHADA';
     const openTitle = '<a:emoji_415:1282771322555994245> ORG-MOV REABERTA';
@@ -43,12 +58,19 @@ async function sendMovEmbed(client: Client, type: 'close' | 'open') {
         .setTimestamp();
     try {
         await ch.send({ content: mention, embeds: [embed] });
-        if (type === 'close') movState.lastClose = Date.now(); else movState.lastOpen = Date.now();
-    } catch (e) { logger.warn({ e }, 'Falha enviar embed mov'); }
+        if (type === 'close')
+            movState.lastClose = Date.now();
+        else
+            movState.lastOpen = Date.now();
+    }
+    catch (e) {
+        logger.warn({ e }, 'Falha enviar embed mov');
+    }
 }
 function scheduleMovWindows(client: Client) {
     movCfgCache = loadMovConfig();
-    if (!movCfgCache) return;
+    if (!movCfgCache)
+        return;
     const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
     movCfgCache.windows.forEach(spec => {
         cron.schedule(spec, async () => {
@@ -60,7 +82,6 @@ function scheduleMovWindows(client: Client) {
 export function scheduleWeeklyTasks(client: Client) {
     const spec = process.env.POINTS_BACKUP_SCHEDULE || '0 0 22 * * 5';
     const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
-    // iniciar agendamentos MOV
     scheduleMovWindows(client);
     cron.schedule(spec, async () => {
         logger.info('Rodando o backup semanal geral (sem reset global)');
@@ -378,22 +399,21 @@ export function scheduleWeeklyTasks(client: Client) {
             logger.error({ err }, 'Falha reset recrutamento');
         }
     }, { timezone: tz });
-
-    // Envio de aviso de encerramento de semana - SUPORTE (bancas: aviso, supervisao, normais) toda sexta 22:00
     cron.schedule('0 0 22 * * 5', async () => {
         try {
             const cfg: any = loadConfig();
             const supportCfg = cfg.support || {};
             const bancaCfg = cfg.banca || {};
-            // canais esperados em suporte
             const avisoChannelId = supportCfg.channels?.bancaAviso || supportCfg.channels?.avisos;
             const supervisaoChannelId = bancaCfg.supervisionChannelId || supportCfg.channels?.supervisao;
-            const normalBancaChannelId = supportCfg.channels?.bancaGeral || supportCfg.channels?.banca || supportCfg.channels?.bancaLog; // fallback
+            const normalBancaChannelId = supportCfg.channels?.bancaGeral || supportCfg.channels?.banca || supportCfg.channels?.bancaLog;
             const banner = 'https://images-ext-1.discordapp.net/external/tVleO-Npk159BUGqnUESgGzyGdJtIuAcXafwzpXu4hc/https/i.imgur.com/5IJQmH2.gif';
             const send = async (channelId?: string) => {
-                if (!channelId) return;
-                const ch: any = await client.channels.fetch(channelId).catch(()=>null);
-                if (!ch || !ch.isTextBased()) return;
+                if (!channelId)
+                    return;
+                const ch: any = await client.channels.fetch(channelId).catch(() => null);
+                if (!ch || !ch.isTextBased())
+                    return;
                 const embed = new EmbedBuilder()
                     .setTitle('🗓️ Semana Encerrada')
                     .setDescription('Encerramos a semana das bancas de **Suporte**. Agradecemos o empenho de todos! Preparem-se para o novo ciclo.')
@@ -401,27 +421,26 @@ export function scheduleWeeklyTasks(client: Client) {
                     .setImage(banner)
                     .setFooter({ text: 'Encerramento semanal • Suporte' })
                     .setTimestamp();
-                await ch.send({ embeds: [embed] }).catch(()=>{});
+                await ch.send({ embeds: [embed] }).catch(() => { });
             };
             await Promise.all([
                 send(avisoChannelId),
                 send(supervisaoChannelId),
                 send(normalBancaChannelId)
             ]);
-        } catch (e) {
+        }
+        catch (e) {
             logger.warn({ err: e }, 'Falha ao enviar encerramento semanal suporte');
         }
     }, { timezone: tz });
-
-    // Envio de aviso de encerramento de semana - RECRUTAMENTO (bancas) todo sábado 12:00
     cron.schedule('0 0 12 * * 6', async () => {
         try {
             const cfg: any = loadConfig();
             const recruitCfg = cfg.recruitBanca || {};
-            const bancaChannelId = recruitCfg.pointsLogChannelId || cfg.channels?.recruitRanking || cfg.channels?.recruitLog; // fallback candidata
+            const bancaChannelId = recruitCfg.pointsLogChannelId || cfg.channels?.recruitRanking || cfg.channels?.recruitLog;
             const banner = 'https://i.imgur.com/hnNwwY1.gif';
             if (bancaChannelId) {
-                const ch: any = await client.channels.fetch(bancaChannelId).catch(()=>null);
+                const ch: any = await client.channels.fetch(bancaChannelId).catch(() => null);
                 if (ch && ch.isTextBased()) {
                     const embed = new EmbedBuilder()
                         .setTitle('🗓️ Semana Encerrada')
@@ -430,10 +449,11 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setImage(banner)
                         .setFooter({ text: 'Encerramento semanal • Recrutamento' })
                         .setTimestamp();
-                    await ch.send({ embeds: [embed] }).catch(()=>{});
+                    await ch.send({ embeds: [embed] }).catch(() => { });
                 }
             }
-        } catch (e) {
+        }
+        catch (e) {
             logger.warn({ err: e }, 'Falha ao enviar encerramento semanal recrutamento');
         }
     }, { timezone: tz });

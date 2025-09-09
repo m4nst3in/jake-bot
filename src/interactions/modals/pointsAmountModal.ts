@@ -22,7 +22,6 @@ export default {
         if (isNaN(qty) || qty <= 0) {
             return interaction.editReply('Quantidade inválida.');
         }
-        // Validação de múltiplos IDs: formato id,id,id SEM espaços
         if (userFieldRaw.includes(' ')) {
             return interaction.editReply('Formato inválido: use IDs separados apenas por vírgula, sem espaços. Ex: 123,456,789');
         }
@@ -33,7 +32,10 @@ export default {
         if (userIds.length > 10) {
             return interaction.editReply('Limite máximo de 10 IDs por operação.');
         }
-        const results: { id: string; ok: boolean }[] = [];
+        const results: {
+            id: string;
+            ok: boolean;
+        }[] = [];
         for (const targetId of userIds) {
             try {
                 if (mode === 'add')
@@ -50,9 +52,15 @@ export default {
         const fail = results.filter(r => !r.ok).map(r => `\`${r.id}\``).join(', ');
         const actionWord = mode === 'add' ? 'Adicionados' : 'Removidos';
         let msg = '';
-        if (ok) msg += `✅ ${actionWord} ${qty} pts para: ${ok} em ${area}.`;
-        if (fail) msg += `\n⚠️ Falhou para: ${fail}.`;
-        if (!msg) msg = 'Nenhuma operação concluída.';
-        try { await interaction.editReply(msg); } catch {}
+        if (ok)
+            msg += `✅ ${actionWord} ${qty} pts para: ${ok} em ${area}.`;
+        if (fail)
+            msg += `\n⚠️ Falhou para: ${fail}.`;
+        if (!msg)
+            msg = 'Nenhuma operação concluída.';
+        try {
+            await interaction.editReply(msg);
+        }
+        catch { }
     }
 };

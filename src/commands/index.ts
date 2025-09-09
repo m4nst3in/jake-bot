@@ -1,5 +1,4 @@
 import { Client, REST, Collection } from 'discord.js';
-// @ts-ignore - Routes path adaptado conforme versão
 import { Routes } from 'discord-api-types/v10';
 import { logger } from '../utils/logger.ts';
 import fs from 'node:fs';
@@ -19,7 +18,7 @@ export async function loadCommands(client: Client) {
         if (file === 'config.ts') {
             continue;
         }
-    const mod = await import(pathToFileURL(path.join(commandsPath, file)).href);
+        const mod = await import(pathToFileURL(path.join(commandsPath, file)).href);
         const cmd: SlashCommand = mod.default;
         if (!cmd?.data)
             continue;

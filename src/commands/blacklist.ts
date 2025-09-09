@@ -3,13 +3,14 @@ import { loadConfig } from '../config/index.ts';
 import { hasCrossGuildLeadership } from '@utils/permissions.ts';
 function isAdmin(i: ChatInputCommandInteraction) { return i.memberPermissions?.has(PermissionsBitField.Flags.Administrator) || false; }
 async function isLeader(i: ChatInputCommandInteraction) {
-    if (!i.guild) return false;
+    if (!i.guild)
+        return false;
     const cfg: any = loadConfig();
     const area = cfg.areas?.find((a: any) => a.guildId === i.guild!.id);
     const leaderRole = area?.roleIds?.lead;
     const m: any = i.member;
-    if (leaderRole && m?.roles?.cache?.has(leaderRole)) return true;
-    // fallback cross-guild
+    if (leaderRole && m?.roles?.cache?.has(leaderRole))
+        return true;
     return await hasCrossGuildLeadership(i.client, m?.id);
 }
 export default {
@@ -20,7 +21,7 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
         const hasTimeout = interaction.memberPermissions?.has(PermissionsBitField.Flags.ModerateMembers);
-    if (!isAdmin(interaction) && !(await isLeader(interaction)) && !hasTimeout) {
+        if (!isAdmin(interaction) && !(await isLeader(interaction)) && !hasTimeout) {
             return interaction.editReply('Apenas liderança ou administradores.');
         }
         const target = interaction.options.getUser('staff', true);

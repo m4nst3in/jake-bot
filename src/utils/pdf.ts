@@ -18,46 +18,48 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
             db.all('SELECT user_id, points, reports_count, shifts_count FROM points WHERE area=?', [area], (err: Error | null, r: any[]) => err ? reject(err) : resolve(r));
         });
         rows = dbRows as any;
-    } else {
+    }
+    else {
         const db = DatabaseManager.getMongo().database;
         const docs = await db.collection('points').find({ area }).project({ user_id: 1, points: 1, reports_count: 1, shifts_count: 1 }).toArray();
         rows = docs as any;
     }
-    // expand with zero-point members from guild
     try {
         const cfg: any = loadConfig();
         const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
         if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
-            const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+            const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(() => null);
             if (g) {
                 await g.members.fetch();
-                // Filtra registros: somente quem ainda está no servidor permanece
                 rows = rows.filter(r => g.members.cache.has(r.user_id));
                 const memberRoleId = areaCfg.roleIds.member;
                 const leadRoleId = areaCfg.roleIds.lead;
                 const owners: string[] = cfg.owners || [];
-                const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
-                const existing = new Set(rows.map(r=>r.user_id));
+                const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
+                const existing = new Set(rows.map(r => r.user_id));
                 g.members.cache.forEach(m => {
-                    if (!m.roles.cache.has(memberRoleId)) return;
-                    const rec = rows.find(r=>r.user_id===m.id);
-                    const hasPoints = !!rec && rec.points>0;
+                    if (!m.roles.cache.has(memberRoleId))
+                        return;
+                    const rec = rows.find(r => r.user_id === m.id);
+                    const hasPoints = !!rec && rec.points > 0;
                     if (!hasPoints) {
-                        if (leadRoleId && m.roles.cache.has(leadRoleId)) return; // skip zero-point leader
-                        if (owners.includes(m.id) && !alwaysShow.includes(m.id)) return; // skip zero-point owner except whitelist
+                        if (leadRoleId && m.roles.cache.has(leadRoleId))
+                            return;
+                        if (owners.includes(m.id) && !alwaysShow.includes(m.id))
+                            return;
                     }
                     if (!existing.has(m.id)) {
                         rows.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                         existing.add(m.id);
                     }
                 });
-                // Remove quaisquer owners (mesmo com pontos) exceto IDs whitelisted (sempre mostrar) para o PDF
                 if (owners.length) {
                     rows = rows.filter(r => !owners.includes(r.user_id) || alwaysShow.includes(r.user_id));
                 }
             }
         }
-    } catch {}
+    }
+    catch { }
     return rows.sort(sort);
 }
 function areaAccent(area: string) {

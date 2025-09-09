@@ -82,8 +82,7 @@ export default {
             await interaction.editReply(`Área inválida. Use apenas: ${allowedAreas.join(', ')}.${sugestao}`);
             return;
         }
-    // areaRaw é utilizado para armazenamento e comparação com outros fluxos (mantém espaços para compatibilidade em botões e painéis)
-    const areaRaw = areaCanonical.toUpperCase();
+        const areaRaw = areaCanonical.toUpperCase();
         const motivo = interaction.fields.getTextInputValue('motivo')?.trim();
         if (!['adicionar', 'add', 'remover', 'remove', 'del', 'delete'].includes(acao)) {
             await interaction.editReply('Ação inválida. Use adicionar ou remover.');
@@ -114,35 +113,42 @@ export default {
                 }
                 catch { }
             }
-            // Garantir que temos a versão mais recente da config (caso mapping tenha sido adicionado após cache)
             let rootCfg: any = loadConfig();
             if (!rootCfg.blacklistAreaLogs) {
-                try { rootCfg = reloadConfig(); } catch {}
+                try {
+                    rootCfg = reloadConfig();
+                }
+                catch { }
             }
             const mainGuildId = rootCfg.mainGuildId;
             const mainLogChannelId = '1414539287130800259';
-            const perAreaLogs: Record<string,string> = (rootCfg.blacklistAreaLogs || {}) as any;
+            const perAreaLogs: Record<string, string> = (rootCfg.blacklistAreaLogs || {}) as any;
             const norm = (s: string) => s.replace(/\s+/g, '').toUpperCase();
             const sendToAreaLog = async (embed: EmbedBuilder, areaUpper: string) => {
                 const channelId = perAreaLogs[areaUpper] || perAreaLogs[norm(areaUpper)];
-                if (!channelId) return;
+                if (!channelId)
+                    return;
                 try {
                     const client = interaction.client;
-                    // localizar a área pelo nome utilizando normalização sem espaços
                     const areaCfg = (rootCfg.areas || []).find((a: any) => norm(a.name) === norm(areaUpper));
-                    if (!areaCfg) return;
+                    if (!areaCfg)
+                        return;
                     const guildId = areaCfg.guildId;
-                    const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(()=>null);
-                    if (!guild) return;
+                    const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+                    if (!guild)
+                        return;
                     let ch: any = guild.channels.cache.get(channelId);
-                    if (!ch) ch = await guild.channels.fetch(channelId).catch(()=>null);
+                    if (!ch)
+                        ch = await guild.channels.fetch(channelId).catch(() => null);
                     if (ch && ch.isTextBased()) {
-                        await ch.send({ embeds: [embed] }).catch(()=>{});
+                        await ch.send({ embeds: [embed] }).catch(() => { });
                         logger.info({ area: areaUpper, channelId, guildId }, 'Blacklist log enviada para canal de área');
-                    } else {
+                    }
+                    else {
                         logger.warn({ area: areaUpper, channelId, guildId }, 'Falha ao localizar canal de log de área (não text based)');
                     }
-                } catch (e:any) {
+                }
+                catch (e: any) {
                     logger.error({ err: e, area: areaUpper, channelId }, 'Erro ao enviar log de blacklist para área');
                 }
             };
@@ -177,7 +183,8 @@ export default {
                     embed.setThumbnail(userObj.avatarURL()!);
                 await interaction.editReply({ embeds: [embed] });
                 await sendToMainLog(embed);
-                if (areaRaw !== 'GERAL') await sendToAreaLog(embed, areaRaw);
+                if (areaRaw !== 'GERAL')
+                    await sendToAreaLog(embed, areaRaw);
             }
             else {
                 await svc.remove(targetId, areaRaw, interaction.user.id);
@@ -193,7 +200,8 @@ export default {
                     embed.setThumbnail(userObj.avatarURL()!);
                 await interaction.editReply({ embeds: [embed] });
                 await sendToMainLog(embed);
-                if (areaRaw !== 'GERAL') await sendToAreaLog(embed, areaRaw);
+                if (areaRaw !== 'GERAL')
+                    await sendToAreaLog(embed, areaRaw);
             }
         }
         catch (e: any) {

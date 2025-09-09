@@ -31,8 +31,8 @@ export interface ConfigRoot {
     channels: GlobalChannelsConfig;
     areas: AreaConfig[];
     staffRankMirrors?: Record<string, Record<string, string>>;
-    staffRankFallbacks?: Record<string, string>; // guildId -> roleId fallback para ranks não mapeados
-    hierarchyOrder?: string[]; // ordenação global de patentes (menor -> maior)
+    staffRankFallbacks?: Record<string, string>;
+    hierarchyOrder?: string[];
     progressionRoles?: Record<string, {
         upa: string[];
         naoUpa?: string[];

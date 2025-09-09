@@ -47,20 +47,21 @@ export function getMemberLeaderAreas(member: GuildMember | null | undefined) {
 export function hasAnyLeadership(member: GuildMember | null | undefined) {
     return getMemberLeaderAreas(member).length > 0;
 }
-// Checa se o usuário possui qualquer cargo de liderança global (painéis multi-servidor)
-// Busca roles de liderança listados em cada área (roleIds.lead) mesmo se o membro não estiver no servidor principal.
 export async function hasCrossGuildLeadership(client: Client, userId: string) {
     const cfg: any = loadConfig();
     const areas = cfg.areas || [];
     for (const area of areas) {
         const leadRole = area?.roleIds?.lead;
         const guildId = area?.guildId;
-        if (!leadRole || !guildId) continue;
+        if (!leadRole || !guildId)
+            continue;
         try {
             const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId);
-            const member = await guild.members.fetch(userId).catch(()=>null);
-            if (member && member.roles.cache.has(leadRole)) return true;
-        } catch {}
+            const member = await guild.members.fetch(userId).catch(() => null);
+            if (member && member.roles.cache.has(leadRole))
+                return true;
+        }
+        catch { }
     }
     return false;
 }
