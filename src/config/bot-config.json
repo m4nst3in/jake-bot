@@ -180,40 +180,7 @@
       "Marechal": "1224414082975797299",
       "Almirante": "1412485382070599821",
       "Manager": "1412485447866646628"
-    },
-    "1405418716258111580": {
-      "Iniciante": "1283179751627817051",
-      "Aprendiz": "1412511521262796900",
-      "Recruta": "1283179650067071059",
-      "Cadete": "1412511046983352360",
-      "Soldado": "1283179649559564380",
-      "Cabo": "1283179587055915021",
-      "3 Sargento": "1283178831695581224",
-      "2 Sargento": "1283178828851839102",
-      "1 Sargento": "1283178828042211430",
-      "Sub Oficial": "1412509825987907645",
-      "Sub Tenente": "1283178827081711627",
-      "Aspirante a Oficial": "1283178764490113105",
-      "Intendente": "1412354077416751146",
-      "2 Tenente": "1283178763739201586",
-      "1 Tenente": "1283178762560737353",
-      "Capitão": "1283178762489561138",
-      "Capitão de Corveta": "1412353024902430760",
-      "Major": "1283178761768140892",
-      "Oficial de Guerra": "1412352439868325898",
-      "Tenente Coronel": "1283178761294057564",
-      "Coronel": "1283178760392151172",
-      "Sub Comandante": "1283178735373127771",
-      "Comandante": "1283178701957103758",
-      "General de Brigada": "1283178619035844730",
-      "General de Divisão": "1283178559766007851",
-      "General de Esquadra": "1412349854113595462",
-      "General de Exército": "1283178441914716262",
-      "Contra-Almirante": "1412348257526480968",
-      "Marechal": "1412347730797396039",
-      "Almirante": "1412346413341474927",
-      "Manager": "1283178329913954485"
-    }
+  }
   },
 
   "__comment_progressionRoles": "Progressão: para cada guild, cargos que sobem (upa) e exceções (naoUpa).",
@@ -515,4 +482,33 @@
   ],
   "__comment_baseMemberRole": "Cargo base aplicado se após transferência o usuário origem ficar sem nenhum cargo transferido.",
   "baseMemberRoleId": "934635845690990632"
+  ,
+  "__comment_progressionWaitingRoles": "Guild IDs -> cargo de 'aguardando verificação' (waiting role) nas áreas que usam esse estágio.",
+  "progressionWaitingRoles": {
+    "1190390194533318706": "1190390194533318712",
+    "1180721287476289596": "1180871603249217547",
+    "1190515971035774996": "1195189431435542538",
+  "1283125240368730132": "1283205107617632336"
+  },
+  "__comment_ranking": "Config específica dos rankings.",
+  "ranking": {
+    "alwaysShowOwnerIds": ["418824536570593280"]
+  },
+  "__comment_movOrg": "Configuração da rotina de fechamento/abertura da ORG-MOV.",
+  "movOrg": {
+    "channelId": "1338533776665350226",
+    "roleId": "1136861814328668230",
+    "closeGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif",
+    "openGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif",
+    "windows": [
+      "0 0 18 * * 1",
+      "0 0 18 * * 2",
+      "0 0 18 * * 3",
+      "0 0 18 * * 4",
+      "0 30 20 * * 4",
+      "0 0 18 * * 5",
+      "0 0 21 * * 5"
+    ],
+    "reopenAfterMinutes": 60
+  }
 }

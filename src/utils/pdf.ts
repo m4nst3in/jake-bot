@@ -36,6 +36,7 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                 const memberRoleId = areaCfg.roleIds.member;
                 const leadRoleId = areaCfg.roleIds.lead;
                 const owners: string[] = cfg.owners || [];
+                const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds)||[];
                 const existing = new Set(rows.map(r=>r.user_id));
                 g.members.cache.forEach(m => {
                     if (!m.roles.cache.has(memberRoleId)) return;
@@ -43,7 +44,7 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                     const hasPoints = !!rec && rec.points>0;
                     if (!hasPoints) {
                         if (leadRoleId && m.roles.cache.has(leadRoleId)) return; // skip zero-point leader
-                        if (owners.includes(m.id) && m.id !== '418824536570593280') return; // skip zero-point owner except whitelist
+                        if (owners.includes(m.id) && !alwaysShow.includes(m.id)) return; // skip zero-point owner except whitelist
                     }
                     if (!existing.has(m.id)) {
                         rows.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });

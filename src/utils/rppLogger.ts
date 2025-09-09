@@ -176,7 +176,8 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
         }
         if (type === 'removido') {
             const all = await resolveSnapshotRoles(payload.userId);
-            const permExclude = ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'];
+            const extras = (rootCfg as any).rppExtras || {};
+            const permExclude = extras.permExclude || [];
             const restored = all.filter((r: string) => !permExclude.includes(r));
             if (restored.length)
                 description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string) => `<@&${r}>`).join(' ')}`;
@@ -203,7 +204,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
     if (['ativado', 'removido'].includes(type)) {
         const mainGuildId = rootCfg.mainGuildId;
         const extras = (rootCfg as any).rppExtras || {};
-        const mainLogChannelId = extras.mainLogChannelId || '1414539162106855476';
+    const mainLogChannelId = extras.mainLogChannelId;
         const mainGuild = guild?.client.guilds.cache.get(mainGuildId) || await guild?.client.guilds.fetch(mainGuildId).catch(() => null);
         if (mainGuild) {
             let channel = mainGuild.channels.cache.get(mainLogChannelId) as TextBasedChannel | undefined;
@@ -244,7 +245,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
                 }
                 else if (type === 'removido') {
                     const all = await resolveSnapshotRoles(payload.userId);
-                    const permExclude = (extras.permExclude || ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404']);
+                    const permExclude = (extras.permExclude || []);
                     const restored = all.filter((r: string) => !permExclude.includes(r));
                     if (restored.length)
                         description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string) => `<@&${r}>`).join(' ')}`;

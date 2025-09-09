@@ -1,24 +1,35 @@
 import { ModalSubmitInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { resolvePrimaryGuildId, loadConfig } from '../../config/index.ts';
-const AREA_GUILD_ASSIGN: Record<string, {
-    area: string;
-    areaRole: string;
-    waitingRole?: string;
-    upYes: string;
-    upNo: string;
-}> = {
-    '1190390194533318706': { area: 'MOVCALL', areaRole: '1190390194533318715', waitingRole: '1190390194533318712', upYes: '1190390194533318714', upNo: '1190390194533318713' },
-    '1180721287476289596': { area: 'RECRUTAMENTO', areaRole: '1180871634631020594', waitingRole: '1180871603249217547', upYes: '1180871635662819498', upNo: '1180871637491523626' },
-    '1190515971035774996': { area: 'SUPORTE', areaRole: '1190515971069321238', waitingRole: '1195189431435542538', upYes: '1190515971069321236', upNo: '1190515971035775005' },
-    '1405418716258111580': { area: 'EVENTOS', areaRole: '1283205107021774918', waitingRole: '1283205107617632336', upYes: '1283205780983648278', upNo: '1283205781831024640' },
-    '1183909149784952902': { area: 'DESIGN', areaRole: '1183909149784952908', upYes: '1183909149784952907', upNo: '1183909149784952906' },
-    '1224414082866745405': { area: 'JORNALISMO', areaRole: '1224414082866745411', upYes: '1224414082866745410', upNo: '1224414082866745409' }
-};
+interface AreaAssign { area: string; areaRole: string; waitingRole?: string; upYes: string; upNo: string; }
+function buildAreaAssignMap(): Record<string, AreaAssign> {
+    const cfg: any = loadConfig();
+    const map: Record<string, AreaAssign> = {};
+    const areas = cfg.areas || [];
+    const prog = cfg.progressionRoles || {};
+    const waiting = cfg.progressionWaitingRoles || {};
+    for (const a of areas) {
+        const guildId = a.guildId;
+        const areaName: string = a.name;
+        const areaRole = a.roleIds?.member;
+        const upRoles = prog[guildId]?.upa || [];
+        const naoUpaRoles = prog[guildId]?.naoUpa || [];
+        if (!guildId || !areaRole || !upRoles[0] || !naoUpaRoles[0]) continue;
+        map[guildId] = {
+            area: areaName,
+            areaRole,
+            waitingRole: waiting[guildId],
+            upYes: upRoles[0],
+            upNo: naoUpaRoles[0]
+        };
+    }
+    return map;
+}
 export default {
     id: 'verify_area_modal',
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true });
-        const assign = AREA_GUILD_ASSIGN[interaction.guildId!];
+    const AREA_GUILD_ASSIGN = buildAreaAssignMap();
+    const assign = AREA_GUILD_ASSIGN[interaction.guildId!];
         if (!assign) {
             await interaction.editReply('Configuração desta área não encontrada.');
             return;

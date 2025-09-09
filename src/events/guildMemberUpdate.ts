@@ -29,23 +29,64 @@ export function registerProtectionListener(client: any) {
             const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
             const leaderUsers: string[] = (loadConfig() as any).protection?.leaderUsers || [];
             const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
-            if (!added.size)
-                return;
+            if (!added.size) return;
+
+            // Aguarda um curto período para garantir que o audit log já foi persistido pela API
+            await new Promise(res => setTimeout(res, 750));
+
+            // Mapeia roleId -> executorId usando um único fetch de audit log para reduzir chamadas e evitar condições de corrida
+            const roleExecutorMap: Record<string, string | null> = {};
+            const MEMBER_ROLE_UPDATE_TYPE: any = 25; // Fallback para tipo de atualização de cargos em versões estáveis
+            try {
+                const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
+                for (const entry of audit.entries.values()) {
+                    if ((entry as any).target?.id !== newMember.id) continue;
+                    const changes: any[] = (entry as any).changes || [];
+                    for (const c of changes) {
+                        if (c.key === '$add') {
+                            const arr = c['new'] || c['new_value'];
+                            if (Array.isArray(arr)) {
+                                for (const r of arr) {
+                                    if (!roleExecutorMap[r.id]) {
+                                        roleExecutorMap[r.id] = entry.executor?.id || null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch {
+                // fallback silent
+            }
+
+            // Fallback adicional: se nenhum executor detectado, tenta outra busca após pequeno delay
+            if (Object.keys(roleExecutorMap).length === 0) {
+                await new Promise(res => setTimeout(res, 1200));
+                try {
+                    const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
+                    for (const entry of audit2.entries.values()) {
+                        if ((entry as any).target?.id !== newMember.id) continue;
+                        const changes: any[] = (entry as any).changes || [];
+                        for (const c of changes) {
+                            if (c.key === '$add') {
+                                const arr = c['new'] || c['new_value'];
+                                if (Array.isArray(arr)) {
+                                    for (const r of arr) {
+                                        if (!roleExecutorMap[r.id]) {
+                                            roleExecutorMap[r.id] = entry.executor?.id || null;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch {}
+            }
+
             for (const role of added.values()) {
                 const blockInfo = blockedRoles[role.id];
-                if (!blockInfo)
-                    continue;
-                let executorId: string | null = null;
-                try {
-                    const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 5 });
-                    const entry = audit.entries.find(e => (e as any).target?.id === newMember.id && (e as any).changes?.some((c: any) => {
-                        const addedArr = (c as any)['new'];
-                        return c.key === '$add' && Array.isArray(addedArr) && addedArr.some((r: any) => r.id === role.id);
-                    }));
-                    if (entry)
-                        executorId = entry.executor?.id || null;
-                }
-                catch { }
+                if (!blockInfo) continue;
+                let executorId: string | null = roleExecutorMap[role.id] ?? null;
                 let allowed = false;
                 if (executorId) {
                     if (isOwner(executorId)) {

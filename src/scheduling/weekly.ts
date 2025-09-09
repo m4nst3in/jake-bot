@@ -8,20 +8,34 @@ import { loadConfig } from '../config/index.ts';
 import { PointsService } from '../services/pointsService.ts';
 import { generateAreaPdf } from '../utils/pdf.ts';
 // ---- MOV ORG close/open scheduling ----
-interface MovWindowConfig { channelId: string; roleId: string; }
-const MOV_CONSTANTS: MovWindowConfig = {
-    channelId: '1338533776665350226',
-    roleId: '1136861814328668230' // cargo Mov Call no servidor principal
-};
+interface MovWindowConfig { channelId: string; roleId: string; closeGif: string; openGif: string; windows: string[]; reopenAfterMinutes: number; }
+function loadMovConfig(): MovWindowConfig | null {
+    try {
+        const cfg: any = loadConfig();
+        const m = cfg.movOrg;
+        if (!m?.channelId || !m?.roleId) return null;
+        return {
+            channelId: m.channelId,
+            roleId: m.roleId,
+            closeGif: m.closeGif,
+            openGif: m.openGif,
+            windows: m.windows || [],
+            reopenAfterMinutes: m.reopenAfterMinutes || 60
+        };
+    } catch { return null; }
+}
+let movCfgCache: MovWindowConfig | null = null;
 let movState: { lastClose?: number; lastOpen?: number } = {};
 async function sendMovEmbed(client: Client, type: 'close' | 'open') {
-    const ch: any = await client.channels.fetch(MOV_CONSTANTS.channelId).catch(()=>null);
+    movCfgCache = movCfgCache || loadMovConfig();
+    if (!movCfgCache) return;
+    const ch: any = await client.channels.fetch(movCfgCache.channelId).catch(()=>null);
     if (!ch || !ch.isTextBased()) return;
-    const mention = `<@&${MOV_CONSTANTS.roleId}>`;
+    const mention = `<@&${movCfgCache.roleId}>`;
     const closeTitle = '<a:emoji_415:1282771322555994245> ORG-MOV FECHADA';
     const openTitle = '<a:emoji_415:1282771322555994245> ORG-MOV REABERTA';
-    const closeGif = 'https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif';
-    const openGif = 'https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif';
+    const closeGif = movCfgCache.closeGif;
+    const openGif = movCfgCache.openGif;
     const embed = new EmbedBuilder()
         .setColor(type === 'close' ? 0xe74c3c : 0x2ecc71)
         .setTitle(type === 'close' ? closeTitle : openTitle)
@@ -33,22 +47,13 @@ async function sendMovEmbed(client: Client, type: 'close' | 'open') {
     } catch (e) { logger.warn({ e }, 'Falha enviar embed mov'); }
 }
 function scheduleMovWindows(client: Client) {
+    movCfgCache = loadMovConfig();
+    if (!movCfgCache) return;
     const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
-    // Horários de fechamento (min hora * * dia_da_semana) -> dias: seg=1 ... sex=5
-    const specs: string[] = [
-        '0 0 18 * * 1', // seg 18:00
-        '0 0 18 * * 2', // ter 18:00
-        '0 0 18 * * 3', // qua 18:00
-        '0 0 18 * * 4', // qui 18:00
-        '0 30 20 * * 4', // qui 20:30
-        '0 0 18 * * 5', // sex 18:00
-        '0 0 21 * * 5', // sex 21:00
-    ];
-    specs.forEach(spec => {
+    movCfgCache.windows.forEach(spec => {
         cron.schedule(spec, async () => {
             await sendMovEmbed(client, 'close');
-            // agenda reabertura em 1h
-            setTimeout(() => sendMovEmbed(client, 'open'), 60 * 60 * 1000);
+            setTimeout(() => sendMovEmbed(client, 'open'), movCfgCache!.reopenAfterMinutes * 60 * 1000);
         }, { timezone: tz });
     });
 }
