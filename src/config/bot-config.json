@@ -552,13 +552,13 @@
     "closeGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif",
     "openGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif",
     "windows": [
-      "0 0 18 * * 1",
-      "0 0 18 * * 2",
-      "0 0 18 * * 3",
-      "0 0 18 * * 4",
-      "0 30 20 * * 4",
-      "0 0 18 * * 5",
-      "0 0 21 * * 5"
+  "0 0 17 * * 1",
+  "0 0 17 * * 2",
+  "0 0 17 * * 3",
+  "0 0 17 * * 4",
+  "0 30 19 * * 4",
+  "0 0 17 * * 5",
+  "0 0 20 * * 5"
     ],
     "reopenAfterMinutes": 60
   }
