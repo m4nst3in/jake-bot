@@ -95,6 +95,7 @@ export default {
         }
         else if (tipo === 'verificar') {
             const EVENTOS_GUILD_ID = '1283125240368730132';
+            const MIG_GUILD_ID = '1355239902169796881';
             const banners: Record<string, string> = {
                 '1190390194533318706': 'https://media.discordapp.net/attachments/1116897156163448863/1327409279619305652/Verifique-se.png?format=webp&quality=lossless&width=687&height=286',
                 '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?format=webp&quality=lossless',
@@ -102,10 +103,26 @@ export default {
                 '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png',
                 '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png',
                 '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif',
+                '1355239902169796881': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif'
             };
             const banner = banners[interaction.guildId!];
             let embed: EmbedBuilder;
-            if (interaction.guildId === EVENTOS_GUILD_ID) {
+            if (interaction.guildId === MIG_GUILD_ID) {
+                const desc = [
+                    'Bem-vindo(a) ao servidor de Migração.',
+                    'Clique em Verificar para validar seu cargo de Migração no servidor principal e receber seus cargos equivalentes aqui.',
+                    'Se sua patente estiver abaixo de Sub Comandante, será aplicado o cargo reserva configurado.'
+                ].join('\n\n');
+                const MIG_BANNER = 'https://media.discordapp.net/attachments/1355346364212580494/1356477847300210728/1.png?format=webp&quality=lossless&';
+                const MIG_HEADER = 'https://media.discordapp.net/attachments/1355346364212580494/1355619532554899477/Design_sem_nome_5.png?format=webp&quality=lossless&';
+                embed = new EmbedBuilder()
+                    .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Migração')
+                    .setColor(0x2ecc71)
+                    .setDescription(desc)
+                    .setThumbnail(MIG_HEADER)
+                    .setImage(MIG_BANNER)
+                    .setFooter({ text: 'Sistema de Verificação • Migração' });
+            } else if (interaction.guildId === EVENTOS_GUILD_ID) {
                 const ev = {
                     bullet: '<:emoji_72:1406097314283786271>',
                     title: '<:purple7_emoji:1283759067269042228>',
@@ -130,7 +147,8 @@ export default {
                     .setFooter({ text: 'Sistema de Verificação • Central da Web' });
                 if (banner) embed.setImage(banner);
             }
-            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('verify_area').setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));
+            const buttonId = interaction.guildId === MIG_GUILD_ID ? 'verify_mig' : 'verify_area';
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(buttonId).setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de verificação publicada.');
             return;
