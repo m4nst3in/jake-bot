@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
     "esModuleInterop": true,
@@ -20,7 +22,6 @@
       "@services/*": ["services/*"],
       "@utils/*": ["utils/*"],
       "@types/*": ["types/*"]
-  },
-  "allowImportingTsExtensions": true
+    },
   }
 }
