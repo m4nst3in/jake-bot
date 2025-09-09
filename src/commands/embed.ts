@@ -109,19 +109,18 @@ export default {
             let embed: EmbedBuilder;
             if (interaction.guildId === MIG_GUILD_ID) {
                 const desc = [
-                    'Bem-vindo(a) ao servidor de Migração.',
-                    'Clique em Verificar para validar seu cargo de Migração no servidor principal e receber seus cargos equivalentes aqui.',
-                    'Se sua patente estiver abaixo de Sub Comandante, será aplicado o cargo reserva configurado.'
-                ].join('\n\n');
+                    '>  Anexe/envie uma print dos seus cargos na Central das Web, e mencione <@&1355242772575289616> e <@&1355243896971464895>, comprovando que você possui a tag de migração no servidor principal, para que seus cargos sejam atualizados aqui.'
+                ].join('');
                 const MIG_BANNER = 'https://media.discordapp.net/attachments/1355346364212580494/1356477847300210728/1.png?format=webp&quality=lossless&';
                 const MIG_HEADER = 'https://media.discordapp.net/attachments/1355346364212580494/1355619532554899477/Design_sem_nome_5.png?format=webp&quality=lossless&';
                 embed = new EmbedBuilder()
-                    .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Migração')
+                    .setAuthor({ name: 'CDW - MIGRAÇÃO', iconURL: MIG_HEADER })
+                    .setTitle('<:cdw_e_verificado:1116425488773152899> **VERIFICAÇÃO** <:cdw_e_verificado:1116425488773152899>')
                     .setColor(0x2ecc71)
                     .setDescription(desc)
                     .setThumbnail(MIG_HEADER)
                     .setImage(MIG_BANNER)
-                    .setFooter({ text: 'Sistema de Verificação • Migração' });
+                    .setFooter({ text: 'CDW - MIGRAÇÃO, todos os direitos reservados.' });
             } else if (interaction.guildId === EVENTOS_GUILD_ID) {
                 const ev = {
                     bullet: '<:emoji_72:1406097314283786271>',
