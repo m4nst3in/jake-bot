@@ -13,17 +13,42 @@ export interface SlashCommand {
 export async function loadCommands(client: Client) {
     const commands: any[] = [];
     const commandsPath = path.join(process.cwd(), 'src', 'commands');
-    const files = fs.readdirSync(commandsPath).filter(f => f.endsWith('.ts') && f !== 'index.ts');
-    for (const file of files) {
-        if (file === 'config.ts') {
+    const rawFiles = fs.readdirSync(commandsPath, { withFileTypes: true });
+    const files: string[] = [];
+    for (const dirent of rawFiles) {
+        if (!dirent.isFile())
+            continue;
+        const name = dirent.name;
+        if (!name.endsWith('.ts'))
+            continue;
+        if (name === 'index.ts' || name === 'config.ts')
+            continue;
+        if (!/^[-a-zA-Z0-9_.]+$/.test(name)) {
+            logger.warn({ file: name }, 'Ignorando arquivo de comando com nome inválido');
             continue;
         }
-        const mod = await import(pathToFileURL(path.join(commandsPath, file)).href);
-        const cmd: SlashCommand = mod.default;
-        if (!cmd?.data)
-            continue;
-        client.commands.set(cmd.data.name, cmd);
-        commands.push(cmd.data.toJSON());
+        files.push(name);
+    }
+    for (const file of files) {
+        const full = path.join(commandsPath, file);
+        let real: string;
+        try {
+            real = fs.realpathSync(full);
+        }
+        catch {
+            real = full;
+        }
+        try {
+            const mod = await import(pathToFileURL(real).href);
+            const cmd: SlashCommand = mod.default;
+            if (!cmd?.data)
+                continue;
+            client.commands.set(cmd.data.name, cmd);
+            commands.push(cmd.data.toJSON());
+        }
+        catch (err) {
+            logger.error({ err, file }, 'Falha ao importar comando');
+        }
     }
     logger.info({ count: commands.length }, 'Comandos carregados igual o Fumaça no CS');
     if (process.env.DISCORD_TOKEN && process.env.DISCORD_CLIENT_ID) {

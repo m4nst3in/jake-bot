@@ -30,7 +30,18 @@ export function loadConfig(): ConfigRoot {
         raw = stripJsonComments(raw);
     }
     const parsed = JSON.parse(raw);
-    cached = validateConfig(parsed);
+    try {
+        cached = validateConfig(parsed);
+    }
+    catch (err: any) {
+        if (process.env.DISABLE_CONFIG_VALIDATION === '1') {
+            console.warn('[config] Validation disabled via env, continuing with unvalidated config. Error was:', err?.message);
+            cached = parsed as ConfigRoot;
+        }
+        else {
+            throw err;
+        }
+    }
     return cached;
 }
 export function getAreaByName(name: string) {
