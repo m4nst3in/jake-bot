@@ -5,13 +5,17 @@ const svc = new PointsService();
 export default {
     data: new SlashCommandBuilder()
         .setName('reset')
-        .setDescription('Resetar dados (pontos ou rpp)')
+        .setDescription('Resetar dados (pontos, rpp ou blacklist)')
         .addStringOption(o => o.setName('tipo')
         .setDescription('O que resetar')
         .setRequired(true)
-        .addChoices({ name: 'Pontos', value: 'pontos' }, { name: 'RPP', value: 'rpp' }))
+        .addChoices(
+        { name: 'Pontos', value: 'pontos' },
+        { name: 'RPP', value: 'rpp' },
+        { name: 'Blacklist', value: 'blacklist' }
+    ))
         .addStringOption(o => {
-        let opt = o.setName('area').setDescription('Área (apenas para pontos)').setRequired(false);
+        let opt = o.setName('area').setDescription('Área (para pontos ou blacklist)').setRequired(false);
         for (const a of AREAS)
             opt = opt.addChoices({ name: a, value: a });
         return opt;
@@ -31,8 +35,17 @@ export default {
         if (tipo === 'rpp' && area) {
             return interaction.reply({ content: 'Reset de RPP não suporta áreas no momento.', ephemeral: true });
         }
+        if (tipo === 'blacklist' && area && !isValidArea(area)) {
+            return interaction.reply({ content: 'Área inválida para blacklist.', ephemeral: true });
+        }
         const modal = new ModalBuilder()
-            .setCustomId(tipo === 'pontos' ? `reset_points_modal:${area || '__all__'}` : 'reset_rpp_modal:__all__')
+            .setCustomId(
+            tipo === 'pontos'
+                ? `reset_points_modal:${area || '__all__'}`
+                : tipo === 'rpp'
+                    ? 'reset_rpp_modal:__all__'
+                    : `reset_blacklist_modal:${area || '__all__'}`
+        )
             .setTitle(`Confirmar Reset ${tipo.toUpperCase()}`);
         const input = new TextInputBuilder()
             .setCustomId('confirm')

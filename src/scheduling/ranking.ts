@@ -49,9 +49,11 @@ export function scheduleRankingUpdater(client: Client) {
                             return line;
                         if (/recrut\./i.test(line))
                             return line;
+                        // extrai pontos antes de qualquer sufixo (mantendo eventual segmento de plantões já adicionado)
                         const m = line.match(/\*\*(\d+)\*\* pts/);
                         const pts = m ? parseInt(m[1], 10) : 0;
                         const recrut = Math.floor(pts / pointsPerMsg);
+                        if (/recrut\./i.test(line)) return line; // já tem
                         return `${line} • ${recrut} recrut.`;
                     }).join('\n');
                     const withEmojis = augmented.split('\n').map((line: string) => {

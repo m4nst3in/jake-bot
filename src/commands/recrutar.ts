@@ -41,22 +41,21 @@ export default {
         catch { }
         const isGlobal = active.some(a => a.area_or_global?.toUpperCase() === 'GLOBAL');
         const byArea = new Set(active.filter(a => a.area_or_global && a.area_or_global.toUpperCase() !== 'GLOBAL').map(a => a.area_or_global.toUpperCase()));
-        if (isGlobal) {
-            const reasons = active.filter(a => a.area_or_global?.toUpperCase() === 'GLOBAL').map(a => `• ${a.reason || 'Sem motivo'}`).join('\n') || '—';
-            const blockedEmbed = new EmbedBuilder()
-                .setTitle('<:purple13_emoji:1283758963418202125> Recrutamento Bloqueado')
-                .setColor(0xe74c3c)
-                .setDescription(`O usuário **${target.tag}** está na **Blacklist GLOBAL** e não pode ser recrutado para nenhuma equipe no momento.`)
-                .addFields({ name: 'Motivos', value: reasons })
-                .setFooter({ text: 'Remova da blacklist para liberar o recrutamento.' });
-            await interaction.editReply({ embeds: [blockedEmbed], components: [] });
-            return;
-        }
+        const globalReasons = active
+            .filter(a => a.area_or_global?.toUpperCase() === 'GLOBAL')
+            .map(a => `• ${a.reason || 'Sem motivo'}`)
+            .join('\n') || '—';
         const embed = new EmbedBuilder()
             .setTitle('<a:c_estrelar:1385143839743934496> Recrutamento de Usuário')
-            .setDescription(`Selecione a equipe para recrutar **${target.tag}**.\n\nÁreas indisponíveis (blacklist): ${byArea.size ? [...byArea].join(', ') : 'Nenhuma'}`)
-            .setColor(0x3498db)
-            .setFooter({ text: 'Clique em apenas uma equipe' });
+            .setColor(isGlobal ? 0xe74c3c : 0x3498db)
+            .setDescription([
+            `Selecione a equipe para recrutar **${target.tag}**.`,
+            isGlobal ? '\n⚠️ O usuário está na **Blacklist GLOBAL**. Todas as equipes estão bloqueadas.' : `\nÁreas indisponíveis (blacklist por área): ${byArea.size ? [...byArea].join(', ') : 'Nenhuma'}`
+        ].join('\n'))
+            .setFooter({ text: isGlobal ? 'Remova da blacklist global para liberar o recrutamento.' : 'Clique em apenas uma equipe' });
+        if (isGlobal) {
+            embed.addFields({ name: 'Motivos (GLOBAL)', value: globalReasons });
+        }
         const rows: ActionRowBuilder<ButtonBuilder>[] = [];
         let current = new ActionRowBuilder<ButtonBuilder>();
         for (const area of RECRUIT_AREAS) {
@@ -64,7 +63,7 @@ export default {
                 rows.push(current);
                 current = new ActionRowBuilder<ButtonBuilder>();
             }
-            const disabled = byArea.has(area.label.toUpperCase());
+            const disabled = isGlobal || byArea.has(area.label.toUpperCase());
             current.addComponents(new ButtonBuilder()
                 .setCustomId(`recruit_team:${area.key}:${target.id}`)
                 .setLabel(area.label)

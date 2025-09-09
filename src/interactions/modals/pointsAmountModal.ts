@@ -16,24 +16,43 @@ export default {
             return;
         }
         const qtyRaw = interaction.fields.getTextInputValue('amount');
-        const userId = interaction.fields.getTextInputValue('user');
+        const userFieldRaw = interaction.fields.getTextInputValue('user');
         const reason = interaction.fields.getTextInputValue('reason');
         const qty = parseInt(qtyRaw, 10);
         if (isNaN(qty) || qty <= 0) {
             return interaction.editReply('Quantidade inválida.');
         }
-        try {
-            if (mode === 'add')
-                await svc.adicionar(userId, area, qty, reason || '—', interaction.user.id);
-            else
-                await svc.remover(userId, area, qty, reason || '—', interaction.user.id);
-            await interaction.editReply(`✅ ${mode === 'add' ? 'Adicionados' : 'Removidos'} ${qty} pts para <@${userId}> em ${area}.`);
+        // Validação de múltiplos IDs: formato id,id,id SEM espaços
+        if (userFieldRaw.includes(' ')) {
+            return interaction.editReply('Formato inválido: use IDs separados apenas por vírgula, sem espaços. Ex: 123,456,789');
         }
-        catch (err) {
+        const userIds = userFieldRaw.split(',').filter(x => !!x);
+        if (!userIds.length) {
+            return interaction.editReply('Informe pelo menos um ID.');
+        }
+        if (userIds.length > 10) {
+            return interaction.editReply('Limite máximo de 10 IDs por operação.');
+        }
+        const results: { id: string; ok: boolean }[] = [];
+        for (const targetId of userIds) {
             try {
-                await interaction.editReply('Falha ao aplicar pontos.');
+                if (mode === 'add')
+                    await svc.adicionar(targetId, area, qty, reason || '—', interaction.user.id);
+                else
+                    await svc.remover(targetId, area, qty, reason || '—', interaction.user.id);
+                results.push({ id: targetId, ok: true });
             }
-            catch { }
+            catch {
+                results.push({ id: targetId, ok: false });
+            }
         }
+        const ok = results.filter(r => r.ok).map(r => `<@${r.id}>`).join(', ');
+        const fail = results.filter(r => !r.ok).map(r => `\`${r.id}\``).join(', ');
+        const actionWord = mode === 'add' ? 'Adicionados' : 'Removidos';
+        let msg = '';
+        if (ok) msg += `✅ ${actionWord} ${qty} pts para: ${ok} em ${area}.`;
+        if (fail) msg += `\n⚠️ Falhou para: ${fail}.`;
+        if (!msg) msg = 'Nenhuma operação concluída.';
+        try { await interaction.editReply(msg); } catch {}
     }
 };

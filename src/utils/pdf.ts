@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { Client } from 'discord.js';
+import { loadConfig } from '../config/index.ts';
 import { DatabaseManager } from '../db/manager.ts';
 import { readFileSync, existsSync } from 'fs';
 interface MemberRow {
@@ -8,18 +9,51 @@ interface MemberRow {
     reports_count: number;
     shifts_count: number;
 }
-async function fetchAreaRows(area: string): Promise<MemberRow[]> {
+async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]> {
     const sort = (a: MemberRow, b: MemberRow) => b.points - a.points;
+    let rows: MemberRow[] = [];
     if (DatabaseManager.current === 'sqlite') {
         const db = DatabaseManager.getSqlite().connection;
-        const rows: any[] = await new Promise((resolve, reject) => {
+        const dbRows: any[] = await new Promise((resolve, reject) => {
             db.all('SELECT user_id, points, reports_count, shifts_count FROM points WHERE area=?', [area], (err: Error | null, r: any[]) => err ? reject(err) : resolve(r));
         });
-        return rows.sort(sort);
+        rows = dbRows as any;
+    } else {
+        const db = DatabaseManager.getMongo().database;
+        const docs = await db.collection('points').find({ area }).project({ user_id: 1, points: 1, reports_count: 1, shifts_count: 1 }).toArray();
+        rows = docs as any;
     }
-    const db = DatabaseManager.getMongo().database;
-    const docs = await db.collection('points').find({ area }).project({ user_id: 1, points: 1, reports_count: 1, shifts_count: 1 }).toArray();
-    return (docs as any).sort(sort);
+    // expand with zero-point members from guild
+    try {
+        const cfg: any = loadConfig();
+        const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
+        if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
+            const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+            if (g) {
+                await g.members.fetch();
+                // Filtra registros: somente quem ainda está no servidor permanece
+                rows = rows.filter(r => g.members.cache.has(r.user_id));
+                const memberRoleId = areaCfg.roleIds.member;
+                const leadRoleId = areaCfg.roleIds.lead;
+                const owners: string[] = cfg.owners || [];
+                const existing = new Set(rows.map(r=>r.user_id));
+                g.members.cache.forEach(m => {
+                    if (!m.roles.cache.has(memberRoleId)) return;
+                    const rec = rows.find(r=>r.user_id===m.id);
+                    const hasPoints = !!rec && rec.points>0;
+                    if (!hasPoints) {
+                        if (leadRoleId && m.roles.cache.has(leadRoleId)) return; // skip zero-point leader
+                        if (owners.includes(m.id) && m.id !== '418824536570593280') return; // skip zero-point owner except whitelist
+                    }
+                    if (!existing.has(m.id)) {
+                        rows.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
+                        existing.add(m.id);
+                    }
+                });
+            }
+        }
+    } catch {}
+    return rows.sort(sort);
 }
 function areaAccent(area: string) {
     const a = area.toLowerCase();
@@ -101,7 +135,7 @@ function prepareFonts(doc: any): Fonts {
     return resolved;
 }
 export async function generateAreaPdf(client: Client, area: string): Promise<Buffer> {
-    const rows = await fetchAreaRows(area);
+    const rows = await fetchAreaRows(client, area);
     const { primary, secondary } = areaAccent(area);
     const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
     const out: Buffer[] = [];

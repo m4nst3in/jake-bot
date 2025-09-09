@@ -1,12 +1,15 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, GuildMember } from 'discord.js';
-import { hasAnyLeadership, isAdminFromMember, isOwner } from '@utils/permissions.ts';
+import { hasAnyLeadership, isAdminFromMember, isOwner, hasCrossGuildLeadership } from '@utils/permissions.ts';
 import { loadConfig } from '../config/index.ts';
 export default {
     data: new SlashCommandBuilder().setName('pontos').setDescription('Painel de gestão de pontos'),
     async execute(interaction: ChatInputCommandInteraction) {
         const member = interaction.member as GuildMember | null;
         const isAdm = isAdminFromMember(member || null);
-        const hasLeadership = hasAnyLeadership(member || null);
+        let hasLeadership = hasAnyLeadership(member || null);
+        if (!hasLeadership && member) {
+            hasLeadership = await hasCrossGuildLeadership(interaction.client, member.id);
+        }
         if (!isAdm && !hasLeadership) {
             await interaction.reply({ content: 'Apenas liderança, administradores ou donos.', ephemeral: true });
             return;

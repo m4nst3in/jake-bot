@@ -1,16 +1,16 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { loadConfig } from '../config/index.ts';
+import { hasCrossGuildLeadership } from '@utils/permissions.ts';
 function isAdmin(i: ChatInputCommandInteraction) { return i.memberPermissions?.has(PermissionsBitField.Flags.Administrator) || false; }
-function isLeader(i: ChatInputCommandInteraction) {
-    if (!i.guild)
-        return false;
+async function isLeader(i: ChatInputCommandInteraction) {
+    if (!i.guild) return false;
     const cfg: any = loadConfig();
     const area = cfg.areas?.find((a: any) => a.guildId === i.guild!.id);
     const leaderRole = area?.roleIds?.lead;
-    if (!leaderRole)
-        return false;
     const m: any = i.member;
-    return !!m?.roles?.cache?.has(leaderRole);
+    if (leaderRole && m?.roles?.cache?.has(leaderRole)) return true;
+    // fallback cross-guild
+    return await hasCrossGuildLeadership(i.client, m?.id);
 }
 export default {
     data: new SlashCommandBuilder()
@@ -20,7 +20,7 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
         const hasTimeout = interaction.memberPermissions?.has(PermissionsBitField.Flags.ModerateMembers);
-        if (!isAdmin(interaction) && !isLeader(interaction) && !hasTimeout) {
+    if (!isAdmin(interaction) && !(await isLeader(interaction)) && !hasTimeout) {
             return interaction.editReply('Apenas liderança ou administradores.');
         }
         const target = interaction.options.getUser('staff', true);

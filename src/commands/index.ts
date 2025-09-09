@@ -1,9 +1,11 @@
-import { Client, REST, Routes, Collection, SlashCommandBuilder } from 'discord.js';
+import { Client, REST, Collection } from 'discord.js';
+// @ts-ignore - Routes path adaptado conforme versão
+import { Routes } from 'discord-api-types/v10';
 import { logger } from '../utils/logger.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 export interface SlashCommand {
-    data: SlashCommandBuilder;
+    data: any;
     execute: (interaction: any) => Promise<any>;
     guildOnly?: boolean;
     permissions?: string[];
@@ -13,7 +15,7 @@ export async function loadCommands(client: Client) {
     const commandsPath = path.join(process.cwd(), 'src', 'commands');
     const files = fs.readdirSync(commandsPath).filter(f => f.endsWith('.ts') && f !== 'index.ts');
     for (const file of files) {
-        if (file === 'config.ts' || file === 'transferir-cargos.ts') {
+        if (file === 'config.ts') {
             continue;
         }
         const mod = await import(path.join(commandsPath, file));

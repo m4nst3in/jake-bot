@@ -2,6 +2,7 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { baseEmbed } from '../utils/embeds.ts';
 import { sendPointsLog } from '../utils/pointsLogger.ts';
 import { loadConfig } from '../config/index.ts';
+import { client } from '../index.ts';
 export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
@@ -41,17 +42,60 @@ export class PointsService {
         return baseEmbed({ title: `${designEmote} Ranking - ${area}`, description: top.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — ${r.points} pts`).join('\n') || 'Sem dados ainda', color: 0xf1c40f });
     }
     async richRanking(area: string) {
-        const [top, total] = await Promise.all([this.repo.getTop(area, 10), this.repo.countArea(area)]);
+        const [top, total] = await Promise.all([this.repo.getTop(area, 200), this.repo.countArea(area)]);
         const cfg: any = loadConfig();
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
-        const filtered = top.filter((r: any) => (r.points || 0) > 0);
-        const lines = filtered.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts`);
+        // coletar membros da área (guild específica) para incluir zeros
+        let extended: any[] = [...top];
+        try {
+            const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
+            if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
+                const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+                if (g) {
+                    await g.members.fetch();
+                    // Regra: somente membros que ainda estão no servidor devem aparecer no ranking
+                    // Remove registros de usuários que não estão mais no servidor da área
+                    extended = extended.filter(r => g.members.cache.has(r.user_id));
+                    const memberRoleId = areaCfg.roleIds.member;
+                    const leadRoleId = areaCfg.roleIds.lead;
+                    const owners: string[] = cfg.owners || [];
+                    const existingIds = new Set(extended.map(r=>r.user_id));
+                    g.members.cache.forEach(m => {
+                        if (!m.roles.cache.has(memberRoleId)) return;
+                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return; // excluir liderança se zero pontos
+                        if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && m.id !== '418824536570593280') return; // excluir owners zero, exceto whitelisted
+                        if (!existingIds.has(m.id)) {
+                            extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
+                            existingIds.add(m.id);
+                        }
+                    });
+                    // Remover líderes / owners já existentes com 0 pts
+                    extended = extended.filter(r => {
+                        if (r.points > 0) return true;
+                        const mem = g.members.cache.get(r.user_id);
+                        if (!mem) return true;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
+                        if ((cfg.owners||[]).includes(r.user_id) && r.user_id !== '418824536570593280') return false;
+                        return true;
+                    });
+                }
+            }
+        } catch {}
+        extended.sort((a,b)=> (b.points||0)-(a.points||0));
+        const filtered = extended; // já inclui zeros após regras
+        const lines = filtered.map((r: any, i: number) => {
+            const base = `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts`;
+            if (area === 'Recrutamento') {
+                return `${base} • 🕒 ${r.shifts_count || 0} plant.`;
+            }
+            return base;
+        });
         return baseEmbed({
             title: `${designEmote} Ranking • ${area}`,
             description: lines.join('\n') || 'Sem participantes ainda',
             color: 0x5865F2,
-            footer: `Total de participantes: ${total}`
+            footer: `Total de participantes: ${filtered.length}`
         });
     }
     async buildRankingEmbedUnified(area: string) {
@@ -67,20 +111,54 @@ export class PointsService {
     async richRankingSuporte() {
         const area = 'Suporte';
         const [top, total, totalReports] = await Promise.all([
-            this.repo.getTop(area, 10),
+            this.repo.getTop(area, 200),
             this.repo.countArea(area),
             (this.repo as any).sumReports(area)
         ]);
         const cfg: any = loadConfig();
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
-        const filtered = top.filter((r: any) => (r.points || 0) > 0);
+        let extended: any[] = [...top];
+        try {
+            const areaCfg = (cfg.areas || []).find((a: any) => a.name === 'SUPORTE');
+            if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
+                const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(()=>null);
+                if (g) {
+                    await g.members.fetch();
+                    // Regra: excluir usuários que não estão mais presentes no servidor da área
+                    extended = extended.filter(r => g.members.cache.has(r.user_id));
+                    const memberRoleId = areaCfg.roleIds.member;
+                    const leadRoleId = areaCfg.roleIds.lead;
+                    const owners: string[] = cfg.owners || [];
+                    const existingIds = new Set(extended.map(r=>r.user_id));
+                    g.members.cache.forEach(m => {
+                        if (!m.roles.cache.has(memberRoleId)) return;
+                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r=>r.user_id===m.id && r.points>0))) return;
+                        if (owners.includes(m.id) && !(extended.find(r=>r.user_id===m.id && r.points>0)) && m.id !== '418824536570593280') return;
+                        if (!existingIds.has(m.id)) {
+                            extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
+                            existingIds.add(m.id);
+                        }
+                    });
+                    extended = extended.filter(r => {
+                        if (r.points > 0) return true;
+                        const mem = g.members.cache.get(r.user_id);
+                        if (!mem) return true;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
+                        if ((cfg.owners||[]).includes(r.user_id) && r.user_id !== '418824536570593280') return false;
+                        return true;
+                    });
+                }
+            }
+        } catch {}
+        extended.sort((a,b)=> (b.points||0)-(a.points||0));
+        const filtered = extended;
         const lines = filtered.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts • 🧾 ${r.reports_count || 0} rel. • 🕒 ${r.shifts_count || 0} plant.`);
         return baseEmbed({
             title: `${designEmote} Ranking de Suporte`,
             description: lines.join('\n') || 'Sem participantes ainda',
             color: 0x2b2d31,
-            footer: `Participantes: ${total} • Relatórios: ${totalReports}`
+            footer: `Participantes: ${filtered.length} • Relatórios: ${totalReports}`
         });
     }
     async resetAll() { await (this.repo as any).resetAllPoints(); }

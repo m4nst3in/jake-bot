@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, GuildMember, PermissionsBitField } from 'discord.js';
 import { RPPService } from '../services/rppService.ts';
-import { isOwner, hasAnyLeadership } from '@utils/permissions.ts';
+import { isOwner, hasAnyLeadership, hasCrossGuildLeadership } from '@utils/permissions.ts';
 import { loadConfig } from '../config/index.ts';
 const service = new RPPService();
 export default {
@@ -15,7 +15,10 @@ export default {
         const leadershipRoleId: string | undefined = cfg?.protection?.alertRole;
         const rppAllowed: string[] = cfg?.permissions?.rpp?.allowedRoles || [];
         const isLeaderGeneral = !!member?.roles.cache.has(leadershipRoleId);
-        const isAnyAreaLeader = hasAnyLeadership(member);
+        let isAnyAreaLeader = hasAnyLeadership(member);
+        if (!isAnyAreaLeader && member) {
+            isAnyAreaLeader = await hasCrossGuildLeadership(interaction.client, member.id);
+        }
         const hasConfiguredRole = !!member?.roles.cache.some(r => rppAllowed.includes(r.id));
         if (!owner && !isLeaderGeneral && !isAnyAreaLeader && !hasConfiguredRole) {
             await interaction.editReply('Sem permissão para usar este comando.');

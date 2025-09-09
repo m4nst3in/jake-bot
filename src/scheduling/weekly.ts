@@ -7,9 +7,56 @@ import path from 'node:path';
 import { loadConfig } from '../config/index.ts';
 import { PointsService } from '../services/pointsService.ts';
 import { generateAreaPdf } from '../utils/pdf.ts';
+// ---- MOV ORG close/open scheduling ----
+interface MovWindowConfig { channelId: string; roleId: string; }
+const MOV_CONSTANTS: MovWindowConfig = {
+    channelId: '1338533776665350226',
+    roleId: '1136861814328668230' // cargo Mov Call no servidor principal
+};
+let movState: { lastClose?: number; lastOpen?: number } = {};
+async function sendMovEmbed(client: Client, type: 'close' | 'open') {
+    const ch: any = await client.channels.fetch(MOV_CONSTANTS.channelId).catch(()=>null);
+    if (!ch || !ch.isTextBased()) return;
+    const mention = `<@&${MOV_CONSTANTS.roleId}>`;
+    const closeTitle = '<a:emoji_415:1282771322555994245> ORG-MOV FECHADA';
+    const openTitle = '<a:emoji_415:1282771322555994245> ORG-MOV REABERTA';
+    const closeGif = 'https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif';
+    const openGif = 'https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif';
+    const embed = new EmbedBuilder()
+        .setColor(type === 'close' ? 0xe74c3c : 0x2ecc71)
+        .setTitle(type === 'close' ? closeTitle : openTitle)
+        .setImage(type === 'close' ? closeGif : openGif)
+        .setTimestamp();
+    try {
+        await ch.send({ content: mention, embeds: [embed] });
+        if (type === 'close') movState.lastClose = Date.now(); else movState.lastOpen = Date.now();
+    } catch (e) { logger.warn({ e }, 'Falha enviar embed mov'); }
+}
+function scheduleMovWindows(client: Client) {
+    const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
+    // Horários de fechamento (min hora * * dia_da_semana) -> dias: seg=1 ... sex=5
+    const specs: string[] = [
+        '0 0 18 * * 1', // seg 18:00
+        '0 0 18 * * 2', // ter 18:00
+        '0 0 18 * * 3', // qua 18:00
+        '0 0 18 * * 4', // qui 18:00
+        '0 30 20 * * 4', // qui 20:30
+        '0 0 18 * * 5', // sex 18:00
+        '0 0 21 * * 5', // sex 21:00
+    ];
+    specs.forEach(spec => {
+        cron.schedule(spec, async () => {
+            await sendMovEmbed(client, 'close');
+            // agenda reabertura em 1h
+            setTimeout(() => sendMovEmbed(client, 'open'), 60 * 60 * 1000);
+        }, { timezone: tz });
+    });
+}
 export function scheduleWeeklyTasks(client: Client) {
     const spec = process.env.POINTS_BACKUP_SCHEDULE || '0 0 22 * * 5';
     const tz = process.env.TIMEZONE || 'America/Sao_Paulo';
+    // iniciar agendamentos MOV
+    scheduleMovWindows(client);
     cron.schedule(spec, async () => {
         logger.info('Rodando o backup semanal geral (sem reset global)');
         try {
@@ -324,6 +371,65 @@ export function scheduleWeeklyTasks(client: Client) {
         }
         catch (err) {
             logger.error({ err }, 'Falha reset recrutamento');
+        }
+    }, { timezone: tz });
+
+    // Envio de aviso de encerramento de semana - SUPORTE (bancas: aviso, supervisao, normais) toda sexta 22:00
+    cron.schedule('0 0 22 * * 5', async () => {
+        try {
+            const cfg: any = loadConfig();
+            const supportCfg = cfg.support || {};
+            const bancaCfg = cfg.banca || {};
+            // canais esperados em suporte
+            const avisoChannelId = supportCfg.channels?.bancaAviso || supportCfg.channels?.avisos;
+            const supervisaoChannelId = bancaCfg.supervisionChannelId || supportCfg.channels?.supervisao;
+            const normalBancaChannelId = supportCfg.channels?.bancaGeral || supportCfg.channels?.banca || supportCfg.channels?.bancaLog; // fallback
+            const banner = 'https://images-ext-1.discordapp.net/external/tVleO-Npk159BUGqnUESgGzyGdJtIuAcXafwzpXu4hc/https/i.imgur.com/5IJQmH2.gif';
+            const send = async (channelId?: string) => {
+                if (!channelId) return;
+                const ch: any = await client.channels.fetch(channelId).catch(()=>null);
+                if (!ch || !ch.isTextBased()) return;
+                const embed = new EmbedBuilder()
+                    .setTitle('🗓️ Semana Encerrada')
+                    .setDescription('Encerramos a semana das bancas de **Suporte**. Agradecemos o empenho de todos! Preparem-se para o novo ciclo.')
+                    .setColor(0x5865F2)
+                    .setImage(banner)
+                    .setFooter({ text: 'Encerramento semanal • Suporte' })
+                    .setTimestamp();
+                await ch.send({ embeds: [embed] }).catch(()=>{});
+            };
+            await Promise.all([
+                send(avisoChannelId),
+                send(supervisaoChannelId),
+                send(normalBancaChannelId)
+            ]);
+        } catch (e) {
+            logger.warn({ err: e }, 'Falha ao enviar encerramento semanal suporte');
+        }
+    }, { timezone: tz });
+
+    // Envio de aviso de encerramento de semana - RECRUTAMENTO (bancas) todo sábado 12:00
+    cron.schedule('0 0 12 * * 6', async () => {
+        try {
+            const cfg: any = loadConfig();
+            const recruitCfg = cfg.recruitBanca || {};
+            const bancaChannelId = recruitCfg.pointsLogChannelId || cfg.channels?.recruitRanking || cfg.channels?.recruitLog; // fallback candidata
+            const banner = 'https://i.imgur.com/hnNwwY1.gif';
+            if (bancaChannelId) {
+                const ch: any = await client.channels.fetch(bancaChannelId).catch(()=>null);
+                if (ch && ch.isTextBased()) {
+                    const embed = new EmbedBuilder()
+                        .setTitle('🗓️ Semana Encerrada')
+                        .setDescription('Encerramos a semana das bancas de **Recrutamento**. Obrigado pelo esforço! Novo ciclo começa agora.')
+                        .setColor(0x2ECC71)
+                        .setImage(banner)
+                        .setFooter({ text: 'Encerramento semanal • Recrutamento' })
+                        .setTimestamp();
+                    await ch.send({ embeds: [embed] }).catch(()=>{});
+                }
+            }
+        } catch (e) {
+            logger.warn({ err: e }, 'Falha ao enviar encerramento semanal recrutamento');
         }
     }, { timezone: tz });
 }

@@ -94,26 +94,42 @@ export default {
             return;
         }
         else if (tipo === 'verificar') {
-            const desc = [
-                'Clique em Verificar para validar seu cargo no servidor principal e configurar seu perfil.',
-                'Se você já possui o cargo oficial da área no servidor principal, poderá escolher se **upa** na área (Sim) ou se **não upa** (Não).'
-            ].join('\n\n');
+            const EVENTOS_GUILD_ID = '1283125240368730132';
             const banners: Record<string, string> = {
-                '1190390194533318706': 'https://media.discordapp.net/attachments/1116897156163448863/1327409279619305652/Verifique-se.png?ex=68c0067a&is=68beb4fa&hm=2a15d9ece1eb4f9996ef71a014f228ef6b3189b392af69fa2e7de3127323c74f&format=webp&quality=lossless&width=687&height=286&',
-                '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?ex=68bf732e&is=68be21ae&hm=87687c524f13ddde66d5c0f404c8ae74df3b793075ba7838a9b3653b9e89bb1f&=&format=webp&quality=lossless',
+                '1190390194533318706': 'https://media.discordapp.net/attachments/1116897156163448863/1327409279619305652/Verifique-se.png?format=webp&quality=lossless&width=687&height=286',
+                '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?format=webp&quality=lossless',
                 '1183909149784952902': 'https://i.imgur.com/8IT7TcG.gif',
-                '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png?ex=68bfb01e&is=68be5e9e&hm=739d605b01d58e6e443ac2bccdb6a5aab11bb9742ca5f3e4bcf61ae70afd1262&',
-                '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png?ex=68bf9025&is=68be3ea5&hm=b69d5f3ca112a43f11c9e9918130cc46629bcd74306b08c68d9b102262c10d31&',
-                '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif?ex=68bfee06&is=68be9c86&hm=90d55932762e812347c32febf12dc0af1ffc433eceedfc22037142917e9c5664&',
+                '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png',
+                '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png',
+                '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif',
             };
             const banner = banners[interaction.guildId!];
-            const embed = new EmbedBuilder()
-                .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Acesso')
-                .setColor(0x2ecc71)
-                .setDescription(desc)
-                .setFooter({ text: 'Sistema de Verificação • Central da Web' });
-            if (banner)
-                embed.setImage(banner);
+            let embed: EmbedBuilder;
+            if (interaction.guildId === EVENTOS_GUILD_ID) {
+                const ev = {
+                    bullet: '<:emoji_72:1406097314283786271>',
+                    title: '<:purple7_emoji:1283759067269042228>',
+                    recruiters: '<:aqopontogg:1406099395405021265>'
+                };
+                embed = new EmbedBuilder()
+                    .setColor(0x9B59BB)
+                    .setTitle(`${ev.title} RECEPÇÃO - EVENTOS ${ev.title}`)
+                    .setDescription(`${ev.bullet} **Seja muito bem-vindo(a) ao servidor da Equipe de Eventos - Cdw!**\n\n• Clique no botão abaixo para iniciar a verificação e informar se você UPA ou NÃO UPA pela área.`)
+                    .addFields({ name: `${ev.recruiters} RECRUTADORES`, value: '*Escreva `rec`, envie e marque a liderança quando solicitado.*' })
+                    .setFooter({ text: 'Sistema de Verificação • Eventos' });
+                if (banner) embed.setImage(banner);
+            } else {
+                const desc = [
+                    'Clique em Verificar para validar seu cargo no servidor principal e configurar seu perfil.',
+                    'Se você já possui o cargo oficial da área no servidor principal, poderá escolher se **upa** na área (Sim) ou se **não upa** (Não).'
+                ].join('\n\n');
+                embed = new EmbedBuilder()
+                    .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Acesso')
+                    .setColor(0x2ecc71)
+                    .setDescription(desc)
+                    .setFooter({ text: 'Sistema de Verificação • Central da Web' });
+                if (banner) embed.setImage(banner);
+            }
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('verify_area').setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de verificação publicada.');

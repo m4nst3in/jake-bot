@@ -1,8 +1,14 @@
 {
+  "__comment_root": "Arquivo de configuração principal do bot. IDs são strings. areas[] = servidores setoriais com cargos locais; cargos globais/liderança principal ficam em protection.areaLeaderRoles e mapas rppExtras.",
+  "__comment_version": "Versão de formato para migrações futuras.",
   "version": 1,
+  "__comment_environment": "Ambiente: dev | prod | staging.",
   "environment": "dev",
+  "__comment_botId": "User ID do bot para exceções de proteção.",
   "botId": "934635845460303882",
+  "__comment_mainGuildId": "Servidor principal com cargos globais e painéis.",
   "mainGuildId": "934635845460303882",
+  "__comment_owners": "Owners: bypass de praticamente todas permissões.",
   "owners": [
     "1382506667211493429",
     "511264305832919050",
@@ -11,6 +17,7 @@
     "1016542932284747836"
   ],
 
+  "__comment_roles": "Cargos globais no servidor principal: hierarquia militar + especiais.",
   "roles": {
     "staff": "1135122929529659472",
     "Iniciante": "1136850198618976296",
@@ -46,6 +53,7 @@
     "Manager": "1134940087973593168"
   },
 
+  "__comment_staffRankMirrors": "Espelhos de ranks: guildId(area) -> cargos equivalentes por nome de rank global.",
   "staffRankMirrors": {
     "1183909149784952902": {
       "Iniciante": "1183909149784952910",
@@ -208,6 +216,7 @@
     }
   },
 
+  "__comment_progressionRoles": "Progressão: para cada guild, cargos que sobem (upa) e exceções (naoUpa).",
   "progressionRoles": {
     "1180721287476289596": { "upa": ["1180871635662819498"], "naoUpa": ["1180871637491523626"] },
     "1183909149784952902": { "upa": ["1183909149784952907"], "naoUpa": ["1183909149784952906"] },
@@ -217,6 +226,7 @@
     "1283125240368730132": { "upa": ["1283205780983648278"], "naoUpa": ["1283205781831024640"] }
   },
 
+  "__comment_channels": "Canais globais para logs/rankings consolidados.",
   "channels": {
     "auditLog": "000000000000001003",
     "blacklistLog": "000000000000001002",
@@ -229,7 +239,17 @@
     "rppLog": "1414091725483282555",
     "rppReview": "1271452939742875670"
   },
+  "__comment_blacklistAreaLogs": "Mapeamento de canais de log de blacklist por área.",
+  "blacklistAreaLogs": {
+    "MOVCALL": "1414776841889386496",
+    "SUPORTE": "1414777697581666304",
+    "RECRUTAMENTO": "1414781211544391751",
+    "JORNALISMO": "1414778101665235004",
+    "DESIGN": "1414777320807600138",
+    "EVENTOS": "1414774876161572959"
+  },
 
+  "__comment_emojis": "Emojis globais reutilizados em embeds/botões.",
   "emojis": {
     "bancaTitle": "<:bregblakk:1347017024412455026>",
     "champion": "<a:champion78:1312240136796242021>",
@@ -243,6 +263,7 @@
     "rppSnowflake": "<a:snowflake:1313280806235672656>"
   },
 
+  "__comment_support": "Config do servidor de suporte (hub interno, supervisão, pontos, banca).",
   "support": {
     "guildId": "1190515971035774996",
     "roles": {
@@ -271,15 +292,18 @@
       "tool": "<:a_staff_40SBR:1377912584484946012>"
     }
   },
-
+  "__comment_areas": "Lista de servidores de área: roleIds.lead = cargo de liderança LOCAL no servidor da área. A liderança GLOBAL (no servidor principal) fica nos mapas protection.areaLeaderRoles, protection.blockedRoles.allowedLeaderRole e rppExtras.membershipToLeadership.",
+  "__comment_areas_detail": "areas[]: servidores setoriais. roleIds.lead = liderança LOCAL; liderança GLOBAL mapeada em protection.areaLeaderRoles & rppExtras.membershipToLeadership.",
   "areas": [
-    { "name": "MOVCALL", "guildId": "1190390194533318706", "roleIds": { "lead": "1190390194579439669", "member": "1136861814328668230" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
-    { "name": "DESIGN", "guildId": "1183909149784952902", "roleIds": { "lead": "1183909149831086082", "member": "1136861844540227624" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
-    { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1136868804677357608" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
-    { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1247967720427884587" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
-    { "name": "EVENTOS", "guildId": "1405418716258111580", "roleIds": { "lead": "1284629218738569228", "member": "1170196352114901052" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
+    { "name": "MOVCALL", "guildId": "1190390194533318706", "roleIds": { "lead": "1190390194579439669", "member": "1190390194533318715" }, "blacklistAreas": ["MOVCALL", "GLOBAL"] },
+    { "name": "DESIGN", "guildId": "1183909149784952902", "roleIds": { "lead": "1183909149831086082", "member": "1183909149784952908" }, "blacklistAreas": ["DESIGN", "GLOBAL"] },
+    { "name": "RECRUTAMENTO", "guildId": "1180721287476289596", "roleIds": { "lead": "1182824023344812154", "member": "1180871634631020594" }, "blacklistAreas": ["RECRUTAMENTO", "GLOBAL"] },
+    { "name": "SUPORTE", "guildId": "1190515971035774996", "roleIds": { "lead": "1190515971144818760", "member": "1190515971069321238" }, "blacklistAreas": ["SUPORTE", "GLOBAL"] },
+    { "name": "JORNALISMO", "guildId": "1224414082866745405", "roleIds": { "lead": "1224414082975797304", "member": "1224414082866745411" }, "blacklistAreas": ["JORNALISMO", "GLOBAL"] },
+    { "name": "EVENTOS", "guildId": "1283125240368730132", "roleIds": { "lead": "1284629218738569228", "member": "1283205107021774918" }, "blacklistAreas": ["EVENTOS", "GLOBAL"] }
   ],
 
+  "__comment_banca": "Banca: pontos base, bônus e canais de referência para pedidos.",
   "banca": {
     "supportGuildId": "1190515971035774996",
     "supportOrderReferenceChannelId": "1307015943590903878",
@@ -292,12 +316,14 @@
     "supervisionPoints": 10
   },
 
+  "__comment_journalismBanca": "Banca de jornalismo: guild/categoria/prefixo de canais.",
   "journalismBanca": {
     "guildId": "1224414082866745405",
     "categoryId": "1224414084980805756",
     "prefix": "💕・"
   },
 
+  "__comment_recruitBanca": "Banca de recrutamento: pontos por mensagem, canais de log e controle.",
   "recruitBanca": {
     "guildId": "1180721287476289596",
     "reactionEmoji": "<a:Check:1217789508939157515>",
@@ -313,6 +339,7 @@
     "categoryId": "1242538995649351820"
   },
 
+  "__comment_rpp": "RPP: por guild, define canais de review/log e layout de embed.",
   "rpp": {
     "guilds": {
       "1180721287476289596": {
@@ -398,13 +425,14 @@
     }
   },
 
+  "__comment_rppExtras": "RPP extras: log principal, mapa membro->liderança global, exclusões de permissão.",
   "rppExtras": {
     "mainLogChannelId": "1414539162106855476",
     "membershipToLeadership": {
       "1180871634631020594": "1153690317262950400",
       "1183909149784952908": "1136864742997250118",
       "1190390194533318715": "1136864678253969430",
-      "1190515971069321238": "1136889351033344000",
+  "1190515971069321238": "1190515971144818760",
       "1224414082866745411": "1247610015787913360",
       "1283205107021774918": "1136864716434710608"
     },
@@ -416,6 +444,7 @@
     ]
   },
 
+  "__comment_protection": "Proteção: cargos bloqueados e quem pode aplicá-los; areaLeaderRoles = guild(area)->cargo liderança global.",
   "protection": {
     "botRoles": ["1080700822624686140", "934635845846192162"],
     "alertRole": "1411223951350435961",
@@ -423,13 +452,13 @@
     "logChannel": "1414540666171559966",
     "blockedRoles": {
       "1136861814328668230": { "name": "Mov Call", "allowedLeaderRole": "1153690317262950400" },
-      "1136861840421425284": { "name": "Suporte", "allowedLeaderRole": "1136889351033344000" },
+  "1136861840421425284": { "name": "Suporte", "allowedLeaderRole": "1190515971144818760" },
       "1136861844540227624": { "name": "Design", "allowedLeaderRole": "1153690317262950400" },
       "1136864678253969430": { "name": "Mov Call", "allowedLeaderRole": "1411223951350435961" },
       "1136864716434710608": { "name": "Eventos", "allowedLeaderRole": "1411223951350435961" },
       "1136864742997250118": { "name": "Design", "allowedLeaderRole": "1411223951350435961" },
       "1136868804677357608": { "name": "Recrutamento", "allowedLeaderRole": "1153690317262950400" },
-      "1136889351033344000": { "name": "Suporte", "allowedLeaderRole": "1411223951350435961" },
+  "1190515971144818760": { "name": "Suporte", "allowedLeaderRole": "1411223951350435961" },
       "1153690317262950400": { "name": "Recrutamento", "allowedLeaderRole": "1411223951350435961" },
       "1170196352114901052": { "name": "Eventos", "allowedLeaderRole": "1153690317262950400" },
       "1247610015787913360": { "name": "Jornalismo", "allowedLeaderRole": "1411223951350435961" },
@@ -453,6 +482,7 @@
     }
   },
 
+  "__comment_permissions": "Permissões adicionais: cargos extras autorizados para /recrutar e RPP.",
   "permissions": {
     "recruit": {
       "allowedRoles": [
@@ -466,6 +496,23 @@
         "1411223951350435961",
         "1153690317262950400"
       ]
+    },
+    "transfer": {
+      "allowedRoles": [
+        "1136861840421425284",
+        "1136889351033344000",
+        "1411223951350435961"
+      ]
     }
-  }
+  },
+  "__comment_permissionRoles": "Cargos de permissão que NÃO devem ser transferidos pelo comando /transferir-cargos.",
+  "permissionRoles": [
+    "1136699869290041404",
+    "1104523865377488918",
+    "1080746284434071582",
+    "1156383581099274250",
+    "1271086030984052788"
+  ],
+  "__comment_baseMemberRole": "Cargo base aplicado se após transferência o usuário origem ficar sem nenhum cargo transferido.",
+  "baseMemberRoleId": "934635845690990632"
 }

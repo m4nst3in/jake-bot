@@ -38,7 +38,10 @@ export function registerProtectionListener(client: any) {
                 let executorId: string | null = null;
                 try {
                     const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 5 });
-                    const entry = audit.entries.find(e => (e as any).target?.id === newMember.id && (e as any).changes?.some((c: any) => c.key === '$add' && c.new?.some((r: any) => r.id === role.id)));
+                    const entry = audit.entries.find(e => (e as any).target?.id === newMember.id && (e as any).changes?.some((c: any) => {
+                        const addedArr = (c as any)['new'];
+                        return c.key === '$add' && Array.isArray(addedArr) && addedArr.some((r: any) => r.id === role.id);
+                    }));
                     if (entry)
                         executorId = entry.executor?.id || null;
                 }

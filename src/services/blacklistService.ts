@@ -10,4 +10,6 @@ export class BlacklistService {
         const items = await this.list(areaOrGlobal);
         return baseEmbed({ title: `🚫 Blacklist ${areaOrGlobal}`, description: items.map((i: any) => `• ${i.discord_id} — ${i.reason}`).join('\n') || 'Vazia', color: 0xe74c3c });
     }
+    async resetAll() { return (this.repo as any).resetAll(); }
+    async resetArea(area: string) { return (this.repo as any).resetArea(area); }
 }
