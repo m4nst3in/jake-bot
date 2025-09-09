@@ -51,6 +51,10 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                         existing.add(m.id);
                     }
                 });
+                // Remove quaisquer owners (mesmo com pontos) exceto IDs whitelisted (sempre mostrar) para o PDF
+                if (owners.length) {
+                    rows = rows.filter(r => !owners.includes(r.user_id) || alwaysShow.includes(r.user_id));
+                }
             }
         }
     } catch {}
