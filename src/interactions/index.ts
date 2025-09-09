@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { Client } from 'discord.js';
 import { logger } from '../utils/logger.ts';
 export async function loadInteractions(client: Client) {
@@ -11,7 +12,7 @@ export async function loadInteractions(client: Client) {
             continue;
         const files = fs.readdirSync(folderPath).filter(f => f.endsWith('.ts'));
         for (const file of files) {
-            const mod = await import(path.join(folderPath, file));
+            const mod = await import(pathToFileURL(path.join(folderPath, file)).href);
             const handler = mod.default;
             if (!handler?.id)
                 continue;

@@ -1,4 +1,4 @@
-import { BaseRepo } from './base.js';
+import { BaseRepo } from './base.ts';
 export class StaffRepository extends BaseRepo {
     async clearAll() {
         if (this.isSqlite()) {

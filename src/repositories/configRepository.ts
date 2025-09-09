@@ -1,4 +1,4 @@
-import { BaseRepo } from './base.js';
+import { BaseRepo } from './base.ts';
 export interface ConfigRecord {
     guild_id: string;
     area_settings?: any;

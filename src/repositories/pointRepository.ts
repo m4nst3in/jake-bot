@@ -1,4 +1,4 @@
-import { BaseRepo } from './base.js';
+import { BaseRepo } from './base.ts';
 export interface PointsRecord {
     id?: number | string;
     user_id: string;

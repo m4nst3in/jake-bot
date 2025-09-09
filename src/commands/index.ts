@@ -4,6 +4,7 @@ import { Routes } from 'discord-api-types/v10';
 import { logger } from '../utils/logger.ts';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 export interface SlashCommand {
     data: any;
     execute: (interaction: any) => Promise<any>;
@@ -18,7 +19,7 @@ export async function loadCommands(client: Client) {
         if (file === 'config.ts') {
             continue;
         }
-        const mod = await import(path.join(commandsPath, file));
+    const mod = await import(pathToFileURL(path.join(commandsPath, file)).href);
         const cmd: SlashCommand = mod.default;
         if (!cmd?.data)
             continue;

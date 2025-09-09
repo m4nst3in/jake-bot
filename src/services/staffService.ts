@@ -1,4 +1,4 @@
-import { StaffRepository } from '../repositories/staffRepository.js';
+import { StaffRepository } from '../repositories/staffRepository.ts';
 export interface StaffRankRecord {
     id: string;
     rankRoleId?: string;

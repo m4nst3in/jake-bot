@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { config as loadEnv } from 'dotenv';
-import { StaffService } from '../services/staffService.js';
+import { StaffService } from '../services/staffService.ts';
 import { resolvePrimaryGuildId, loadConfig } from '../config/index.ts';
 import { DatabaseManager } from '../db/manager.ts';
 import { logger } from '../utils/logger.ts';

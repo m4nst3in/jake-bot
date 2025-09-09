@@ -1,4 +1,4 @@
-import { BaseRepo } from './base.js';
+import { BaseRepo } from './base.ts';
 export class BancaRepository extends BaseRepo {
     async create(channelId: string, name: string, staffId: string) {
         if (this.isSqlite()) {

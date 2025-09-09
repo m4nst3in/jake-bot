@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
-import { logger } from './utils/logger.js';
-import { registerEventHandlers } from './events/index.js';
-import { loadCommands } from './commands/index.js';
-import { loadInteractions } from './interactions/index.js';
-import { DatabaseManager } from './db/manager.js';
+import { logger } from './utils/logger.ts';
+import { registerEventHandlers } from './events/index.ts';
+import { loadCommands } from './commands/index.ts';
+import { loadInteractions } from './interactions/index.ts';
+import { DatabaseManager } from './db/manager.ts';
 export const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,

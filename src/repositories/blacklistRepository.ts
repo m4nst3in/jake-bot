@@ -1,4 +1,4 @@
-import { BaseRepo } from './base.js';
+import { BaseRepo } from './base.ts';
 export interface BlacklistRecord {
     id?: number | string;
     discord_id: string;
