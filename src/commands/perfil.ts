@@ -28,7 +28,7 @@ export default {
     const activeBlacklistPromise = blacklistRepo.listUserActive(target.id).catch(() => []);
     const occCountPromise = occRepo.countForUser(target.id).catch(() => 0);
 
-    const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
+  const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
     const withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
 
     // Leadership detection across all configured guilds
@@ -49,9 +49,17 @@ export default {
     } catch {}
     leaderAreas = [...new Set(leaderAreas)].sort((a,b)=>a.localeCompare(b));
 
-    const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
+  const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
 
-    const descLines: string[] = [];
+  // Aggregate stats
+  const totalReports = withPos.reduce((s, a) => s + (a.reports || 0), 0);
+  const totalShifts = withPos.reduce((s, a) => s + (a.shifts || 0), 0);
+  const activeAreas = withPos.filter(a => (a.points || a.reports || a.shifts));
+  const avgPoints = activeAreas.length ? Math.round(activeAreas.reduce((s,a)=>s+a.points,0)/activeAreas.length) : 0;
+  const topArea = withPos.slice().sort((a,b)=>b.points-a.points)[0];
+  const lastUpdateUnix = Math.floor(Date.now()/1000); // placeholder (could store per-area last_updated if added)
+
+  const descLines: string[] = [];
     if (withPos.length) {
       for (const a of withPos) {
         const isRecruit = a.area.toLowerCase() === 'recrutamento';
@@ -78,12 +86,35 @@ export default {
     if (occCount) headerBadges.push(`📂 Ocorrências: ${occCount}`);
 
     const header = headerBadges.length ? headerBadges.join(' • ') : 'Nenhuma restrição ou liderança registrada.';
-    const desc = `${header}\n\n${descLines.join('\n')}`;
+
+    // Blacklist details (limit 3 reasons for brevity)
+    let blacklistDetails = '';
+    if (activeBlacklist.length) {
+      blacklistDetails = activeBlacklist.slice(0,3).map((b:any,i:number)=>`• ${b.area_or_global || 'GLOBAL'}: ${b.reason || 'Sem motivo'}`).join('\n');
+      if (activeBlacklist.length > 3) blacklistDetails += `\n… (+${activeBlacklist.length-3})`;
+    }
+
+    const statsLines: string[] = [];
+    statsLines.push(`🌐 Áreas ativas: **${activeAreas.length}**`);
+    statsLines.push(`⭐ Pontos médios/área: **${avgPoints}**`);
+    if (topArea) statsLines.push(`🏅 Top área: **${topArea.area}** (${topArea.points} pts)`);
+    if (totalReports) statsLines.push(`🧾 Total relatórios: **${totalReports}**`);
+    if (totalShifts) statsLines.push(`🕒 Total plantões: **${totalShifts}**`);
+    statsLines.push(`⏱️ Atualização: <t:${lastUpdateUnix}:R>`);
+
+    if (occCount) statsLines.push(`📂 Ocorrências registradas: **${occCount}**`);
+
+    const sections: string[] = [header];
+    if (statsLines.length) sections.push(statsLines.join(' • '));
+    if (descLines.length) sections.push(descLines.join('\n'));
+    if (blacklistDetails) sections.push(`\n__Blacklist Detalhes__\n${blacklistDetails}`);
+
+    const desc = sections.filter(Boolean).join('\n\n');
 
     const embed = new EmbedBuilder()
       .setTitle(`Perfil de ${target.username || target.tag || target.id}`)
       .setDescription(desc)
-      .setFooter({ text: `Total: ${profile.total} pts • ID: ${target.id}` })
+  .setFooter({ text: `Total: ${profile.total} pts • Relatórios: ${totalReports} • Plantões: ${totalShifts} • ID: ${target.id}` })
       .setTimestamp();
 
     // Aplicar cor por guild se possível
