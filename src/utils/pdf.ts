@@ -340,12 +340,13 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             const hitPoints = pointGoal ? r.points >= pointGoal : true;
             const hitReports = reportsGoal !== undefined ? (r.reports_count || 0) >= reportsGoal : true;
             const hitShifts = (r.shifts_count || 0) >= SUPPORT_PLANTOES_META;
-            return { hit: hitPoints && hitReports && hitShifts, pointGoal, reportsGoal, shiftsGoal: SUPPORT_PLANTOES_META, g };
+            const overallHit = hitPoints && hitReports && hitShifts;
+            return { overallHit, hitPoints, hitReports, hitShifts, pointGoal, reportsGoal, shiftsGoal: SUPPORT_PLANTOES_META, g };
         }
-        if (!g) return { hit: true, g: undefined };
+        if (!g) return { overallHit: true, g: undefined };
         const threshold = g.upPoints ?? g.points ?? 0;
-        const hit = threshold ? r.points >= threshold : true;
-        return { hit, g, threshold };
+        const hitPoints = threshold ? r.points >= threshold : true;
+        return { overallHit: hitPoints, g, threshold, hitPoints };
     }
     for (const r of rows) {
         const cardHeight = suporte ? 120 : 108;
@@ -427,20 +428,21 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.font(fonts.regular).fontSize(8).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
         cursorY += 12;
         const rankLabel = r.rankName ? ` • ${r.rankName}` : '';
-        // Indicador de status (círculo à direita do card)
+        // Indicador de status (badge à direita do card)
         try {
-            const success = evalRes.hit;
-            const statusCircleColor = success ? '#2ecc71' : '#e74c3c';
-            const statusSymbol = success ? '✓' : '✗';
+            const success = evalRes.overallHit;
+            const badgeColor = success ? '#1abc9c' : '#e74c3c';
+            const label = success ? 'META OK' : 'META FALTA';
             const cardRight = doc.page.margins.left + contentWidth;
-            let statusX = cardRight - 28; // centro do círculo
-            let statusY = startY + 22;
-            if (idx === 1) {
-                // Ajuste para não colidir com o ribbon no primeiro card
-                statusY = startY + 42; // abaixo do ribbon
-            }
-            doc.save().circle(statusX, statusY, 12).fill(statusCircleColor).restore();
-            doc.fillColor('#fff').font(fonts.bold).fontSize(12).text(statusSymbol, statusX - 6, statusY - 7, { width: 12, align: 'center' });
+            const badgeHeight = 22;
+            const badgeWidth = 90;
+            let badgeY = startY + 16;
+            if (idx === 1) badgeY = startY + 44; // abaixo do ribbon
+            const badgeX = cardRight - badgeWidth - 18;
+            doc.save();
+            doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 12).fill(badgeColor);
+            doc.fillColor('#fff').font(fonts.bold).fontSize(10).text(label, badgeX, badgeY + 5, { width: badgeWidth, align: 'center' });
+            doc.restore();
         } catch {}
         doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
         cursorY += 16;
@@ -448,27 +450,40 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
         cursorY += 12;
         if (areaKey === 'suporte') {
-            const repStr = `Relatórios: ${r.reports_count || 0}${evalRes.reportsGoal !== undefined ? '/' + evalRes.reportsGoal : ''}`;
-            const shiftStr = `Plantões: ${r.shifts_count || 0}/${evalRes.shiftsGoal}`;
-            doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`${repStr}  •  ${shiftStr}`, infoX, cursorY);
-            cursorY += 12;
+            // Pontos
             if (evalRes.pointGoal !== undefined) {
-                if (!evalRes.hit) {
+                if (evalRes.hitPoints) {
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY);
+                } else {
                     const diff = Math.max(0, evalRes.pointGoal - r.points);
-                    if (diff > 0) {
-                        doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${diff})`, infoX, cursorY); cursorY += 12;
-                    } else {
-                        doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} pendente`, infoX, cursorY); cursorY += 12;
-                    }
+                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${diff})`, infoX, cursorY);
                 }
-                else {
-                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY); cursorY += 12;
-                }
+                cursorY += 12;
+            }
+            // Relatórios
+            if (evalRes.reportsGoal !== undefined) {
+                const have = r.reports_count || 0;
+                const need: number = evalRes.reportsGoal ?? 0;
+                const hit = evalRes.hitReports;
+                const diff = Math.max(0, need - have);
+                if (hit) doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Relatórios: ${have}/${need} ok`, infoX, cursorY);
+                else doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Relatórios: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
+                cursorY += 12;
+            }
+            // Plantões
+            {
+                const have = r.shifts_count || 0;
+                const need: number = evalRes.shiftsGoal ?? SUPPORT_PLANTOES_META;
+                const hit = evalRes.hitShifts;
+                const diff = Math.max(0, need - have);
+                if (hit) doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Plantões: ${have}/${need} ok`, infoX, cursorY);
+                else doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Plantões: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
+                cursorY += 12;
             }
         } else if (evalRes.g) {
             const up = evalRes.g.upPoints ?? evalRes.g.points;
             if (up) {
-                if (!evalRes.hit) {
+                if (!evalRes.overallHit) {
                     const diff = Math.max(0, up - r.points);
                     doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up}${diff > 0 ? ` (faltam ${diff})` : ''}`, infoX, cursorY); cursorY += 12;
                 }
