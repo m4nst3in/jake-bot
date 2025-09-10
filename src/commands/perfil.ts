@@ -31,17 +31,23 @@ export default {
     const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
     const withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
 
-    // Leadership detection (current guild + cross guild)
+    // Leadership detection across all configured guilds
     let leaderAreas: string[] = [];
-    const member = interaction.guild?.members?.cache?.get(target.id) as GuildMember | undefined;
-    if (member) leaderAreas = getMemberLeaderAreas(member);
-    if (!leaderAreas.length) {
-      const cross = await hasCrossGuildLeadership(interaction.client, target.id);
-      if (cross) {
-        // coarse: mark as 'Alguma liderança'
-        leaderAreas = ['(cross-guild)'];
+    try {
+      const cfgAreas: any[] = cfg.areas || [];
+      const client = interaction.client;
+      for (const a of cfgAreas) {
+        if (!a.guildId || !a.roleIds?.lead) continue;
+        try {
+          const g = client.guilds.cache.get(a.guildId) || await client.guilds.fetch(a.guildId);
+          const m = await g.members.fetch(target.id).catch(() => null);
+          if (m && m.roles.cache.has(a.roleIds.lead)) {
+            leaderAreas.push(a.name);
+          }
+        } catch {}
       }
-    }
+    } catch {}
+    leaderAreas = [...new Set(leaderAreas)].sort((a,b)=>a.localeCompare(b));
 
     const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
 
