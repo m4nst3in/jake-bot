@@ -2,6 +2,9 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { baseEmbed } from '../utils/embeds.ts';
 import { sendPointsLog } from '../utils/pointsLogger.ts';
 import { loadConfig } from '../config/index.ts';
+
+// Public type for user profile area summary (used in return type inference)
+export interface UserAreaSummary { area: string; points: number; reports: number; shifts: number; }
 export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
@@ -179,10 +182,9 @@ export class PointsService {
     async resetArea(area: string) { await (this.repo as any).resetArea(area); }
     async getUserProfile(userId: string) {
         const all: any[] = await (this.repo as any).getUserAllAreas(userId);
-        interface AreaSummary { area: string; points: number; reports: number; shifts: number; }
-        const areas: AreaSummary[] = all.map((r: any) => ({ area: r.area, points: r.points || 0, reports: r.reports_count || 0, shifts: r.shifts_count || 0 }))
-            .sort((a: AreaSummary, b: AreaSummary) => b.points - a.points);
-        const total = areas.reduce((s: number, a: AreaSummary) => s + a.points, 0);
+        const areas: UserAreaSummary[] = all.map((r: any) => ({ area: r.area, points: r.points || 0, reports: r.reports_count || 0, shifts: r.shifts_count || 0 }))
+            .sort((a: UserAreaSummary, b: UserAreaSummary) => b.points - a.points);
+        const total = areas.reduce((s: number, a: UserAreaSummary) => s + a.points, 0);
         return { areas, total };
     }
 }
