@@ -45,15 +45,21 @@ export default {
             return;
         }
         const areaCfg = cfg.areas.find(a => a.name.toLowerCase() === team);
-        const roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
-        if (!areaCfg) {
+        // Prefer cargo de equipe principal se configurado (primaryGuildTeamRoles) quando no servidor principal
+        const primaryMap = cfg.primaryGuildTeamRoles || {};
+        const primaryRoleId = primaryMap[team];
+        let roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
+        if (interaction.guildId === cfg.mainGuildId && primaryRoleId) {
+            roleId = primaryRoleId;
+        }
+        if (!areaCfg && !primaryRoleId) {
             await interaction.editReply('Config da equipe não encontrada.');
             return;
         }
         const inicianteRole = cfg.roles?.Iniciante;
         const staffRole = cfg.roles?.staff;
         if (!roleId.startsWith('ROLE_ID_') && !member.roles.cache.has(roleId)) {
-            await member.roles.add(roleId).catch(() => { });
+            await member.roles.add(roleId, 'Recrutamento de usuário').catch(() => { });
         }
         let hasHigherRank = false;
         const alreadyStaff = staffRole ? member.roles.cache.has(staffRole) : false;

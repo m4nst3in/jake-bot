@@ -52,6 +52,16 @@
     "Almirante": "1411961026995290162",
     "Manager": "1134940087973593168"
   },
+  "__comment_primaryGuildTeamRoles": "Cargos de equipe no servidor principal usados pelo /recrutar (áreas).",
+  "primaryGuildTeamRoles": {
+    "movcall": "1136861814328668230",
+    "eventos": "1170196352114901052",
+    "recrutamento": "1136868804677357608",
+    "design": "1136861844540227624",
+    "jornalismo": "1247967720427884587",
+    "suporte": "1136861840421425284",
+    "mig": "1346223411289919558"
+  },
 
   "__comment_hierarchyOrder": "Ordem global das patentes (menor -> maior). Pode ser ajustada sem alterar código.",
   "hierarchyOrder": [
@@ -65,7 +75,7 @@
     "Vip God": "934635845829423189",
     "Vip Highest": "962046581811601508"
   },
-  
+
   "__comment_purchasableRoles": "Cargos compráveis especiais (loja/pacotes).",
   "purchasableRoles": {
     "Presidencial": "1136850373383045121",
