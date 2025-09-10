@@ -401,7 +401,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.circle(badgeX + 18, badgeY + 18, 18).fill(circleColor);
         doc.fillColor('#fff').font(fonts.bold).fontSize(15).text(String(idx), badgeX + 6, badgeY + 8, { width: 24, align: 'center' });
         doc.restore();
-        const user = await client.users.fetch(r.user_id).catch(() => null);
+    const evalRes = evaluate(r);
+    const user = await client.users.fetch(r.user_id).catch(() => null);
         let avatarDrawn = false;
         if (user) {
             const av = user.displayAvatarURL({ size: 128, extension: 'png' } as any);
@@ -426,9 +427,22 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.font(fonts.regular).fontSize(8).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
         cursorY += 12;
         const rankLabel = r.rankName ? ` • ${r.rankName}` : '';
-        const evalRes = evaluate(r);
-        const statusEmoji = evalRes.hit ? passEmoji : failEmoji;
-        doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`${statusEmoji} Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
+        // Indicador de status (círculo à direita do card)
+        try {
+            const success = evalRes.hit;
+            const statusCircleColor = success ? '#2ecc71' : '#e74c3c';
+            const statusSymbol = success ? '✓' : '✗';
+            const cardRight = doc.page.margins.left + contentWidth;
+            let statusX = cardRight - 28; // centro do círculo
+            let statusY = startY + 22;
+            if (idx === 1) {
+                // Ajuste para não colidir com o ribbon no primeiro card
+                statusY = startY + 42; // abaixo do ribbon
+            }
+            doc.save().circle(statusX, statusY, 12).fill(statusCircleColor).restore();
+            doc.fillColor('#fff').font(fonts.bold).fontSize(12).text(statusSymbol, statusX - 6, statusY - 7, { width: 12, align: 'center' });
+        } catch {}
+        doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
         cursorY += 16;
         const pctTotal = totalPoints ? (r.points / totalPoints * 100) : 0;
         doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
@@ -439,13 +453,25 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`${repStr}  •  ${shiftStr}`, infoX, cursorY);
             cursorY += 12;
             if (evalRes.pointGoal !== undefined) {
-                if (!evalRes.hit) { doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${evalRes.pointGoal - r.points})`, infoX, cursorY); cursorY += 12; }
-                else { doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY); cursorY += 12; }
+                if (!evalRes.hit) {
+                    const diff = Math.max(0, evalRes.pointGoal - r.points);
+                    if (diff > 0) {
+                        doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${diff})`, infoX, cursorY); cursorY += 12;
+                    } else {
+                        doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} pendente`, infoX, cursorY); cursorY += 12;
+                    }
+                }
+                else {
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY); cursorY += 12;
+                }
             }
         } else if (evalRes.g) {
             const up = evalRes.g.upPoints ?? evalRes.g.points;
             if (up) {
-                if (!evalRes.hit) { doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up} (faltam ${up - r.points})`, infoX, cursorY); cursorY += 12; }
+                if (!evalRes.hit) {
+                    const diff = Math.max(0, up - r.points);
+                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up}${diff > 0 ? ` (faltam ${diff})` : ''}`, infoX, cursorY); cursorY += 12;
+                }
                 else { doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY); cursorY += 12; }
             }
         }
