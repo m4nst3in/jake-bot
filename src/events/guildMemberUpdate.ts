@@ -86,6 +86,17 @@ export function registerProtectionListener(client: any) {
                 ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
                 '1411223951350435961'
             ]);
+            // Detecta cargo de Liderança de Recrutamento (heurística: nome 'Recrutamento' com allowedLeaderRole = Líder Geral)
+            let recruitmentLeadershipRoleId: string | undefined;
+            for (const [rid, info] of Object.entries((rootCfg.protection?.blockedRoles) || {})) {
+                if ((info as any).name === 'Recrutamento' && (info as any).allowedLeaderRole === '1411223951350435961') {
+                    recruitmentLeadershipRoleId = rid;
+                    break;
+                }
+            }
+            const staffRoleId = rootCfg.roles?.staff;
+            const inicianteRoleId = rootCfg.roles?.['Iniciante'];
+            const allowedTeamNamesForRecruitLead = new Set(['Mov Call','Design','Recrutamento','Eventos','Jornalismo']); // exclui Migração e Suporte
             async function resolveExecutorForRole(roleId: string): Promise<string | null> {
                 if (roleExecutorMap[roleId])
                     return roleExecutorMap[roleId];
@@ -197,6 +208,12 @@ export function registerProtectionListener(client: any) {
                             else if (blockInfo.allowedLeaderRole) {
                                 if (execMember.roles.cache.has(blockInfo.allowedLeaderRole))
                                     allowed = true;
+                            }
+                            // Regra: Liderança de Recrutamento pode aplicar Staff, Iniciante e cargos de equipes (exceto Migração e Suporte)
+                            if (!allowed && recruitmentLeadershipRoleId && execMember.roles.cache.has(recruitmentLeadershipRoleId)) {
+                                if (role.id === staffRoleId || role.id === inicianteRoleId || allowedTeamNamesForRecruitLead.has(blockInfo.name || '')) {
+                                    allowed = true;
+                                }
                             }
                             if (!allowed && isGlobalHierarchy) {
                                 if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
