@@ -10,18 +10,14 @@ export default {
   data: new SlashCommandBuilder()
     .setName('ocorrencias')
     .setDescription('Registra uma ocorrência de staff')
-    // Required FIRST
+    // Ordem solicitada: (id) (motivo) (resolução)
+    .addStringOption(o => o.setName('id').setDescription('ID do staff acusado').setRequired(true))
     .addStringOption(o => o.setName('motivo').setDescription('Motivo principal / título').setRequired(true))
-    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true))
-    // Optional after required
-    .addUserOption(o => o.setName('staff').setDescription('Mencione o staff acusado').setRequired(false))
-    .addStringOption(o => o.setName('id').setDescription('ID do staff acusado (caso não mencione)').setRequired(false)),
+    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true)),
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
   const member = interaction.member as GuildMember | null;
-  const staffUser = interaction.options.getUser('staff');
-  const providedId = interaction.options.getString('id')?.trim();
-  const staffId = (staffUser?.id || providedId || '').trim();
+  const staffId = interaction.options.getString('id', true).trim();
   const motivo = interaction.options.getString('motivo', true).trim();
   const resolucao = interaction.options.getString('resolucao', true).trim();
 
@@ -36,12 +32,28 @@ export default {
       return;
     }
 
-    if (!staffId) {
-      await interaction.editReply('Forneça um ID ou mencione o staff.');
-      return;
-    }
     if (!/^[0-9]{5,20}$/.test(staffId)) {
       await interaction.editReply('ID inválido.');
+      return;
+    }
+
+    // Validar se é staff (precisa ter cargo staff global no mainGuild)
+    try {
+      const cfgAny: any = loadConfig();
+      const mainGuildId = cfgAny.mainGuildId;
+      const staffRole = cfgAny.roles?.staff;
+      if (mainGuildId && staffRole) {
+        const g = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId);
+        const targetMember = await g.members.fetch(staffId).catch(()=>null);
+        if (!targetMember || !targetMember.roles.cache.has(staffRole)) {
+          await interaction.editReply('O alvo não possui cargo de staff.');
+          return;
+        }
+      } else {
+        // Se não houver configuração clara, ainda assim continuamos, mas registramos aviso
+      }
+    } catch {
+      await interaction.editReply('Falha ao validar staff.');
       return;
     }
 
@@ -68,7 +80,7 @@ export default {
       .setTimestamp();
 
     const repo = new OccurrenceRepository();
-    // Coletar menções de liderança das áreas onde o staff participa
+  // Coletar menções de liderança das áreas onde o staff participa
     let leadershipRoleMentions: string[] = [];
     try {
       const cfgAny: any = cfg;
