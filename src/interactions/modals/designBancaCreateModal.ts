@@ -42,15 +42,21 @@ export default {
         }
         catch { }
         const ownerMention = `<@${donoId}>`;
-        const greetingLines = [
-            `${EMBED_EMOJIS[0]} Seja bem vindo/a a equipe de Design! Esse é o seu portfólio. Envie suas artes no chat do pedido marcando a pessoa que o abriu, e logo depois, envie aqui no seu portfólio sem nenhuma marcação.`,
-            `${EMBED_EMOJIS[1]} Não se esqueça de fazer no MÍNIMO 3 artes por semana para não ser rebaixado/rebocado da equipe.`,
-            `${EMBED_EMOJIS[2]} Se houver alguma dúvida, favor chamar a liderança no privado.`,
+        // Texto customizado solicitado para a embed de portfólio
+        const portfolioDescription = [
+            '<a:o_sparkle02:1413296730350293085>  <:abo_letterp:1413296132196401193>  <:abo_lettero:1413296193152483429>  <:abo_letterr:1413296230179537056>  <:abo_lettert:1413296291169042494>  <:abo_letterf:1413296762931777697>  <:abo_lettero:1413296193152483429>  <:abo_letterl:1413296498019536896>  <:abo_letteri:1413296398090371082>  <:abo_lettero:1413296193152483429>  <:o_bow01:1413296911741616170>   <:abo_letterc:1413296963390148730> <:abo_letterd:1413297001268908052> <:abo_letterw:1413297041353867335> <a:o_sparkle02:1413296730350293085>',
+            `<:cdwdsg_ponto_mexendo:1190435485043138671>   *Seja bem-vindo(a), ${ownerMention}*\n*Aqui será o espaço do seu portfólio, onde você poderá postar todas as suas artes.*`,
+            '<a:o_sparkle02:1413296730350293085> <:abo_letterg:1413297772567728259>  <:o_letter_u:1413297831388643379>  <:abo_letteri:1413296398090371082> <:abo_lettera:1413297966374191114>  <a:o_sparkle02:1413296730350293085>',
+            '> <:cdwdsg_ponto_mexendo:1190435485043138671>https://discord.com/channels/1183909149784952902/1316420985171345468 explicação de cada parte da área;',
+            '> <:cdwdsg_ponto_mexendo:1190435485043138671>https://discord.com/channels/1183909149784952902/1183909150267297899 as cores de cada área;',
+            '> <:cdwdsg_ponto_mexendo:1190435485043138671>https://discord.com/channels/1183909149784952902/1183909150447648808 para conferir a sua pontuação semanal.',
+            '<a:cdwdsg_exclamation:1391471203465826376>   `Lembre-se:` Sempre poste aqui as artes feitas para o servidor, pois é através delas que contabilizamos seus pontos.',
+            '<:cdwdsg_topico:1190435674705371146>   **Em caso de dúvidas, chame no privado alguém com o cargo <@&1183909149831086082>. Boa diversão e boas criações!**'
         ].join('\n\n');
         const embed = new EmbedBuilder()
             .setColor(0xE67E22)
-            .setDescription(`Olá ${ownerMention} !\n\n${greetingLines}`)
-            .setFooter({ text: 'Liderança de Design - CDW Jake' });
+            .setDescription(portfolioDescription)
+            .setFooter({ text: 'Liderança de Design - CDW' });
         try {
             await (channel as TextChannel).send({ embeds: [embed] });
         }
