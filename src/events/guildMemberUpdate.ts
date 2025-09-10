@@ -27,6 +27,76 @@ export function registerProtectionListener(client: any) {
             if (!newMember || !newMember.guild)
                 return;
             const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
+               const rootCfg: any = loadConfig();
+            const mainGuildId = rootCfg.mainGuildId;
+            // --- Proteção Anti-Remoção de Cargo Membro ---
+            const MEMBER_PROTECTED_ROLE_ID = '934635845690990632';
+            // Se o cargo protegido estava antes e não está mais agora => tentativa de remoção
+            if (oldMember?.roles?.cache?.has(MEMBER_PROTECTED_ROLE_ID) && !newMember.roles.cache.has(MEMBER_PROTECTED_ROLE_ID)) {
+                let executorId: string | null = null;
+                try {
+                    const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 15 }); // MEMBER_ROLE_UPDATE
+                    for (const entry of audit.entries.values()) {
+                        if ((entry as any).target?.id !== newMember.id) continue;
+                        const changes: any[] = (entry as any).changes || [];
+                        for (const c of changes) {
+                            if (c.key === '$remove') {
+                                const removedArr = c['new'] || c['new_value'];
+                                if (Array.isArray(removedArr) && removedArr.some((r: any) => r.id === MEMBER_PROTECTED_ROLE_ID)) {
+                                    executorId = entry.executor?.id || null;
+                                    break;
+                                }
+                            }
+                        }
+                        if (executorId) break;
+                    }
+                } catch {}
+                const isOwnerExecutor = executorId ? (Array.isArray(rootCfg.owners) && rootCfg.owners.includes(executorId)) : false;
+                // Liderança = qualquer cargo em protection.areaLeaderRoles ou cargo global líder geral
+                const leadershipRoleIds: Set<string> = new Set([
+                    ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
+                    '1411223951350435961'
+                ]);
+                let isLeadershipExecutor = false;
+                if (executorId) {
+                    try {
+                        const execMember = await newMember.guild.members.fetch(executorId).catch(() => null);
+                        if (execMember) {
+                            if (Array.from(leadershipRoleIds).some(r => execMember.roles.cache.has(r))) {
+                                isLeadershipExecutor = true;
+                            }
+                        }
+                    } catch {}
+                }
+                const allowedRemoval = isOwnerExecutor || isLeadershipExecutor;
+                if (!allowedRemoval) {
+                    // Restaura cargo
+                    await newMember.roles.add(MEMBER_PROTECTED_ROLE_ID, 'Proteção: cargo membro restaurado automaticamente').catch(() => { });
+                    // Loga no canal de proteção somente no servidor principal
+                    if (newMember.guild.id === mainGuildId) {
+                        const logChannelId = logChannel || '1414540666171559966';
+                        try {
+                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                            if (ch && ch.isTextBased()) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Remoção Bloqueada')
+                                    .setColor(0xE67E22)
+                                    .setDescription('O cargo de membro foi removido e restaurado automaticamente.')
+                                    .addFields(
+                                        { name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
+                                        { name: 'Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' },
+                                        { name: 'Cargo Restaurado', value: `<@&${MEMBER_PROTECTED_ROLE_ID}>\n\`${MEMBER_PROTECTED_ROLE_ID}\`` },
+                                        { name: 'Ação', value: 'Remoção revertida (não autorizado)' },
+                                        { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
+                                    )
+                                    .setTimestamp();
+                                const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
+                                ch.send({ content: mentionContent, embeds: [embed] }).catch(() => { });
+                            }
+                        } catch {}
+                    }
+                }
+            }
             const leaderUsers: string[] = (loadConfig() as any).protection?.leaderUsers || [];
             const added = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
             if (!added.size)
@@ -80,7 +150,7 @@ export function registerProtectionListener(client: any) {
                 }
                 catch { }
             }
-            const rootCfg: any = loadConfig();
+            // rootCfg já definido anteriormente
             const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
             const leadershipRoleIds: Set<string> = new Set([
                 ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),

@@ -447,7 +447,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             const label = success ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA';
             const cardRight = doc.page.margins.left + contentWidth;
             const badgeHeight = 22;
-            const badgeWidth = 90;
+                const textWidth = doc.widthOfString(label);
+                const badgeWidth = Math.min(Math.max(textWidth + 24, 90), 170); // padding horizontal 12px cada lado, limites
             let badgeY = startY + 16;
             if (idx === 1) badgeY = startY + 44; // abaixo do ribbon
             const badgeX = cardRight - badgeWidth - 18;
