@@ -29,7 +29,7 @@ export default {
     const occCountPromise = occRepo.countForUser(target.id).catch(() => 0);
 
   const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
-    const withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
+  let withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
 
     // Leadership detection across all configured guilds
     let leaderAreas: string[] = [];
@@ -51,32 +51,40 @@ export default {
 
   const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
 
-  // Aggregate stats
-  const totalReports = withPos.reduce((s, a) => s + (a.reports || 0), 0);
-  const totalShifts = withPos.reduce((s, a) => s + (a.shifts || 0), 0);
-  const activeAreas = withPos.filter(a => (a.points || a.reports || a.shifts));
-  const avgPoints = activeAreas.length ? Math.round(activeAreas.reduce((s,a)=>s+a.points,0)/activeAreas.length) : 0;
-  const topArea = withPos.slice().sort((a,b)=>b.points-a.points)[0];
-  const lastUpdateUnix = Math.floor(Date.now()/1000); // placeholder (could store per-area last_updated if added)
+    // Incluir áreas em que o usuário possui cargo de membro (mesmo com 0 pontos)
+    try {
+      const cfgAreas: any[] = cfg.areas || [];
+      const client = interaction.client;
+      for (const a of cfgAreas) {
+        if (!a.guildId || !a.roleIds?.member) continue;
+        try {
+          const g = client.guilds.cache.get(a.guildId) || await client.guilds.fetch(a.guildId);
+            const m = await g.members.fetch(target.id).catch(() => null);
+            if (m && m.roles.cache.has(a.roleIds.member)) {
+              if (!withPos.find(x => x.area.toLowerCase() === a.name.toLowerCase())) {
+                withPos.push({ area: a.name, points: 0, reports: 0, shifts: 0, pos: null });
+              }
+            }
+        } catch {}
+      }
+    } catch {}
+    // Reordenar: pontos desc depois nome
+    withPos.sort((a:any,b:any)=> (b.points - a.points) || a.area.localeCompare(b.area));
 
-  const descLines: string[] = [];
+    const totalReports = withPos.reduce((s, a) => s + (a.reports || 0), 0);
+    const totalShifts = withPos.reduce((s, a) => s + (a.shifts || 0), 0);
+
+    const descLines: string[] = [];
     if (withPos.length) {
       for (const a of withPos) {
-        const isRecruit = a.area.toLowerCase() === 'recrutamento';
-        const isSupport = a.area.toLowerCase() === 'suporte';
         const extra: string[] = [];
-        if (isRecruit || isSupport) {
-          if (a.reports) extra.push(`🧾 ${a.reports} rel.`);
-          if (a.shifts) extra.push(`🕒 ${a.shifts} plant.`);
-        } else {
-          if (a.reports) extra.push(`🧾 ${a.reports}`);
-          if (a.shifts) extra.push(`🕒 ${a.shifts}`);
-        }
+        if (a.reports) extra.push(`🧾 ${a.reports} rel.`);
+        if (a.shifts) extra.push(`🕒 ${a.shifts} plant.`);
         const posTxt = a.pos ? `#${a.pos}` : '#?';
         descLines.push(`• **${a.area}** ${posTxt} — **${a.points}** pts${extra.length ? ' • ' + extra.join(' • ') : ''}`);
       }
     } else {
-      descLines.push('Sem registros de pontos.');
+      descLines.push('Nenhuma área encontrada.');
     }
 
     // Header badges
@@ -90,32 +98,19 @@ export default {
     // Blacklist details (limit 3 reasons for brevity)
     let blacklistDetails = '';
     if (activeBlacklist.length) {
-      blacklistDetails = activeBlacklist.slice(0,3).map((b:any,i:number)=>`• ${b.area_or_global || 'GLOBAL'}: ${b.reason || 'Sem motivo'}`).join('\n');
+      blacklistDetails = activeBlacklist.slice(0,3).map((b:any)=>`• ${b.area_or_global || 'GLOBAL'}: ${b.reason || 'Sem motivo'}`).join('\n');
       if (activeBlacklist.length > 3) blacklistDetails += `\n… (+${activeBlacklist.length-3})`;
     }
 
-    const statsLines: string[] = [];
-    statsLines.push(`🌐 Áreas ativas: **${activeAreas.length}**`);
-    statsLines.push(`⭐ Pontos médios/área: **${avgPoints}**`);
-    if (topArea) statsLines.push(`🏅 Top área: **${topArea.area}** (${topArea.points} pts)`);
-    if (totalReports) statsLines.push(`🧾 Total relatórios: **${totalReports}**`);
-    if (totalShifts) statsLines.push(`🕒 Total plantões: **${totalShifts}**`);
-    statsLines.push(`⏱️ Atualização: <t:${lastUpdateUnix}:R>`);
-
-    if (occCount) statsLines.push(`📂 Ocorrências registradas: **${occCount}**`);
-
-    const sections: string[] = [header];
-    if (statsLines.length) sections.push(statsLines.join(' • '));
-    if (descLines.length) sections.push(descLines.join('\n'));
-    if (blacklistDetails) sections.push(`\n__Blacklist Detalhes__\n${blacklistDetails}`);
-
+    const sections: string[] = [header, descLines.join('\n')];
+    if (blacklistDetails) sections.push(`__Blacklist__\n${blacklistDetails}`);
+    if (occCount) sections.push(`📂 Ocorrências: **${occCount}**`);
     const desc = sections.filter(Boolean).join('\n\n');
 
     const embed = new EmbedBuilder()
       .setTitle(`Perfil de ${target.username || target.tag || target.id}`)
       .setDescription(desc)
-  .setFooter({ text: `Total: ${profile.total} pts • Relatórios: ${totalReports} • Plantões: ${totalShifts} • ID: ${target.id}` })
-      .setTimestamp();
+  .setFooter({ text: `Total: ${profile.total} pts • Relatórios: ${totalReports} • Plantões: ${totalShifts} • ID: ${target.id}` });
 
     // Aplicar cor por guild se possível
     try {
