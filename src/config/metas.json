@@ -1,0 +1,218 @@
+{
+  "movcall": {
+    "ranks": [
+      { "name": "Iniciante", "period": "1w", "upPoints": 70, "maintainPoints": 50 },
+      { "name": "Aprendiz", "period": "1w", "upPoints": 70, "maintainPoints": 50 },
+      { "name": "Recruta", "period": "1w", "upPoints": 75, "maintainPoints": 50 },
+      { "name": "Cadete", "period": "1w", "upPoints": 80, "maintainPoints": 50 },
+      { "name": "Soldado", "period": "1w", "upPoints": 80, "maintainPoints": 50 },
+      { "name": "Cabo", "period": "1w", "upPoints": 80, "maintainPoints": 50 },
+      { "name": "3 Sargento", "period": "1w", "upPoints": 90, "maintainPoints": 50 },
+      { "name": "2 Sargento", "period": "1w", "upPoints": 90, "maintainPoints": 50 },
+      { "name": "1 Sargento", "period": "1w", "upPoints": 100, "maintainPoints": 50 },
+
+      { "name": "Sub Oficial", "period": "2w", "upPoints": 90, "maintainPoints": 70 },
+      { "name": "Sub Tenente", "period": "2w", "upPoints": 100, "maintainPoints": 70 },
+      { "name": "Aspirante a Oficial", "period": "2w", "upPoints": 110, "maintainPoints": 70 },
+      { "name": "Intendente", "period": "2w", "upPoints": 120, "maintainPoints": 70 },
+      { "name": "2 Tenente", "period": "2w", "upPoints": 130, "maintainPoints": 70 },
+      { "name": "1 Tenente", "period": "2w", "upPoints": 140, "maintainPoints": 70 },
+
+      { "name": "Capitão", "period": "3w", "upPoints": 120, "maintainPoints": 80 },
+      { "name": "Capitão de Corveta", "period": "3w", "upPoints": 130, "maintainPoints": 80 },
+      { "name": "Major", "period": "3w", "upPoints": 145, "maintainPoints": 80 },
+      { "name": "Oficial de Guerra", "period": "3w", "upPoints": 150, "maintainPoints": 80 },
+      { "name": "Tenente Coronel", "period": "3w", "upPoints": 170, "maintainPoints": 80 },
+      { "name": "Coronel", "period": "3w", "upPoints": 200, "maintainPoints": 90 },
+
+      { "name": "Sub Comandante", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "Comandante", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "General de Brigada", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "General de Divisão", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "General de Esquadra", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "General de Exército", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "Contra-Almirante", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "Marechal", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "Almirante", "period": "merit", "upPoints": 90, "maintainPoints": 90 },
+      { "name": "Manager", "period": "merit", "upPoints": 90, "maintainPoints": 90 }
+    ]
+  },
+  "jornalismo": {
+    "ranks": [
+      { "name": "Iniciante", "period": "1w", "upPoints": 70 },
+      { "name": "Aprendiz", "period": "1w", "upPoints": 70 },
+      { "name": "Recruta", "period": "1w", "upPoints": 70 },
+      { "name": "Cadete", "period": "1w", "upPoints": 70 },
+      { "name": "Soldado", "period": "1w", "upPoints": 80 },
+      { "name": "Cabo", "period": "1w", "upPoints": 80 },
+      { "name": "3 Sargento", "period": "1w", "upPoints": 80 },
+      { "name": "2 Sargento", "period": "1w", "upPoints": 80 },
+      { "name": "1 Sargento", "period": "1w", "upPoints": 80 },
+
+      { "name": "Sub Oficial", "period": "2w", "upPoints": 90 },
+      { "name": "Sub Tenente", "period": "2w", "upPoints": 90 },
+      { "name": "Aspirante a Oficial", "period": "2w", "upPoints": 90 },
+      { "name": "Intendente", "period": "2w", "upPoints": 100 },
+      { "name": "2 Tenente", "period": "2w", "upPoints": 100 },
+      { "name": "1 Tenente", "period": "2w", "upPoints": 100 },
+
+      { "name": "Capitão", "period": "3w", "upPoints": 110 },
+      { "name": "Capitão de Corveta", "period": "3w", "upPoints": 110 },
+      { "name": "Major", "period": "3w", "upPoints": 110 },
+      { "name": "Oficial de Guerra", "period": "3w", "upPoints": 110 },
+      { "name": "Tenente Coronel", "period": "3w", "upPoints": 125 },
+      { "name": "Coronel", "period": "3w", "upPoints": 125 },
+
+      { "name": "Sub Comandante", "period": "merit", "upPoints": 0 },
+      { "name": "Comandante", "period": "merit", "upPoints": 0 },
+      { "name": "General de Brigada", "period": "merit", "upPoints": 0 },
+      { "name": "General de Divisão", "period": "merit", "upPoints": 0 },
+      { "name": "General de Esquadra", "period": "merit", "upPoints": 0 },
+      { "name": "General de Exército", "period": "merit", "upPoints": 0 },
+      { "name": "Contra-Almirante", "period": "merit", "upPoints": 0 },
+      { "name": "Marechal", "period": "merit", "upPoints": 0 },
+      { "name": "Almirante", "period": "merit", "upPoints": 0 },
+      { "name": "Manager", "period": "merit", "upPoints": 0 }
+    ],
+    "maintain": { "postsPerWeek": 3 }
+  },
+  "design": {
+    "ranks": [
+      { "name": "Iniciante", "period": "1w", "upPoints": 50 },
+      { "name": "Aprendiz", "period": "1w", "upPoints": 80 },
+      { "name": "Recruta", "period": "1w", "upPoints": 90 },
+      { "name": "Cadete", "period": "1w", "upPoints": 100 },
+      { "name": "Soldado", "period": "1w", "upPoints": 120 },
+      { "name": "Cabo", "period": "1w", "upPoints": 150 },
+      { "name": "Terceiro Sargento", "period": "1w", "upPoints": 170 },
+      { "name": "Segundo Sargento", "period": "1w", "upPoints": 190 },
+      { "name": "Primeiro Sargento", "period": "1w", "upPoints": 200 },
+
+      { "name": "Sub Oficial", "period": "2w", "upPoints": 230 },
+      { "name": "Sub Tenente", "period": "2w", "upPoints": 240 },
+      { "name": "Aspirante a Oficial", "period": "2w", "upPoints": 250 },
+      { "name": "Intendente", "period": "2w", "upPoints": 260 },
+      { "name": "2 Tenente", "period": "2w", "upPoints": 270 },
+      { "name": "1 Tenente", "period": "2w", "upPoints": 280 },
+
+      { "name": "Capitão", "period": "3w", "upPoints": 290 },
+      { "name": "Capitão de Corveta", "period": "3w", "upPoints": 300 },
+      { "name": "Major", "period": "3w", "upPoints": 310 },
+      { "name": "Oficial de Guerra", "period": "3w", "upPoints": 320 },
+      { "name": "Tenente Coronel", "period": "3w", "upPoints": 330 },
+      { "name": "Coronel", "period": "3w", "upPoints": 340 },
+
+      { "name": "Sub Comandante", "period": "merit", "upPoints": 0 },
+      { "name": "Comandante", "period": "merit", "upPoints": 0 },
+      { "name": "General de Brigada", "period": "merit", "upPoints": 0 },
+      { "name": "General de Divisão", "period": "merit", "upPoints": 0 },
+      { "name": "General de Esquadra", "period": "merit", "upPoints": 0 },
+      { "name": "General de Exército", "period": "merit", "upPoints": 0 },
+      { "name": "Contra-Almirante", "period": "merit", "upPoints": 0 },
+      { "name": "Marechal", "period": "merit", "upPoints": 0 },
+      { "name": "Almirante", "period": "merit", "upPoints": 0 },
+      { "name": "Manager", "period": "merit", "upPoints": 0 }
+    ],
+    "maintain": { "artsPerWeek": 5 }
+  },
+  "eventos": {
+    "ranks": [
+      { "name": "Iniciante", "period": "1w", "upPoints": 60, "maintainPoints": 50 },
+      { "name": "Aprendiz", "period": "1w", "upPoints": 60, "maintainPoints": 50 },
+      { "name": "Recruta", "period": "1w", "upPoints": 70, "maintainPoints": 50 },
+      { "name": "Cadete", "period": "1w", "upPoints": 75, "maintainPoints": 60 },
+      { "name": "Soldado", "period": "1w", "upPoints": 80, "maintainPoints": 60 },
+      { "name": "Cabo", "period": "1w", "upPoints": 85, "maintainPoints": 70 },
+      { "name": "3 Sargento", "period": "1w", "upPoints": 90, "maintainPoints": 70 },
+      { "name": "Sub Oficial", "period": "1w", "upPoints": 95, "maintainPoints": 80 },
+
+      { "name": "2 Sargento", "period": "1w", "upPoints": 90, "maintainPoints": 70 },
+      { "name": "1 Sargento", "period": "1w", "upPoints": 90, "maintainPoints": 70 },
+
+      { "name": "Sub Tenente", "period": "2w", "upPoints": 100, "maintainPoints": 90 },
+      { "name": "Aspirante a Oficial", "period": "2w", "upPoints": 110, "maintainPoints": 90 },
+      { "name": "Intendente", "period": "2w", "upPoints": 120, "maintainPoints": 100 },
+      { "name": "2 Tenente", "period": "2w", "upPoints": 130, "maintainPoints": 100 },
+      { "name": "1 Tenente", "period": "2w", "upPoints": 140, "maintainPoints": 110 },
+
+      { "name": "Capitão", "period": "3w", "upPoints": 150, "maintainPoints": 110 },
+      { "name": "Capitão de Corveta", "period": "3w", "upPoints": 160, "maintainPoints": 120 },
+      { "name": "Major", "period": "3w", "upPoints": 170, "maintainPoints": 120 },
+      { "name": "Oficial de Guerra", "period": "3w", "upPoints": 180, "maintainPoints": 120 },
+      { "name": "Tenente Coronel", "period": "3w", "upPoints": 190, "maintainPoints": 120 },
+      { "name": "Coronel", "period": "3w", "upPoints": 200, "maintainPoints": 120 },
+
+      { "name": "Sub Comandante", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "Comandante", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "General de Brigada", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "General de Divisão", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "General de Esquadra", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "General de Exército", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "Contra-Almirante", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "Marechal", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "Almirante", "period": "merit", "upPoints": 140, "maintainPoints": 140 },
+      { "name": "Manager", "period": "merit", "upPoints": 140, "maintainPoints": 140 }
+    ]
+  },
+  "recrutamento": {
+    "ranks": [
+      { "name": "Iniciante", "period": "1w", "upPoints": 105, "maintainPoints": 100 },
+      { "name": "Aprendiz", "period": "1w", "upPoints": 110, "maintainPoints": 100 },
+      { "name": "Recruta", "period": "1w", "upPoints": 115, "maintainPoints": 100 },
+      { "name": "Cadete", "period": "1w", "upPoints": 120, "maintainPoints": 100 },
+      { "name": "Soldado", "period": "1w", "upPoints": 120, "maintainPoints": 100 },
+      { "name": "Cabo", "period": "1w", "upPoints": 125, "maintainPoints": 100 },
+      { "name": "3 Sargento", "period": "1w", "upPoints": 130, "maintainPoints": 100 },
+      { "name": "2 Sargento", "period": "1w", "upPoints": 130, "maintainPoints": 100 },
+      { "name": "1 Sargento", "period": "1w", "upPoints": 135, "maintainPoints": 100 },
+      { "name": "Sub Oficial", "period": "2w", "upPoints": 140, "maintainPoints": 100 },
+      { "name": "Sub Tenente", "period": "2w", "upPoints": 140, "maintainPoints": 100 },
+      { "name": "Aspirante a Oficial", "period": "2w", "upPoints": 145, "maintainPoints": 100 },
+      { "name": "Intendente", "period": "2w", "upPoints": 150, "maintainPoints": 100 },
+      { "name": "2 Tenente", "period": "2w", "upPoints": 150, "maintainPoints": 100 },
+      { "name": "1 Tenente", "period": "2w", "upPoints": 155, "maintainPoints": 100 },
+      { "name": "Sub Comandante", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "Comandante", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "General de Brigada", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "General de Divisão", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "General de Esquadra", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "General de Exército", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "Contra-Almirante", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "Marechal", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "Almirante", "period": "merit", "upPoints": 100, "maintainPoints": 100 },
+      { "name": "Manager", "period": "merit", "upPoints": 100, "maintainPoints": 100 }
+    ]
+  },
+  "suporte": {
+    "ranks": [
+  { "name": "3 Sargento", "period": "1w", "points": 140, "reports": 12 },
+  { "name": "2 Sargento", "period": "1w", "points": 140, "reports": 12 },
+  { "name": "1 Sargento", "period": "1w", "points": 140, "reports": 12 },
+
+  { "name": "Sub Oficial", "period": "2w", "points": 150, "reports": 14 },
+  { "name": "Sub Tenente", "period": "2w", "points": 150, "reports": 14 },
+  { "name": "Aspirante a Oficial", "period": "2w", "points": 160, "reports": 14 },
+  { "name": "Intendente", "period": "2w", "points": 170, "reports": 14 },
+  { "name": "2 Tenente", "period": "2w", "points": 180, "reports": 14 },
+  { "name": "1 Tenente", "period": "2w", "points": 190, "reports": 14 },
+
+  { "name": "Capitão", "period": "3w", "points": 200, "reports": 18 },
+  { "name": "Capitão de Corveta", "period": "3w", "points": 210, "reports": 18 },
+  { "name": "Major", "period": "3w", "points": 220, "reports": 18 },
+  { "name": "Oficial de Guerra", "period": "3w", "points": 230, "reports": 18 },
+  { "name": "Tenente Coronel", "period": "3w", "points": 240, "reports": 18 },
+  { "name": "Coronel", "period": "3w", "points": 250, "reports": 18 },
+
+  { "name": "Sub Comandante", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "Comandante", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "General de Brigada", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "General de Divisão", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "General de Esquadra", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "General de Exército", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "Contra-Almirante", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "Marechal", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "Almirante", "period": "merit", "points": 160, "reports": 14 },
+  { "name": "Manager", "period": "merit", "points": 160, "reports": 14 }
+    ]
+  }
+}

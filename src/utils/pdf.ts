@@ -1,13 +1,15 @@
 import PDFDocument from 'pdfkit';
-import { Client } from 'discord.js';
+import { Client, GuildMember } from 'discord.js';
 import { loadConfig } from '../config/index.ts';
 import { DatabaseManager } from '../db/manager.ts';
 import { readFileSync, existsSync } from 'fs';
+import path from 'path';
 interface MemberRow {
     user_id: string;
     points: number;
     reports_count: number;
     shifts_count: number;
+    rankName?: string; // patente atual no servidor principal
 }
 async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]> {
     const sort = (a: MemberRow, b: MemberRow) => b.points - a.points;
@@ -26,6 +28,14 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
     }
     try {
         const cfg: any = loadConfig();
+        // Carregar guild principal para obter patente atual
+        let mainGuild: any = null;
+        if (cfg.mainGuildId) {
+            mainGuild = client.guilds.cache.get(cfg.mainGuildId) || await client.guilds.fetch(cfg.mainGuildId).catch(() => null);
+            if (mainGuild) {
+                await mainGuild.members.fetch();
+            }
+        }
         const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === area.toLowerCase());
         if (areaCfg?.guildId && areaCfg?.roleIds?.member) {
             const g = client.guilds.cache.get(areaCfg.guildId) || await client.guilds.fetch(areaCfg.guildId).catch(() => null);
@@ -57,6 +67,24 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                     rows = rows.filter(r => !owners.includes(r.user_id) || alwaysShow.includes(r.user_id));
                 }
             }
+        }
+        // Atribuir rankName para cada row via hierarquia definida
+        if (mainGuild) {
+            const hierarchy: string[] = cfg.hierarchyOrder || [];
+            const roleNameById: Record<string,string> = {};
+            Object.entries(cfg.roles || {}).forEach(([name, id]) => roleNameById[id as string] = name);
+            rows.forEach(r => {
+                const member: GuildMember | undefined = mainGuild.members.cache.get(r.user_id);
+                if (!member) return;
+                // Encontrar maior patente do usuário de acordo com hierarchyOrder
+                let found: string | undefined;
+                for (let i = hierarchy.length - 1; i >= 0; i--) {
+                    const rankName = hierarchy[i];
+                    const roleId = (cfg.roles || {})[rankName];
+                    if (roleId && member.roles.cache.has(roleId)) { found = rankName; break; }
+                }
+                r.rankName = found;
+            });
         }
     }
     catch { }
@@ -143,6 +171,30 @@ function prepareFonts(doc: any): Fonts {
 }
 export async function generateAreaPdf(client: Client, area: string): Promise<Buffer> {
     const rows = await fetchAreaRows(client, area);
+    // Carregar metas externas unificadas
+    interface RankGoal { name: string; period: string; points?: number; reports?: number; upPoints?: number; maintainPoints?: number; }
+    type AreaGoals = { ranks: RankGoal[]; maintain?: any };
+    let metas: Record<string, AreaGoals> = {};
+    const metasRankIndex: Record<string, Record<string, RankGoal>> = {};
+    const normalizeRank = (n?: string) => (n || '')
+        .toLowerCase()
+        .replace(/º|°/g, '')
+        .replace(/terceiro/g, '3')
+        .replace(/segundo/g, '2')
+        .replace(/primeiro/g, '1')
+        .replace(/\s+a\s+/g, ' a ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    try {
+        const metasPath = path.resolve('src/config/metas.json');
+        const raw = readFileSync(metasPath, 'utf8');
+        metas = JSON.parse(raw);
+        Object.entries(metas).forEach(([areaKey, data]: [string, any]) => {
+            const idx: Record<string, RankGoal> = {};
+            (data.ranks || []).forEach((rg: any) => { idx[normalizeRank(rg.name)] = rg; });
+            metasRankIndex[areaKey.toLowerCase()] = idx;
+        });
+    } catch { }
     const { primary, secondary } = areaAccent(area);
     const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
     const out: Buffer[] = [];
@@ -174,7 +226,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const avgPoints = totalPoints / rows.length;
     const medPoints = median(rows.map(r => r.points));
     const maxPoints = rows[0].points || 1;
-    const suporte = area.toLowerCase() === 'suporte';
+    const areaKey = area.toLowerCase();
+    const suporte = areaKey === 'suporte';
     doc.x = doc.page.margins.left;
     doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Resumo', { width: contentWidth, align: 'left' });
     doc.moveDown(0.4);
@@ -272,6 +325,28 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const medalColors = ['#D4AF37', '#C0C0C0', '#CD7F32'];
     let cardsOnCurrentPage = 0;
     const maxCardsPerPage = 4;
+    const cfg: any = loadConfig();
+    const isSuporte = areaKey === 'suporte';
+    const passEmoji = '✅';
+    const failEmoji = '❌';
+    const SUPPORT_PLANTOES_META = 4;
+    const areaRankGoals = metasRankIndex[areaKey] || {};
+    function evaluate(r: MemberRow) {
+        const rnNorm = normalizeRank(r.rankName);
+        const g = areaRankGoals[rnNorm];
+        if (areaKey === 'suporte') {
+            const pointGoal = g?.points ?? 0;
+            const reportsGoal = g?.reports;
+            const hitPoints = pointGoal ? r.points >= pointGoal : true;
+            const hitReports = reportsGoal !== undefined ? (r.reports_count || 0) >= reportsGoal : true;
+            const hitShifts = (r.shifts_count || 0) >= SUPPORT_PLANTOES_META;
+            return { hit: hitPoints && hitReports && hitShifts, pointGoal, reportsGoal, shiftsGoal: SUPPORT_PLANTOES_META, g };
+        }
+        if (!g) return { hit: true, g: undefined };
+        const threshold = g.upPoints ?? g.points ?? 0;
+        const hit = threshold ? r.points >= threshold : true;
+        return { hit, g, threshold };
+    }
     for (const r of rows) {
         const cardHeight = suporte ? 120 : 108;
         const cardWithMargin = cardHeight + 20;
@@ -350,14 +425,29 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         cursorY += 20;
         doc.font(fonts.regular).fontSize(8).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
         cursorY += 12;
-        doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}`, infoX, cursorY);
+        const rankLabel = r.rankName ? ` • ${r.rankName}` : '';
+        const evalRes = evaluate(r);
+        const statusEmoji = evalRes.hit ? passEmoji : failEmoji;
+        doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`${statusEmoji} Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
         cursorY += 16;
         const pctTotal = totalPoints ? (r.points / totalPoints * 100) : 0;
         doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
         cursorY += 12;
-        if (suporte) {
-            doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Relatórios: ${r.reports_count || 0}  •  Plantões: ${r.shifts_count || 0}`, infoX, cursorY);
+        if (areaKey === 'suporte') {
+            const repStr = `Relatórios: ${r.reports_count || 0}${evalRes.reportsGoal !== undefined ? '/' + evalRes.reportsGoal : ''}`;
+            const shiftStr = `Plantões: ${r.shifts_count || 0}/${evalRes.shiftsGoal}`;
+            doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`${repStr}  •  ${shiftStr}`, infoX, cursorY);
             cursorY += 12;
+            if (evalRes.pointGoal !== undefined) {
+                if (!evalRes.hit) { doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${evalRes.pointGoal - r.points})`, infoX, cursorY); cursorY += 12; }
+                else { doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY); cursorY += 12; }
+            }
+        } else if (evalRes.g) {
+            const up = evalRes.g.upPoints ?? evalRes.g.points;
+            if (up) {
+                if (!evalRes.hit) { doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up} (faltam ${up - r.points})`, infoX, cursorY); cursorY += 12; }
+                else { doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY); cursorY += 12; }
+            }
         }
         doc.y = startY + cardHeight + 14;
         cardsOnCurrentPage++;

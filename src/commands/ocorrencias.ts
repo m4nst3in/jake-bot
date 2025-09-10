@@ -78,7 +78,6 @@ export default {
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Staff Acusado:** <@${staffId}> (${staffId})`);
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Motivo:** ${motivo}`);
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Resolução:** ${resolucao}`);
-    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Data:** <t:${Math.floor(Date.now()/1000)}:F>`);
   lines.push(`<:cdw_ponto_branco:1108388917004226601> **Prova:** ${prova.url}`);
 
     const embed = new EmbedBuilder()
