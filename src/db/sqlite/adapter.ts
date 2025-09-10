@@ -38,6 +38,7 @@ export class SqliteAdapter {
             `CREATE TABLE IF NOT EXISTS points (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, area TEXT, points INTEGER DEFAULT 0, reports_count INTEGER DEFAULT 0, shifts_count INTEGER DEFAULT 0, last_updated TEXT);`,
             `CREATE TABLE IF NOT EXISTS point_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, change INTEGER, reason TEXT, by TEXT, timestamp TEXT);`,
             `CREATE TABLE IF NOT EXISTS blacklist (id INTEGER PRIMARY KEY AUTOINCREMENT, discord_id TEXT, reason TEXT, area_or_global TEXT, added_by TEXT, added_at TEXT, removed_by TEXT, removed_at TEXT);`,
+            `CREATE TABLE IF NOT EXISTS occurrences (id INTEGER PRIMARY KEY AUTOINCREMENT, staff_id TEXT, motivo1 TEXT, motivo2 TEXT, resolucao TEXT, created_by TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);`,
             `CREATE TABLE IF NOT EXISTS role_transfers (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user TEXT, to_user TEXT, roles TEXT, by TEXT, timestamp TEXT);`,
             `CREATE TABLE IF NOT EXISTS audits (id INTEGER PRIMARY KEY AUTOINCREMENT, action TEXT, payload TEXT, by TEXT, timestamp TEXT);`,
             `CREATE TABLE IF NOT EXISTS config (guild_id TEXT PRIMARY KEY, area_settings TEXT, roles_config TEXT, channels_config TEXT);`,

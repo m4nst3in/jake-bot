@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { hasAnyLeadership, isAdminFromMember, isOwner, hasCrossGuildLeadership } from '../utils/permissions.ts';
 import { loadConfig } from '../config/index.ts';
+import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
 
 // Canal fixo principal para ocorrências
 const OCORRENCIAS_CHANNEL_ID = '1373853106172854332';
@@ -60,8 +61,12 @@ export default {
       .setFooter({ text: 'Sistema de Ocorrências • Registro permanente' })
       .setTimestamp();
 
+    const repo = new OccurrenceRepository();
     try {
-      await channel.send({ embeds: [embed] });
+      await Promise.all([
+        channel.send({ embeds: [embed] }),
+        repo.add({ staff_id: staffId, motivo1, motivo2, resolucao, created_by: interaction.user.id })
+      ]);
       await interaction.editReply('Ocorrência registrada com sucesso.');
     } catch (e) {
       await interaction.editReply('Falha ao enviar a ocorrência.');

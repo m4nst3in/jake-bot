@@ -1,7 +1,10 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { PointsService } from '../services/pointsService.ts';
 import { PointRepository } from '../repositories/pointRepository.ts';
 import { loadConfig } from '../config/index.ts';
+import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
+import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
+import { getMemberLeaderAreas, hasCrossGuildLeadership } from '../utils/permissions.ts';
 
 // /perfil [user]
 export default {
@@ -12,28 +15,69 @@ export default {
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
     const target = interaction.options.getUser('user') || interaction.user;
-    const svc = new PointsService();
-    const repo = new PointRepository();
+  const svc = new PointsService();
+  const repo = new PointRepository();
+  const blacklistRepo = new BlacklistRepository();
+  const occRepo = new OccurrenceRepository();
     const cfg: any = loadConfig();
     const profile = await svc.getUserProfile(target.id);
 
-    // Montar tabela resumida
-    const lines: string[] = [];
-    profile.areas.forEach((a, idx) => {
-      const posPromise = (repo as any).getAreaPosition(target.id, a.area).catch(() => null);
-      lines.push(`${idx + 1}. **${a.area}** • ${a.points} pts • ${a.reports} rel. • ${a.shifts} plant.`);
-    });
+    // Fetch positions, blacklist and occurrences in parallel
+    const positionsPromise = Promise.all(profile.areas.map(a => (repo as any).getAreaPosition(target.id, a.area).catch(() => null)));
+    // active blacklists
+    const activeBlacklistPromise = blacklistRepo.listUserActive(target.id).catch(() => []);
+    const occCountPromise = occRepo.countForUser(target.id).catch(() => 0);
 
-    // Resolver posições em paralelo
-    const positions = await Promise.all(profile.areas.map(a => (repo as any).getAreaPosition(target.id, a.area).catch(() => null)));
+    const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
     const withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
 
-    const desc = withPos.length ? withPos.map(a => `• ${a.area}: ${a.points} pts (rank ${a.pos || '?'}), ${a.reports} rel., ${a.shifts} plant.`).join('\n') : 'Sem registros.';
+    // Leadership detection (current guild + cross guild)
+    let leaderAreas: string[] = [];
+    const member = interaction.guild?.members?.cache?.get(target.id) as GuildMember | undefined;
+    if (member) leaderAreas = getMemberLeaderAreas(member);
+    if (!leaderAreas.length) {
+      const cross = await hasCrossGuildLeadership(interaction.client, target.id);
+      if (cross) {
+        // coarse: mark as 'Alguma liderança'
+        leaderAreas = ['(cross-guild)'];
+      }
+    }
+
+    const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
+
+    const descLines: string[] = [];
+    if (withPos.length) {
+      for (const a of withPos) {
+        const isRecruit = a.area.toLowerCase() === 'recrutamento';
+        const isSupport = a.area.toLowerCase() === 'suporte';
+        const extra: string[] = [];
+        if (isRecruit || isSupport) {
+          if (a.reports) extra.push(`🧾 ${a.reports} rel.`);
+          if (a.shifts) extra.push(`🕒 ${a.shifts} plant.`);
+        } else {
+          if (a.reports) extra.push(`🧾 ${a.reports}`);
+          if (a.shifts) extra.push(`🕒 ${a.shifts}`);
+        }
+        const posTxt = a.pos ? `#${a.pos}` : '#?';
+        descLines.push(`• **${a.area}** ${posTxt} — **${a.points}** pts${extra.length ? ' • ' + extra.join(' • ') : ''}`);
+      }
+    } else {
+      descLines.push('Sem registros de pontos.');
+    }
+
+    // Header badges
+    const headerBadges: string[] = [];
+    if (leaderAreas.length) headerBadges.push(`👑 Liderança: ${leaderAreas.join(', ')}`);
+    if (blacklistBadges) headerBadges.push(`⛔ Blacklist: ${blacklistBadges}`);
+    if (occCount) headerBadges.push(`📂 Ocorrências: ${occCount}`);
+
+    const header = headerBadges.length ? headerBadges.join(' • ') : 'Nenhuma restrição ou liderança registrada.';
+    const desc = `${header}\n\n${descLines.join('\n')}`;
 
     const embed = new EmbedBuilder()
-      .setTitle(`Perfil de Pontos`)
+      .setTitle(`Perfil de ${target.username || target.tag || target.id}`)
       .setDescription(desc)
-      .setFooter({ text: `Total: ${profile.total} pts • Usuário: ${target.id}` })
+      .setFooter({ text: `Total: ${profile.total} pts • ID: ${target.id}` })
       .setTimestamp();
 
     // Aplicar cor por guild se possível
