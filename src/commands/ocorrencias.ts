@@ -13,13 +13,15 @@ export default {
     // Ordem solicitada: (id) (motivo) (resolução)
     .addStringOption(o => o.setName('id').setDescription('ID do staff acusado').setRequired(true))
     .addStringOption(o => o.setName('motivo').setDescription('Motivo principal / título').setRequired(true))
-    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true)),
+  .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true))
+  .addAttachmentOption(o => o.setName('prova').setDescription('Imagem de prova (obrigatória)').setRequired(true)),
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
   const member = interaction.member as GuildMember | null;
   const staffId = interaction.options.getString('id', true).trim();
   const motivo = interaction.options.getString('motivo', true).trim();
   const resolucao = interaction.options.getString('resolucao', true).trim();
+  const prova = interaction.options.getAttachment('prova', true);
 
     // Permissões: lideranças, líder geral (admin) ou donos
     let hasLeadership = hasAnyLeadership(member || null);
@@ -34,6 +36,12 @@ export default {
 
     if (!/^[0-9]{5,20}$/.test(staffId)) {
       await interaction.editReply('ID inválido.');
+      return;
+    }
+
+    // Validar prova (imagem)
+    if (!prova || !(prova.contentType?.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/i.test(prova.name))) {
+      await interaction.editReply('A prova deve ser uma imagem (png/jpg/gif/webp).');
       return;
     }
 
@@ -71,34 +79,35 @@ export default {
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Motivo:** ${motivo}`);
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Resolução:** ${resolucao}`);
     lines.push(`<:cdw_ponto_branco:1108388917004226601> **Data:** <t:${Math.floor(Date.now()/1000)}:F>`);
+  lines.push(`<:cdw_ponto_branco:1108388917004226601> **Prova:** ${prova.url}`);
 
     const embed = new EmbedBuilder()
       .setTitle('<a:staff_cdw:934664526639562872> Ocorrência de Staff')
       .setDescription(lines.join('\n'))
       .setColor(color)
       .setFooter({ text: 'Sistema de Ocorrências • Registro permanente' })
-      .setTimestamp();
+  .setTimestamp()
+  .setImage(prova.url);
 
     const repo = new OccurrenceRepository();
-    // Coletar menções de liderança: apenas das áreas cujos cargos de equipe o staff alvo possui.
-    // Regra solicitada: membro em Suporte -> menciona só liderança de Suporte; membro em Mov Call e Eventos -> menciona Mov Call e Eventos, etc.
+  // Coletar menções de liderança: apenas das áreas cujos cargos de equipe o staff alvo possui.
+  // Agora usando mapa global primaryGuildLeadershipRoles do servidor principal.
     let leadershipRoleMentions: string[] = [];
     try {
       const cfgAny: any = cfg;
       const mainGuildId: string | undefined = cfgAny.mainGuildId;
-      const primaryTeamRoles: Record<string,string> = cfgAny.primaryGuildTeamRoles || {};
+  const primaryTeamRoles: Record<string,string> = cfgAny.primaryGuildTeamRoles || {};
+  const primaryLeadershipRoles: Record<string,string> = cfgAny.primaryGuildLeadershipRoles || {};
       if (mainGuildId) {
         const mainGuild = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId);
         const targetMemberMain = await mainGuild.members.fetch(staffId).catch(()=>null);
         if (targetMemberMain) {
-          const areaConfigs: any[] = cfgAny.areas || [];
           const collected = new Set<string>();
           for (const [key, teamRoleId] of Object.entries(primaryTeamRoles)) {
             if (!teamRoleId) continue;
             if (!targetMemberMain.roles.cache.has(teamRoleId)) continue; // usuário não tem cargo de equipe dessa área
-            // Procurar config da área (por name) para pegar cargo de liderança local
-            const areaCfg = areaConfigs.find(a => a.name?.toLowerCase() === key.toLowerCase());
-            const leadRoleId = areaCfg?.roleIds?.lead;
+            // Usar cargo de liderança global correspondente
+            const leadRoleId = primaryLeadershipRoles[key.toLowerCase()];
             if (leadRoleId) collected.add(leadRoleId);
           }
           leadershipRoleMentions = [...collected].map(r=>`<@&${r}>`);

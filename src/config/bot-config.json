@@ -62,6 +62,15 @@
     "suporte": "1136861840421425284",
     "mig": "1346223411289919558"
   },
+  "__comment_primaryGuildLeadershipRoles": "Cargos de liderança global por área no servidor principal (para menções em ocorrências). Chaves devem casar com primaryGuildTeamRoles.",
+  "primaryGuildLeadershipRoles": {
+    "movcall": "1136864678253969430",
+    "eventos": "1136864716434710608",
+    "recrutamento": "1153690317262950400",
+    "design": "1136864742997250118",
+    "jornalismo": "1247610015787913360",
+    "suporte": "1136889351033344000"
+  },
 
   "__comment_hierarchyOrder": "Ordem global das patentes (menor -> maior). Pode ser ajustada sem alterar código.",
   "hierarchyOrder": [
