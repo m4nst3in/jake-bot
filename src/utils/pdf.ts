@@ -444,7 +444,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         try {
             const success = evalRes.overallHit;
             const badgeColor = success ? '#1abc9c' : '#e74c3c';
-            const label = success ? 'META OK' : 'META FALTA';
+            const label = success ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA';
             const cardRight = doc.page.margins.left + contentWidth;
             const badgeHeight = 22;
             const badgeWidth = 90;

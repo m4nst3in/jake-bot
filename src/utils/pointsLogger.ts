@@ -37,6 +37,8 @@ export async function sendPointsLog(client: Client, type: 'adicionado' | 'removi
             id = recruitChannelId;
         else if (areaLower === 'suporte')
             id = getSupportPointsLog(cfg) || undefined;
+        else if (areaLower === 'eventos')
+            id = cfg.channels?.eventsPointsLog;
         else
             id = undefined;
         if (!id)
