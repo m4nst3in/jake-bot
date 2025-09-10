@@ -4,6 +4,7 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { loadConfig } from '../config/index.ts';
 import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
 import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
+import { RPPRepository } from '../repositories/rppRepository.ts';
 import { getMemberLeaderAreas, hasCrossGuildLeadership } from '../utils/permissions.ts';
 
 // /perfil [user]
@@ -19,6 +20,7 @@ export default {
   const repo = new PointRepository();
   const blacklistRepo = new BlacklistRepository();
   const occRepo = new OccurrenceRepository();
+  const rppRepo = new RPPRepository();
     const cfg: any = loadConfig();
     const profile = await svc.getUserProfile(target.id);
 
@@ -26,9 +28,10 @@ export default {
     const positionsPromise = Promise.all(profile.areas.map(a => (repo as any).getAreaPosition(target.id, a.area).catch(() => null)));
     // active blacklists
     const activeBlacklistPromise = blacklistRepo.listUserActive(target.id).catch(() => []);
-    const occCountPromise = occRepo.countForUser(target.id).catch(() => 0);
+  const occCountPromise = occRepo.countForUser(target.id).catch(() => 0);
+  const rppActivePromise = rppRepo.findActiveByUser(target.id).catch(()=>null);
 
-  const [positions, activeBlacklist, occCount] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise]);
+  const [positions, activeBlacklist, occCount, rppActive] = await Promise.all([positionsPromise, activeBlacklistPromise, occCountPromise, rppActivePromise]);
   let withPos = profile.areas.map((a, i) => ({ ...a, pos: positions[i] }));
 
     // Leadership detection across all configured guilds
@@ -80,8 +83,8 @@ export default {
         const extra: string[] = [];
         if (a.reports) extra.push(`🧾 ${a.reports} rel.`);
         if (a.shifts) extra.push(`🕒 ${a.shifts} plant.`);
-        const posTxt = a.pos ? `#${a.pos}` : '#?';
-        descLines.push(`• **${a.area}** ${posTxt} — **${a.points}** pts${extra.length ? ' • ' + extra.join(' • ') : ''}`);
+  const posTxt = (a.pos && a.points > 0) ? `#${a.pos}` : '-';
+  descLines.push(`• **${a.area}** ${posTxt} — **${a.points}** pts${extra.length ? ' • ' + extra.join(' • ') : ''}`);
       }
     } else {
       descLines.push('Nenhuma área encontrada.');
@@ -90,7 +93,8 @@ export default {
     // Header badges
     const headerBadges: string[] = [];
     if (leaderAreas.length) headerBadges.push(`👑 Liderança: ${leaderAreas.join(', ')}`);
-    if (blacklistBadges) headerBadges.push(`⛔ Blacklist: ${blacklistBadges}`);
+  if (blacklistBadges) headerBadges.push(`⛔ Blacklist: ${blacklistBadges}`);
+  if (rppActive) headerBadges.push('🧪 RPP Ativo');
     if (occCount) headerBadges.push(`📂 Ocorrências: ${occCount}`);
 
     const header = headerBadges.length ? headerBadges.join(' • ') : 'Nenhuma restrição ou liderança registrada.';
