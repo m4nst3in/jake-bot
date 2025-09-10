@@ -1,8 +1,8 @@
 import { ButtonInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder } from 'discord.js';
-import { loadConfig } from '../../config/index.ts';
+import { loadConfig, reloadConfig } from '../../config/index.ts';
 import { RECRUIT_AREAS } from '../../commands/recrutar.ts';
 import { BlacklistRepository } from '../../repositories/blacklistRepository.ts';
-const cfg = loadConfig();
+// Nota: carregar dinamicamente dentro do execute para refletir alterações recentes de config
 const LOG_CHANNEL_ID = '1414539961515900979';
 const TEAM_COLORS: Record<string, number> = {
     movcall: 0x1abc9c,
@@ -15,6 +15,7 @@ export default {
     id: 'recruit_team',
     async execute(interaction: ButtonInteraction) {
         await interaction.deferReply({ ephemeral: true });
+    const cfg: any = reloadConfig();
         const parts = interaction.customId.split(':');
         const team = parts[1].toLowerCase();
         const userId = parts[2];
@@ -44,7 +45,7 @@ export default {
             await interaction.editReply('Usuário não encontrado no servidor.');
             return;
         }
-        const areaCfg = cfg.areas.find(a => a.name.toLowerCase() === team);
+    const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
         // Prefer cargo de equipe principal se configurado (primaryGuildTeamRoles) quando no servidor principal
         const primaryMap = cfg.primaryGuildTeamRoles || {};
         const primaryRoleId = primaryMap[team];
@@ -56,8 +57,8 @@ export default {
             await interaction.editReply('Config da equipe não encontrada.');
             return;
         }
-        const inicianteRole = cfg.roles?.Iniciante;
-        const staffRole = cfg.roles?.staff;
+    const inicianteRole: string | undefined = cfg.roles?.Iniciante;
+    const staffRole: string | undefined = cfg.roles?.staff;
         if (!roleId.startsWith('ROLE_ID_') && !member.roles.cache.has(roleId)) {
             await member.roles.add(roleId, 'Recrutamento de usuário').catch(() => { });
         }
@@ -69,7 +70,7 @@ export default {
                     continue;
                 if (name === 'Iniciante' || name === 'staff')
                     continue;
-                if (member.roles.cache.has(id)) {
+                if (member.roles.cache.has(String(id))) {
                     hasHigherRank = true;
                     break;
                 }
