@@ -177,4 +177,12 @@ export class PointsService {
     }
     async resetAll() { await (this.repo as any).resetAllPoints(); }
     async resetArea(area: string) { await (this.repo as any).resetArea(area); }
+    async getUserProfile(userId: string) {
+        const all: any[] = await (this.repo as any).getUserAllAreas(userId);
+        interface AreaSummary { area: string; points: number; reports: number; shifts: number; }
+        const areas: AreaSummary[] = all.map((r: any) => ({ area: r.area, points: r.points || 0, reports: r.reports_count || 0, shifts: r.shifts_count || 0 }))
+            .sort((a: AreaSummary, b: AreaSummary) => b.points - a.points);
+        const total = areas.reduce((s: number, a: AreaSummary) => s + a.points, 0);
+        return { areas, total };
+    }
 }

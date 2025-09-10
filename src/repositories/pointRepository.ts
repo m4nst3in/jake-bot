@@ -165,4 +165,45 @@ export class PointRepository extends BaseRepo {
             await this.mongo.collection('points').updateMany({ area }, { $set: { points: 0, reports_count: 0, shifts_count: 0, last_updated: new Date().toISOString() } });
         }
     }
+    async getUserAllAreas(userId: string) {
+        if (this.isSqlite()) {
+            return new Promise<any[]>((resolve, reject) => {
+                this.sqlite.all('SELECT area, points, reports_count, shifts_count FROM points WHERE user_id=?', [userId], function (err: Error | null, rows: any[]) {
+                    if (err) reject(err); else resolve(rows || []);
+                });
+            });
+        }
+        return this.mongo.collection('points').find({ user_id: userId }).project({ area: 1, points: 1, reports_count: 1, shifts_count: 1 }).toArray();
+    }
+    async countDistinctUsers() {
+        if (this.isSqlite()) {
+            return new Promise<number>((resolve, reject) => {
+                this.sqlite.get('SELECT COUNT(DISTINCT user_id) c FROM points', [], function (err: Error | null, row: any) {
+                    if (err) reject(err); else resolve(row?.c || 0);
+                });
+            });
+        }
+        const distinct = await this.mongo.collection('points').distinct('user_id');
+        return distinct.length;
+    }
+    async getAreaPosition(userId: string, area: string) {
+        if (this.isSqlite()) {
+            return new Promise<number | null>((resolve, reject) => {
+                this.sqlite.get('SELECT points FROM points WHERE user_id=? AND area=?', [userId, area], (err: Error | null, row: any) => {
+                    if (err) return reject(err);
+                    if (!row) return resolve(null);
+                    const userPts = row.points || 0;
+                    this.sqlite.get('SELECT COUNT(*) c FROM points WHERE area=? AND points > ?', [area, userPts], (err2: Error | null, row2: any) => {
+                        if (err2) return reject(err2);
+                        resolve((row2?.c || 0) + 1);
+                    });
+                });
+            });
+        }
+        const doc = await this.mongo.collection('points').findOne({ user_id: userId, area });
+        if (!doc) return null;
+        const userPts = doc.points || 0;
+        const ahead = await this.mongo.collection('points').countDocuments({ area, points: { $gt: userPts } });
+        return ahead + 1;
+    }
 }

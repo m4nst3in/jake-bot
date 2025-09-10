@@ -113,6 +113,7 @@ export default async function messageCreate(message: Message) {
     try {
         if (message.author.bot)
             return;
+    try { (await import('../commands/status.ts')).incMessageProcessed?.(); } catch {}
         const cfg = loadConfig();
         const supportCfg: any = (cfg as any).support;
         const recruitCfg: any = (cfg as any).recruitBanca;

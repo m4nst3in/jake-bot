@@ -3,6 +3,7 @@ import { Client } from 'discord.js';
 import { PointsService } from '../services/pointsService.ts';
 import { logger } from '../utils/logger.ts';
 import { loadConfig } from '../config/index.ts';
+import { markRankingUpdate } from '../commands/status.ts';
 const svc = new PointsService();
 export function scheduleRankingUpdater(client: Client) {
     const cfg = loadConfig();
@@ -90,6 +91,7 @@ export function scheduleRankingUpdater(client: Client) {
                 }
                 await channel.send({ embeds: [embed] });
                 logger.info({ area }, 'Ranking atualizado (recriado).');
+                try { markRankingUpdate(); } catch {}
             }
             if (supportChannelId)
                 await processChannel(supportChannelId);
@@ -130,6 +132,7 @@ export function scheduleRankingUpdater(client: Client) {
                         }
                         await evCh.send({ embeds: [embed] });
                         logger.info({ area }, 'Ranking Eventos atualizado.');
+                        try { markRankingUpdate(); } catch {}
                     }
                 }
                 catch (err) {
@@ -163,6 +166,7 @@ export function scheduleRankingUpdater(client: Client) {
                         }
                         await jrCh.send({ embeds: [embed] });
                         logger.info({ area }, 'Ranking Jornalismo atualizado.');
+                        try { markRankingUpdate(); } catch {}
                     }
                 }
                 catch (err) {
@@ -207,6 +211,7 @@ export function scheduleRankingUpdater(client: Client) {
                     }
                     await dChannel.send({ embeds: [rankingEmbed] });
                     logger.info({ area: 'Design' }, 'Ranking Design atualizado (especial).');
+                    try { markRankingUpdate(); } catch {}
                 }
             }
             catch (err) {
