@@ -19,6 +19,7 @@ function enforceBrandColor(embed: EmbedBuilder, guildId?: string) {
         const cfg: any = loadConfig();
         const movGuild = (cfg.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
         const recruitGuild = (cfg.areas || []).find((a: any) => a.name === 'RECRUTAMENTO')?.guildId;
+        const designGuild = (cfg.areas || []).find((a: any) => a.name === 'DESIGN')?.guildId;
         if (movGuild && guildId === movGuild) {
             // Dark red tone
             embed.setColor(0x8B0000);
@@ -26,6 +27,10 @@ function enforceBrandColor(embed: EmbedBuilder, guildId?: string) {
         if (recruitGuild && guildId === recruitGuild) {
             // Recruitment ranking color (same used in ranking scheduler logic: 0x39ff14)
             embed.setColor(0x39ff14);
+        }
+        if (designGuild && guildId === designGuild) {
+            // Unified Design color
+            embed.setColor(0xE67E22);
         }
         // Delegate support + others
         enforceSupportColor(embed, guildId);
