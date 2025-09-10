@@ -1,12 +1,10 @@
 import { ButtonInteraction, ModalBuilder, TextInputBuilder, ActionRowBuilder, TextInputStyle } from 'discord.js';
 const SUPPORTED_GUILDS = new Set([
-    '1283125240368730132',
-    '1183909149784952902',
-    '1224414082866745405',
-    '1180721287476289596',
     '1190390194533318706',
+    '1180721287476289596',
     '1190515971035774996',
-    '1355239902169796881'
+    '1183909149784952902',
+    '1224414082866745405'
 ]);
 export default {
     id: 'verify_area',

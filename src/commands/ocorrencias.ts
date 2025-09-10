@@ -10,11 +10,12 @@ export default {
   data: new SlashCommandBuilder()
     .setName('ocorrencias')
     .setDescription('Registra uma ocorrência de staff')
-    // Todas opcionais: usuário pode fornecer ID ou mencionar o staff
-    .addUserOption(o => o.setName('staff').setDescription('Mencione o staff acusado').setRequired(false))
-    .addStringOption(o => o.setName('id').setDescription('ID do staff acusado (caso não mencione)').setRequired(false))
+    // Required FIRST
     .addStringOption(o => o.setName('motivo').setDescription('Motivo principal / título').setRequired(true))
-    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true)),
+    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true))
+    // Optional after required
+    .addUserOption(o => o.setName('staff').setDescription('Mencione o staff acusado').setRequired(false))
+    .addStringOption(o => o.setName('id').setDescription('ID do staff acusado (caso não mencione)').setRequired(false)),
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
   const member = interaction.member as GuildMember | null;
@@ -43,7 +44,6 @@ export default {
       await interaction.editReply('ID inválido.');
       return;
     }
-
 
     const channel = await interaction.client.channels.fetch(OCORRENCIAS_CHANNEL_ID).catch(() => null) as any;
     if (!channel || !channel.isTextBased()) {
@@ -89,10 +89,10 @@ export default {
 
     try {
       const sent = await channel.send({ content: leadershipRoleMentions.length ? `Alerta ${leadershipRoleMentions.join(' ')}` : undefined, embeds: [embed] });
-  await repo.add({ staff_id: staffId, motivo1: motivo, resolucao, created_by: interaction.user.id });
+      await repo.add({ staff_id: staffId, motivo1: motivo, resolucao, created_by: interaction.user.id });
       // Reagir com o emoji customizado
       try { await sent.react('white_certocr:1293360415857836072'); } catch {}
-  await interaction.editReply('Ocorrência registrada com sucesso.');
+      await interaction.editReply('Ocorrência registrada com sucesso.');
     } catch (e) {
       await interaction.editReply('Falha ao enviar a ocorrência.');
     }
