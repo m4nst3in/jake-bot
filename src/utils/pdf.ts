@@ -177,12 +177,15 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     let metas: Record<string, AreaGoals> = {};
     const metasRankIndex: Record<string, Record<string, RankGoal>> = {};
     const normalizeRank = (n?: string) => (n || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove acentos
         .toLowerCase()
         .replace(/º|°/g, '')
-        .replace(/terceiro/g, '3')
-        .replace(/segundo/g, '2')
-        .replace(/primeiro/g, '1')
-        .replace(/\s+a\s+/g, ' a ')
+        .replace(/terceir[oa]/g, '3')
+        .replace(/segund[oa]/g, '2')
+        .replace(/primeir[oa]/g, '1')
+        .replace(/\bcapitao\b/g, 'capitan') // evitar variação? (exemplo)
+        .replace(/-/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
     try {
@@ -191,7 +194,16 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         metas = JSON.parse(raw);
         Object.entries(metas).forEach(([areaKey, data]: [string, any]) => {
             const idx: Record<string, RankGoal> = {};
-            (data.ranks || []).forEach((rg: any) => { idx[normalizeRank(rg.name)] = rg; });
+            (data.ranks || []).forEach((rg: any) => {
+                const base = normalizeRank(rg.name);
+                idx[base] = rg;
+                // adicionar variantes numericas <-> palavra para 1/2/3 se necessário
+                const wordVariant = base
+                    .replace(/\b1\b/g, 'primeiro')
+                    .replace(/\b2\b/g, 'segundo')
+                    .replace(/\b3\b/g, 'terceiro');
+                if (!idx[wordVariant]) idx[wordVariant] = rg;
+            });
             metasRankIndex[areaKey.toLowerCase()] = idx;
         });
     } catch { }
@@ -482,12 +494,13 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             }
         } else if (evalRes.g) {
             const up = evalRes.g.upPoints ?? evalRes.g.points;
-            if (up) {
+            if (up && up > 0) {
                 if (!evalRes.overallHit) {
                     const diff = Math.max(0, up - r.points);
                     doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up}${diff > 0 ? ` (faltam ${diff})` : ''}`, infoX, cursorY); cursorY += 12;
+                } else {
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY); cursorY += 12;
                 }
-                else { doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY); cursorY += 12; }
             }
         }
         doc.y = startY + cardHeight + 14;
