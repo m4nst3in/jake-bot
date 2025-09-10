@@ -28,9 +28,19 @@ export async function loadCommands(client: Client) {
     logger.info({ count: commands.length }, 'Comandos carregados igual o Fumaça no CS');
     if (process.env.DISCORD_TOKEN && process.env.DISCORD_CLIENT_ID) {
         const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+        const appId = process.env.DISCORD_CLIENT_ID;
+        const guilds = (process.env.DEPLOY_GUILDS || '').split(',').map(s => s.trim()).filter(Boolean);
         try {
-            await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID), { body: commands });
-            logger.info('Comandos de barra registrados parça');
+            if (guilds.length) {
+                for (const g of guilds) {
+                    await rest.put(Routes.applicationGuildCommands(appId, g), { body: commands });
+                    logger.info({ guild: g, count: commands.length }, 'Slash commands (guild) registrados');
+                }
+            }
+            if (!guilds.length || process.env.GLOBAL === 'true') {
+                await rest.put(Routes.applicationCommands(appId), { body: commands });
+                logger.info({ count: commands.length }, 'Slash commands (global) registrados');
+            }
         }
         catch (err) {
             logger.error({ err }, 'Falha ao registrar comandos');

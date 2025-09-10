@@ -44,6 +44,7 @@ export default {
       return;
     }
 
+
     const channel = await interaction.client.channels.fetch(OCORRENCIAS_CHANNEL_ID).catch(() => null) as any;
     if (!channel || !channel.isTextBased()) {
       await interaction.editReply('Canal de ocorrências indisponível.');
@@ -88,10 +89,10 @@ export default {
 
     try {
       const sent = await channel.send({ content: leadershipRoleMentions.length ? `Alerta ${leadershipRoleMentions.join(' ')}` : undefined, embeds: [embed] });
-      await repo.add({ staff_id: staffId, motivo1: motivo, resolucao, created_by: interaction.user.id });
+  await repo.add({ staff_id: staffId, motivo1: motivo, resolucao, created_by: interaction.user.id });
       // Reagir com o emoji customizado
       try { await sent.react('white_certocr:1293360415857836072'); } catch {}
-      await interaction.editReply('Ocorrência registrada com sucesso.');
+  await interaction.editReply('Ocorrência registrada com sucesso.');
     } catch (e) {
       await interaction.editReply('Falha ao enviar a ocorrência.');
     }
