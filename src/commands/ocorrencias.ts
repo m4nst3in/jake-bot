@@ -10,10 +10,12 @@ export default {
   data: new SlashCommandBuilder()
     .setName('ocorrencias')
     .setDescription('Registra uma ocorrência de staff')
+    // Required options FIRST (Discord constraint)
     .addStringOption(o => o.setName('staff_id').setDescription('ID do staff acusado').setRequired(true))
     .addStringOption(o => o.setName('motivo1').setDescription('Motivo principal / título').setRequired(true))
-    .addStringOption(o => o.setName('motivo2').setDescription('Detalhamento adicional (opcional)').setRequired(false))
-    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true)),
+    .addStringOption(o => o.setName('resolucao').setDescription('Resolução / ação tomada').setRequired(true))
+    // Optional after all required
+    .addStringOption(o => o.setName('motivo2').setDescription('Detalhamento adicional (opcional)').setRequired(false)),
   async execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
     const member = interaction.member as GuildMember | null;
