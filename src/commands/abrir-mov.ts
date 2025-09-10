@@ -3,6 +3,8 @@ import { logger } from '../utils/logger.ts';
 import { loadConfig } from '../config/index.ts';
 const CHANNEL_ID = '1338533776665350226';
 const ROLE_ID = '1136861814328668230';
+// Cargo adicional de liderança MOV que também pode usar o comando
+const EXTRA_LEAD_ROLE_ID = '1136864678253969430';
 const OPEN_GIF = 'https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif';
 export default {
     data: new SlashCommandBuilder()
@@ -15,9 +17,13 @@ export default {
             const owners: string[] = cfg.owners || [];
             const movArea = (cfg.areas || []).find((a: any) => a.name === 'MOVCALL');
             const movLeadId = movArea?.roleIds?.lead;
+            const globalMovLeadId = cfg.primaryGuildLeadershipRoles?.movcall
             const member = interaction.member as any;
             const hasRole = (id: string) => member?.roles?.cache?.has(id);
-            const allowed = owners.includes(interaction.user.id) || (movLeadId && hasRole(movLeadId));
+                        const allowed = owners.includes(interaction.user.id)
+                            || (movLeadId && hasRole(movLeadId))
+                            || hasRole(EXTRA_LEAD_ROLE_ID)
+                            || (globalMovLeadId && hasRole(globalMovLeadId));
             if (!allowed) {
                 await interaction.editReply('Você não tem permissão para usar este comando.');
                 return;
