@@ -66,41 +66,50 @@ export default {
     const cfg: any = loadConfig();
     const color = 0xE74C3C; // vermelho padrão para alertas
     const lines: string[] = [];
-    lines.push(`<:branco_membros:1303749626062573610> **Staff Acusado:** <@${staffId}> (${staffId})`);
-    lines.push(`<a:staff_cdw:934664526639562872> **Acionante:** <@${interaction.user.id}> (${interaction.user.id})`);
-  lines.push(`<:p_bow02:1312933529100750858> **Motivo:** ${motivo}`);
-    lines.push(`<a:emoji_50:1330028935563575306> **Resolução:** ${resolucao}`);
-    lines.push(`🕒 **Data:** <t:${Math.floor(Date.now()/1000)}:F>`);
+    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Responsável:** <@${interaction.user.id}> (${interaction.user.id})`);
+    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Staff Acusado:** <@${staffId}> (${staffId})`);
+    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Motivo:** ${motivo}`);
+    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Resolução:** ${resolucao}`);
+    lines.push(`<:cdw_ponto_branco:1108388917004226601> **Data:** <t:${Math.floor(Date.now()/1000)}:F>`);
 
     const embed = new EmbedBuilder()
-      .setTitle('📂 Ocorrência de Staff')
+      .setTitle('<a:staff_cdw:934664526639562872> Ocorrência de Staff')
       .setDescription(lines.join('\n'))
       .setColor(color)
       .setFooter({ text: 'Sistema de Ocorrências • Registro permanente' })
       .setTimestamp();
 
     const repo = new OccurrenceRepository();
-  // Coletar menções de liderança das áreas onde o staff participa
+    // Coletar menções de liderança: apenas das áreas cujos cargos de equipe o staff alvo possui.
+    // Regra solicitada: membro em Suporte -> menciona só liderança de Suporte; membro em Mov Call e Eventos -> menciona Mov Call e Eventos, etc.
     let leadershipRoleMentions: string[] = [];
     try {
       const cfgAny: any = cfg;
-      const areas: any[] = cfgAny.areas || [];
-      const rolesSet = new Set<string>();
-      await Promise.all(areas.map(async (a: any) => {
-        if (!a.guildId || !a.roleIds?.lead) return;
-        try {
-          const g = interaction.client.guilds.cache.get(a.guildId) || await interaction.client.guilds.fetch(a.guildId);
-          const m = await g.members.fetch(staffId).catch(() => null);
-          if (m) {
-            rolesSet.add(a.roleIds.lead);
+      const mainGuildId: string | undefined = cfgAny.mainGuildId;
+      const primaryTeamRoles: Record<string,string> = cfgAny.primaryGuildTeamRoles || {};
+      if (mainGuildId) {
+        const mainGuild = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId);
+        const targetMemberMain = await mainGuild.members.fetch(staffId).catch(()=>null);
+        if (targetMemberMain) {
+          const areaConfigs: any[] = cfgAny.areas || [];
+          const collected = new Set<string>();
+          for (const [key, teamRoleId] of Object.entries(primaryTeamRoles)) {
+            if (!teamRoleId) continue;
+            if (!targetMemberMain.roles.cache.has(teamRoleId)) continue; // usuário não tem cargo de equipe dessa área
+            // Procurar config da área (por name) para pegar cargo de liderança local
+            const areaCfg = areaConfigs.find(a => a.name?.toLowerCase() === key.toLowerCase());
+            const leadRoleId = areaCfg?.roleIds?.lead;
+            if (leadRoleId) collected.add(leadRoleId);
           }
-        } catch {}
-      }));
-      leadershipRoleMentions = [...rolesSet].map(r => `<@&${r}>`);
-    } catch {}
+          leadershipRoleMentions = [...collected].map(r=>`<@&${r}>`);
+        }
+      }
+    } catch {
+      // Silencioso: falha em resolução de liderança não deve impedir registro da ocorrência
+    }
 
     try {
-      const sent = await channel.send({ content: leadershipRoleMentions.length ? `Alerta ${leadershipRoleMentions.join(' ')}` : undefined, embeds: [embed] });
+      const sent = await channel.send({ content: leadershipRoleMentions.length ? `${leadershipRoleMentions.join(' ')}` : undefined, embeds: [embed] });
       await repo.add({ staff_id: staffId, motivo1: motivo, resolucao, created_by: interaction.user.id });
       // Reagir com o emoji customizado
       try { await sent.react('white_certocr:1293360415857836072'); } catch {}
