@@ -344,6 +344,7 @@
     "guildId": "1180721287476289596",
     "reactionEmoji": "<a:Check:1217789508939157515>",
     "pointsPerMessage": 10,
+  "shiftPoints": 20,
     "keyword": "recrutamento",
   "pointsLogChannelId": "1263455658594926644",
   "plantaoLogChannelId": "1414388997257429042",

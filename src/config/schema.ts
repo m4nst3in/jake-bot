@@ -61,6 +61,7 @@ export interface ConfigRoot {
         guildId: string;
         reactionEmoji: string;
         pointsPerMessage: number;
+    shiftPoints?: number;
         keyword: string;
         pointsLogChannelId: string;
         bannerUrl?: string;

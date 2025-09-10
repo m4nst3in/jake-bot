@@ -128,6 +128,7 @@ export default async function messageCreate(message: Message) {
         const RECRUIT_LEADERSHIP_ROLE = recruitCfg?.leadershipRoleId;
         const isRecruitGuild = message.guild?.id === recruitCfg?.guildId;
         if (message.guild && (message.channelId === PLANTAO_CHANNEL || message.channelId === RECRUIT_PLANTAO_CHANNEL)) {
+            const isRecruitShift = message.channelId === RECRUIT_PLANTAO_CHANNEL && /(https?:\/\/\S+)/i.test(message.content);
             if (/(https?:\/\/\S+)/i.test(message.content)) {
                 await message.react(ACCEPT_EMOJI).catch(() => { });
                 try {
@@ -138,12 +139,12 @@ export default async function messageCreate(message: Message) {
                         const ts = Math.floor(message.createdTimestamp / 1000);
                         const targetRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? RECRUIT_LEADERSHIP_ROLE : SUPERVISAO_ROLE;
                         const embed = new EmbedBuilder()
-                            .setTitle('🕒 Supervisão de Plantão')
+                            .setTitle('<a:z_estrelinha_cdw:935927437647314994> Supervisão de Plantão')
                             .setColor(0x8e44ad)
-                            .setDescription(`Solicitação de supervisão registrada.\n\n👤 **Usuário**: <@${message.author.id}>\n🕘 **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
+                            .setDescription(`Solicitação de supervisão registrada.\n\n<a:emoji_50:1330028935563575306> **Usuário**: <@${message.author.id}>\n<a:emoji_50:1330028935563575306> **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
                             .setFooter({ text: `Msg ${message.id}` })
                             .setTimestamp();
-                        const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4));
+                        const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('<:sim:1234898291851001887> Aceitar').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('<:no:1234898326378381342> Recusar').setStyle(4));
                         const mentionRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? `<@&${RECRUIT_LEADERSHIP_ROLE}>` : `<@&${SUPERVISAO_ROLE}>`;
                         await supervisaoChannel.send({ content: mentionRole, embeds: [embed], components: [row] });
                     }
@@ -157,6 +158,11 @@ export default async function messageCreate(message: Message) {
                             .setDescription(`Usuário: <@${message.author.id}> (${message.author.id})\nCanal origem: <#${message.channelId}>\nMensagem: [Ir para a mensagem](${message.url})`)
                             .setTimestamp();
                         await logChannel.send({ embeds: [embed] });
+                    }
+                    // Pontuação automática para plantão de Recrutamento
+                    if (isRecruitShift) {
+                        const shiftPoints = typeof recruitCfg?.shiftPoints === 'number' ? recruitCfg.shiftPoints : (recruitCfg?.pointsPerMessage || 10);
+                        await pointsService.registrarPlantao(message.author.id, 'Recrutamento', shiftPoints, 'system');
                     }
                 }
                 catch { }
