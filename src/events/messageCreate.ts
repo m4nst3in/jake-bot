@@ -205,7 +205,7 @@ export default async function messageCreate(message: Message) {
                             const { EmbedBuilder } = await import('discord.js');
                             const embed = new EmbedBuilder()
                                 .setTitle('Pontos de Recrutamento')
-                                .setColor(0x2ecc71)
+                                .setColor(0x39ff14)
                                 .setDescription(`**Usuário:** <@${message.author.id}> (${message.author.id})\n**Pontos:** +${recruitCfg.pointsPerMessage || 10}\n**Canal:** <#${message.channel.id}>`)
                                 .setTimestamp();
                             await logCh.send({ embeds: [embed] }).catch(() => { });

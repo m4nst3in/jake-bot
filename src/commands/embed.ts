@@ -2,6 +2,36 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, 
 import { baseEmbed } from '../utils/embeds.ts';
 import { loadConfig, reloadConfig } from '../config/index.ts';
 const SUPPORTED = ['rpp', 'banca', 'pedido', 'verificar'];
+// Helper to enforce white color for support guild embeds
+function enforceSupportColor(embed: EmbedBuilder, guildId?: string) {
+    try {
+        const cfg: any = loadConfig();
+        if (guildId && cfg.banca?.supportGuildId === guildId) {
+            embed.setColor(0xFFFFFF);
+        }
+    } catch { }
+    return embed;
+}
+// Generic brand color enforcement (support already handled above but kept for clarity)
+function enforceBrandColor(embed: EmbedBuilder, guildId?: string) {
+    if (!guildId) return embed;
+    try {
+        const cfg: any = loadConfig();
+        const movGuild = (cfg.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
+        const recruitGuild = (cfg.areas || []).find((a: any) => a.name === 'RECRUTAMENTO')?.guildId;
+        if (movGuild && guildId === movGuild) {
+            // Dark red tone
+            embed.setColor(0x8B0000);
+        }
+        if (recruitGuild && guildId === recruitGuild) {
+            // Recruitment ranking color (same used in ranking scheduler logic: 0x39ff14)
+            embed.setColor(0x39ff14);
+        }
+        // Delegate support + others
+        enforceSupportColor(embed, guildId);
+    } catch { }
+    return embed;
+}
 function buildRppEmbed(guild: Guild) {
     let cfg: any = loadConfig();
     let serverCfg = cfg.rpp?.guilds?.[guild.id];
@@ -47,6 +77,7 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         const tipo = interaction.options.getString('tipo', true);
         const channel = interaction.options.getChannel('canal', true);
+    const JOURNALISM_GUILD_ID = '1224414082866745405';
         if (!SUPPORTED.includes(tipo)) {
             await interaction.reply({ content: 'Tipo não suportado.', ephemeral: true });
             return;
@@ -59,6 +90,9 @@ export default {
         if (tipo === 'rpp') {
             try {
                 const embed = buildRppEmbed(interaction.guild!);
+                if (interaction.guildId === JOURNALISM_GUILD_ID) embed.setColor(0xFFB6ED);
+                enforceSupportColor(embed, interaction.guildId || undefined);
+                enforceBrandColor(embed, interaction.guildId || undefined);
                 const cfg: any = loadConfig();
                 const btnEmoji = cfg.rpp.guilds[interaction.guild!.id].embed.button;
                 const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('rpp_request').setLabel('Pedir RPP').setEmoji(btnEmoji).setStyle(2));
@@ -75,6 +109,9 @@ export default {
             const bancaTitle = cfgAll.emojis?.bancaTitle || 'Banca';
             const rppAccept = cfgAll.emojis?.rppAccept || '';
             const embed = new EmbedBuilder().setTitle(`${bancaTitle} Crie sua banca!`).setDescription('Clique no botão abaixo para criar a sua banca. Preencha as informações necessárias para a criação da sua banca.').setColor(0x3498db);
+            if (interaction.guildId === JOURNALISM_GUILD_ID) embed.setColor(0xFFB6ED);
+            enforceSupportColor(embed, interaction.guildId || undefined);
+            enforceBrandColor(embed, interaction.guildId || undefined);
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('banca_create').setLabel('Criar Banca').setStyle(1).setEmoji(rppAccept));
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de banca publicada.');
@@ -87,6 +124,9 @@ export default {
                 .setDescription('Clique no botão abaixo para fazer uma solicitação de arte.\nPreencha as informações necessárias para sua arte.')
                 .setImage('https://i.imgur.com/U9lCIK7.gif')
                 .setFooter({ text: 'Sistema de Pedidos de Design' });
+            if (interaction.guildId === JOURNALISM_GUILD_ID) embed.setColor(0xFFB6ED);
+            enforceSupportColor(embed, interaction.guildId || undefined);
+            enforceBrandColor(embed, interaction.guildId || undefined);
             const openBtn = new ButtonBuilder().setCustomId('design_request_open').setLabel('Abrir pedido').setStyle(1).setEmoji('🎨');
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(openBtn);
             await (channel as any).send({ embeds: [embed], components: [row] });
@@ -149,6 +189,16 @@ export default {
                     .setFooter({ text: 'Sistema de Verificação • Central da Web' });
                 if (banner)
                     embed.setImage(banner);
+                // For Design guild enforce unified color
+                if (interaction.guildId === '1183909149784952902') {
+                    embed.setColor(0xE67E22);
+                }
+                // For Journalism guild enforce unified journalism color
+                if (interaction.guildId === JOURNALISM_GUILD_ID) {
+                    embed.setColor(0xFFB6ED);
+                }
+                enforceSupportColor(embed, interaction.guildId || undefined);
+                enforceBrandColor(embed, interaction.guildId || undefined);
             }
             const buttonId = interaction.guildId === MIG_GUILD_ID ? 'verify_mig' : 'verify_area';
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(buttonId).setLabel('Verificar').setStyle(1).setEmoji('<:cdw_e_verificado:1116425488773152899>'));

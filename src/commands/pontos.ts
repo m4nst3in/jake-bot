@@ -18,7 +18,20 @@ export default {
         const champion = cfg.emojis?.champion || '<a:champion:placeholder>';
         const dot = cfg.emojis?.dot || '•';
         const embed = new EmbedBuilder()
-            .setColor(0x1f2a44)
+            .setColor((() => {
+            if (interaction.guildId === cfg.banca?.supportGuildId)
+                return 0xFFFFFF;
+            try {
+                const movGuild = (cfg.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
+                const recruitGuild = (cfg.areas || []).find((a: any) => a.name === 'RECRUTAMENTO')?.guildId;
+                if (movGuild && interaction.guildId === movGuild)
+                    return 0x8B0000;
+                if (recruitGuild && interaction.guildId === recruitGuild)
+                    return 0x39ff14;
+            }
+            catch { }
+            return 0x1f2a44;
+        })())
             .setTitle(`${champion} Painel de Pontos`)
             .setDescription([
             `${dot} Gerencie pontos rapidamente nas áreas onde você tem liderança${isOwner(member) ? ' (owner: todas as áreas)' : ''}.`,

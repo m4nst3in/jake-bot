@@ -132,7 +132,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         const backupEmbed = new EmbedBuilder()
                             .setTitle('🗄️ Backup Área - Suporte')
                             .setDescription(`Registros: ${areaData.count}. Backup gerado antes do reset.`)
-                            .setColor(0x5865F2)
+                            .setColor(0xFFFFFF)
                             .setTimestamp();
                         const jsonFile = new AttachmentBuilder(areaData.jsonBuffer, { name: `suporte-${Date.now()}.json` });
                         const csvFile = new AttachmentBuilder(areaData.csvBuffer, { name: `suporte-${Date.now()}.csv` });
@@ -147,7 +147,7 @@ export function scheduleWeeklyTasks(client: Client) {
                     const embed = new EmbedBuilder()
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Suporte** (incluindo relatórios e plantões) foi resetada.')
-                        .setColor(0x5865F2)
+                        .setColor(0xFFFFFF)
                         .setFooter({ text: 'Novo ciclo iniciado' })
                         .setTimestamp();
                     try {
@@ -291,6 +291,7 @@ export function scheduleWeeklyTasks(client: Client) {
                     await dCh.send({ embeds: [embed] });
                     try {
                         const rankingEmbed = await svc.buildRankingEmbedUnified('Design');
+                        (rankingEmbed as any).setColor && (rankingEmbed as any).setColor(0xE67E22);
                         await dCh.send({ embeds: [rankingEmbed] });
                     }
                     catch (e) {
@@ -356,7 +357,7 @@ export function scheduleWeeklyTasks(client: Client) {
                             const backupEmbed = new EmbedBuilder()
                                 .setTitle('🗄️ Backup Área - Recrutamento')
                                 .setDescription(`Registros: ${rBackup.count}. Backup gerado antes do reset.`)
-                                .setColor(0x2ECC71)
+                                .setColor(0x39ff14)
                                 .setTimestamp();
                             const jsonFile = new AttachmentBuilder(rBackup.jsonBuffer, { name: `recrutamento-${Date.now()}.json` });
                             const csvFile = new AttachmentBuilder(rBackup.csvBuffer, { name: `recrutamento-${Date.now()}.csv` });
@@ -377,7 +378,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         const embed = new EmbedBuilder()
                             .setTitle('♻️ Reset Semanal de Pontos')
                             .setDescription('A pontuação da equipe de **Recrutamento** foi resetada.')
-                            .setColor(0x2ECC71)
+                            .setColor(0x39ff14)
                             .setFooter({ text: 'Novo ciclo iniciado' })
                             .setTimestamp();
                         await rRankCh.send({ embeds: [embed] });
@@ -417,10 +418,17 @@ export function scheduleWeeklyTasks(client: Client) {
                 const embed = new EmbedBuilder()
                     .setTitle('🗓️ Semana Encerrada')
                     .setDescription('Encerramos a semana das bancas de **Suporte**. Agradecemos o empenho de todos! Preparem-se para o novo ciclo.')
-                    .setColor(0x5865F2)
+                    .setColor(0xFFFFFF)
                     .setImage(banner)
                     .setFooter({ text: 'Encerramento semanal • Suporte' })
                     .setTimestamp();
+                try {
+                    const cfgAny: any = cfg;
+                    const movGuild = (cfgAny.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
+                    if (movGuild && ch.guild?.id === movGuild) {
+                        embed.setColor(0x8B0000);
+                    }
+                } catch {}
                 await ch.send({ embeds: [embed] }).catch(() => { });
             };
             await Promise.all([
@@ -445,7 +453,7 @@ export function scheduleWeeklyTasks(client: Client) {
                     const embed = new EmbedBuilder()
                         .setTitle('🗓️ Semana Encerrada')
                         .setDescription('Encerramos a semana das bancas de **Recrutamento**. Obrigado pelo esforço! Novo ciclo começa agora.')
-                        .setColor(0x2ECC71)
+                        .setColor(0x39ff14)
                         .setImage(banner)
                         .setFooter({ text: 'Encerramento semanal • Recrutamento' })
                         .setTimestamp();

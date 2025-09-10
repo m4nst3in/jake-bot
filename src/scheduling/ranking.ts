@@ -39,6 +39,12 @@ export function scheduleRankingUpdater(client: Client) {
                 if (area.toLowerCase() !== 'recrutamento') {
                     (embed as any).setImage && (embed as any).setImage('https://i.imgur.com/MaXRcNR.gif');
                 }
+                if (area.toLowerCase() === 'suporte') {
+                    (embed as any).setColor && (embed as any).setColor(0xFFFFFF);
+                }
+                if (area.toLowerCase() === 'movcall') {
+                    (embed as any).setColor && (embed as any).setColor(0x8B0000);
+                }
                 if (area.toLowerCase() === 'recrutamento') {
                     const primary = cfg.emojis?.recruitPrimary || '★';
                     const arrow = cfg.emojis?.recruitArrow || '→';
@@ -95,6 +101,14 @@ export function scheduleRankingUpdater(client: Client) {
                     if (evCh && evCh.isTextBased()) {
                         const area = 'Eventos';
                         const embed = await svc.buildRankingEmbedUnified(area);
+                        (embed as any).setColor && (embed as any).setColor(0xFFFFFF);
+                        const guildId = evCh.guild?.id;
+                        if (guildId) {
+                            const movGuild = (cfg.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
+                            if (movGuild && guildId === movGuild) {
+                                (embed as any).setColor && (embed as any).setColor(0x8B0000);
+                            }
+                        }
                         const raw = (embed as any).data?.description || (embed as any).description || '';
                         const arrowEmoji = '<:emoji_73:1406097351747178496>';
                         const adjusted = raw.split('\n').map((line: string) => {
@@ -182,6 +196,8 @@ export function scheduleRankingUpdater(client: Client) {
                         (rankingEmbed as any).data.description = cleaned;
                     else
                         (rankingEmbed as any).setDescription(cleaned);
+                    // Enforce unified Design color
+                    (rankingEmbed as any).setColor && (rankingEmbed as any).setColor(0xE67E22);
                     (rankingEmbed as any).setImage && (rankingEmbed as any).setImage(null);
                     const prev = await dChannel.messages.fetch({ limit: 10 }).catch(() => null);
                     if (prev) {

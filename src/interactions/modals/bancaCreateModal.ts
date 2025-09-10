@@ -140,7 +140,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                 `${BUNNY} *Liderança de Recrutamento - CDW*`
             ];
             const embed = new EmbedBuilder()
-                .setColor(0x2ecc71)
+                .setColor(0x39ff14)
                 .setDescription(partes.join('\n\n'));
             await textChannel.send({ content: `<@${staffId}>`, embeds: [embed] });
             return;
@@ -184,6 +184,15 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
         await interaction.editReply(`Banca criada: <#${channel.id}>`);
         const textChannel = channel as TextChannel;
         const embed = new EmbedBuilder().setTitle(`Banca: ${nome}`).setColor(0x5865F2).setDescription(`Canal criado para a banca **${nome}**`).addFields({ name: 'Staff', value: `<@${staffId}>`, inline: true }, { name: 'Criada por', value: `<@${interaction.user.id}>`, inline: true }).setFooter({ text: `ID: ${channel.id}` }).setTimestamp();
+        if (interaction.guild.id === config.banca?.supportGuildId) {
+            embed.setColor(0xFFFFFF);
+        }
+        try {
+            const movGuild = (config.areas || []).find((a: any) => a.name === 'MOVCALL')?.guildId;
+            if (movGuild && interaction.guild.id === movGuild) {
+                embed.setColor(0x8B0000);
+            }
+        } catch {}
         if (config.banca?.bannerUrl)
             embed.setImage(config.banca.bannerUrl);
         await textChannel.send({ embeds: [embed] });

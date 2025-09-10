@@ -7,7 +7,8 @@ const LOG_CHANNEL_ID = '1414539961515900979';
 const TEAM_COLORS: Record<string, number> = {
     movcall: 0x1abc9c,
     design: 0xe67e22,
-    jornalismo: 0x9b59b6,
+    // Unified journalism ranking color
+    jornalismo: 0xFFB6ED,
     recrutamento: 0x3498db,
     eventos: 0xf1c40f
 };
