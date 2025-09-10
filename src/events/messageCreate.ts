@@ -144,7 +144,7 @@ export default async function messageCreate(message: Message) {
                             .setDescription(`Solicitação de supervisão registrada.\n\n<a:emoji_50:1330028935563575306> **Usuário**: <@${message.author.id}>\n<a:emoji_50:1330028935563575306> **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
                             .setFooter({ text: `Msg ${message.id}` })
                             .setTimestamp();
-                        const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('<:sim:1234898291851001887> ').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4));
+                        const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4));
                         const mentionRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? `<@&${RECRUIT_LEADERSHIP_ROLE}>` : `<@&${SUPERVISAO_ROLE}>`;
                         await supervisaoChannel.send({ content: mentionRole, embeds: [embed], components: [row] });
                     }
@@ -159,7 +159,6 @@ export default async function messageCreate(message: Message) {
                             .setTimestamp();
                         await logChannel.send({ embeds: [embed] });
                     }
-                    // Pontuação automática para plantão de Recrutamento
                     if (isRecruitShift) {
                         const shiftPoints = typeof recruitCfg?.shiftPoints === 'number' ? recruitCfg.shiftPoints : (recruitCfg?.pointsPerMessage || 10);
                         await pointsService.registrarPlantao(message.author.id, 'Recrutamento', shiftPoints, 'system');
