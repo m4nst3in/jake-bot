@@ -215,8 +215,51 @@ export function registerProtectionListener(client: any) {
             for (const role of added.values()) {
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
                 const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
+                
+                // Cargos especiais que devem ser apenas registrados (sem bloqueio)
+                const MONITORED_ROLES: Record<string, string> = {
+                    '1212657992630280302': 'Community',
+                    '1137176557979439246': 'Membro Ativo', 
+                    '1055316223639945367': 'Verificado'
+                };
+                
                 const isVip = vipRoleIds.has(role.id);
                 const isPerm = permissionRoleIds.has(role.id);
+                const isMonitored = MONITORED_ROLES[role.id];
+                
+                if (isMonitored) {
+                    let executorIdPassive = roleExecutorMap[role.id] ?? null;
+                    if (!executorIdPassive) {
+                        executorIdPassive = await resolveExecutorForRole(role.id);
+                    }
+                    
+                    // Log apenas para registro (sem menções)
+                    if (newMember.guild.id === mainGuildId) {
+                        const logChannelId = getProtectionConfig().logChannel || '1414540666171559966';
+                        try {
+                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch((err: any) => { logger.warn({ err, logChannelId }, 'Proteção: falha fetch canal de log (cargo monitorado)'); return null; });
+                            if (ch && ch.isTextBased()) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
+                                    .setColor(0x3498DB)
+                                    .setDescription(`Um cargo monitorado foi adicionado e registrado.`)
+                                    .addFields(
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' },
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isMonitored },
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Apenas registrado (sem bloqueio)' },
+                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
+                                    )
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setTimestamp();
+                                ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log cargo monitorado'); });
+                            }
+                        } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log cargo monitorado'); }
+                    }
+                    continue;
+                }
+                
                 if (isVip || isPerm) {
                     let executorIdPassive = roleExecutorMap[role.id] ?? null;
                     if (!executorIdPassive) {
