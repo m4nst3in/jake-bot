@@ -90,8 +90,8 @@ export function registerProtectionListener(client: any) {
                                         { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
                                     )
                                     .setTimestamp();
-                                const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
-                ch.send({ content: mentionContent, embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
+                                // Envia apenas o embed sem menções para remoção de cargo membro
+                ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
                             }
             } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
                     }
@@ -166,7 +166,6 @@ export function registerProtectionListener(client: any) {
             }
             const staffRoleId = rootCfg.roles?.staff;
             const inicianteRoleId = rootCfg.roles?.['Iniciante'];
-            const allowedTeamNamesForRecruitLead = new Set(['Mov Call','Design','Recrutamento','Eventos','Jornalismo']); // exclui Migração e Suporte
             async function resolveExecutorForRole(roleId: string): Promise<string | null> {
                 if (roleExecutorMap[roleId])
                     return roleExecutorMap[roleId];
@@ -322,10 +321,26 @@ export function registerProtectionListener(client: any) {
                                 if (execMember.roles.cache.has(blockInfo.allowedLeaderRole))
                                     allowed = true;
                             }
-                            // Regra: Liderança de Recrutamento pode aplicar Staff, Iniciante e cargos de equipes (exceto Migração e Suporte)
+                            // Regra: Liderança de Recrutamento pode aplicar Staff, Iniciante, cargos de equipes e hierarquia até Coronel
                             if (!allowed && recruitmentLeadershipRoleId && execMember.roles.cache.has(recruitmentLeadershipRoleId)) {
-                                if (role.id === staffRoleId || role.id === inicianteRoleId || allowedTeamNamesForRecruitLead.has(blockInfo.name || '')) {
+                                // Pode aplicar Staff e Iniciante
+                                if (role.id === staffRoleId || role.id === inicianteRoleId) {
                                     allowed = true;
+                                }
+                                // Pode aplicar qualquer cargo de área/equipe (exceto Migração)
+                                else if (blockInfo && blockInfo.name && blockInfo.name !== 'Migração' && blockInfo.name !== 'Líder Geral') {
+                                    allowed = true;
+                                }
+                                // Pode aplicar cargos de hierarquia até Coronel (exceto Sub Comandante para cima)
+                                else if (isGlobalHierarchy) {
+                                    const roleName = globalRoleNameById[role.id];
+                                    if (roleName) {
+                                        const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
+                                        const targetIdx = hierarchyOrder.indexOf(roleName);
+                                        if (targetIdx !== -1 && targetIdx < subCmdIndex) {
+                                            allowed = true;
+                                        }
+                                    }
                                 }
                             }
                             if (!allowed && isGlobalHierarchy) {

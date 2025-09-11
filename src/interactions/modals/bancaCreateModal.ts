@@ -18,7 +18,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             return;
         }
         const recruitCfg: any = (config as any).recruitBanca;
-        const recruitPrefix = '�・';
+        const recruitPrefix = recruitCfg?.prefix || '📖・';
         const supportPrefix = '📖・';
         const journalismCfg: any = (config as any).journalismBanca;
         const journalismGuildId = journalismCfg?.guildId;
