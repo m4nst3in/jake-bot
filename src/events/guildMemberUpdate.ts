@@ -30,7 +30,7 @@ export function registerProtectionListener(client: any) {
                const rootCfg: any = loadConfig();
             const mainGuildId = rootCfg.mainGuildId;
             // --- Proteção Anti-Remoção de Cargo Membro ---
-            const MEMBER_PROTECTED_ROLE_ID = '934635845690990632';
+            const MEMBER_PROTECTED_ROLE_ID = rootCfg.protectionRoles?.memberProtected || '934635845690990632';
             // Se o cargo protegido estava antes e não está mais agora => tentativa de remoção
             if (oldMember?.roles?.cache?.has(MEMBER_PROTECTED_ROLE_ID) && !newMember.roles.cache.has(MEMBER_PROTECTED_ROLE_ID)) {
                 let executorId: string | null = null;
@@ -55,7 +55,7 @@ export function registerProtectionListener(client: any) {
                 // Liderança = qualquer cargo em protection.areaLeaderRoles ou cargo global líder geral
                 const leadershipRoleIds: Set<string> = new Set([
                     ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
-                    '1411223951350435961'
+                    rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961'
                 ]);
                 let isLeadershipExecutor = false;
                 if (executorId) {
@@ -154,12 +154,12 @@ export function registerProtectionListener(client: any) {
             const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
             const leadershipRoleIds: Set<string> = new Set([
                 ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
-                '1411223951350435961'
+                rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961'
             ]);
             // Detecta cargo de Liderança de Recrutamento (heurística: nome 'Recrutamento' com allowedLeaderRole = Líder Geral)
             let recruitmentLeadershipRoleId: string | undefined;
             for (const [rid, info] of Object.entries((rootCfg.protection?.blockedRoles) || {})) {
-                if ((info as any).name === 'Recrutamento' && (info as any).allowedLeaderRole === '1411223951350435961') {
+                if ((info as any).name === 'Recrutamento' && (info as any).allowedLeaderRole === (rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961')) {
                     recruitmentLeadershipRoleId = rid;
                     break;
                 }
@@ -198,7 +198,7 @@ export function registerProtectionListener(client: any) {
                 }
                 return null;
             }
-            const MIG_GLOBAL_ROLE = '1346223411289919558';
+            const MIG_GLOBAL_ROLE = rootCfg.protectionRoles?.migGlobal || '1346223411289919558';
             const hierarchyOrder: string[] = Array.isArray(rootCfg.hierarchyOrder) && rootCfg.hierarchyOrder.length
                 ? rootCfg.hierarchyOrder
                 : [
@@ -225,7 +225,7 @@ export function registerProtectionListener(client: any) {
                     const cfg: any = loadConfig();
                     const mainGuildId = cfg.mainGuildId;
                     if (newMember.guild.id === mainGuildId) {
-                        const logChannelId = getProtectionConfig().logChannel || '1414540666171559966';
+                        const logChannelId = getProtectionConfig().logChannel || rootCfg.protection?.logChannel || '1414540666171559966';
                         try {
                             const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
                             if (ch && ch.isTextBased()) {
@@ -268,7 +268,7 @@ export function registerProtectionListener(client: any) {
                             if (botRoles.some((id: string) => execMember.roles.cache.has(id))) {
                                 allowed = true;
                             }
-                            else if (leaderUsers.includes(executorId) && role.id !== '1411223951350435961') {
+                            else if (leaderUsers.includes(executorId) && role.id !== (rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961')) {
                                 allowed = true;
                             }
                             else if (blockInfo.allowedLeaderRoles && blockInfo.allowedLeaderRoles.length) {
@@ -297,7 +297,7 @@ export function registerProtectionListener(client: any) {
                                     const targetIdx = hierarchyOrder.indexOf(roleName);
                                     if (targetIdx !== -1 && targetIdx < subCmdIndex) {
                                         allowed = true;
-                                        const logChannelId = logChannel || '1414540666171559966';
+                                        const logChannelId = logChannel || rootCfg.protection?.logChannel || '1414540666171559966';
                                         if (newMember.guild.id === (loadConfig() as any).mainGuildId) {
                                             try {
                                                 const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);

@@ -60,17 +60,16 @@ export default {
             await interaction.editReply('Você não está no servidor principal. Entre nele antes.');
             return;
         }
-        const MAIN_AREA_ROLES: Record<string, {
-            area: string;
-        }> = {
-            '1136861840421425284': { area: 'SUPORTE' },
-            '1170196352114901052': { area: 'EVENTOS' },
-            '1136861814328668230': { area: 'MOVCALL' },
-            '1136868804677357608': { area: 'RECRUTAMENTO' },
-            '1136861844540227624': { area: 'DESIGN' },
-            '1247967720427884587': { area: 'JORNALISMO' }
+        const configData = loadConfig();
+        const MAIN_AREA_ROLES = (configData as any).mainAreaRoleMap || {
+            '1136861840421425284': 'SUPORTE',
+            '1170196352114901052': 'EVENTOS',
+            '1136861814328668230': 'MOVCALL',
+            '1136868804677357608': 'RECRUTAMENTO',
+            '1136861844540227624': 'DESIGN',
+            '1247967720427884587': 'JORNALISMO'
         };
-        const hasRequired = primaryMember.roles.cache.some(r => MAIN_AREA_ROLES[r.id]?.area === assign.area);
+        const hasRequired = primaryMember.roles.cache.some(r => MAIN_AREA_ROLES[r.id] === assign.area);
         if (!hasRequired) {
             await interaction.editReply(`Você não possui o cargo principal da área **${assign.area}** no servidor principal.`);
             return;

@@ -553,7 +553,37 @@
     "🍃": "1271086030984052788"
   },
   "__comment_baseMemberRole": "Cargo base aplicado se após transferência o usuário origem ficar sem nenhum cargo transferido.",
-  "baseMemberRoleId": "934635845690990632"
+  "baseMemberRoleId": "934635845690990632",
+
+  "__comment_rppRoles": "Cargos específicos do sistema RPP para remoção/restauração automática.",
+  "rppRoles": {
+    "recovery": "1136856157835763783",
+    "mainAreaRoles": [
+      "1136861840421425284",
+      "1170196352114901052", 
+      "1136861814328668230",
+      "1136868804677357608",
+      "1136861844540227624",
+      "1247967720427884587"
+    ]
+  },
+
+  "__comment_mainAreaRoleMap": "Mapeamento dos cargos principais de área para verificação de área.",
+  "mainAreaRoleMap": {
+    "1136861840421425284": "SUPORTE",
+    "1170196352114901052": "EVENTOS", 
+    "1136861814328668230": "MOVCALL",
+    "1136868804677357608": "RECRUTAMENTO",
+    "1136861844540227624": "DESIGN",
+    "1247967720427884587": "JORNALISMO"
+  },
+
+  "__comment_protectionRoles": "Cargos específicos do sistema de proteção.",
+  "protectionRoles": {
+    "memberProtected": "934635845690990632",
+    "leaderGeneral": "1411223951350435961",
+    "migGlobal": "1346223411289919558"
+  }
   ,
   "__comment_progressionWaitingRoles": "Guild IDs -> cargo de 'aguardando verificação' (waiting role) nas áreas que usam esse estágio.",
   "progressionWaitingRoles": {
@@ -570,6 +600,7 @@
   "movOrg": {
     "channelId": "1338533776665350226",
     "roleId": "1136861814328668230",
+    "extraLeadRoleId": "1136864678253969430",
     "closeGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif",
     "openGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif",
     "windows": [

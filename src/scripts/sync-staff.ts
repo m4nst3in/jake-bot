@@ -9,7 +9,10 @@ async function main() {
     await DatabaseManager.init();
     const guildId = resolvePrimaryGuildId();
     const cfg = loadConfig();
-    const roleId = cfg.roles?.staff || '1135122929529659472';
+    const roleId = cfg.roles?.staff;
+    if (!roleId) {
+        throw new Error('Staff role ID não encontrado na configuração');
+    }
     if (!guildId)
         throw new Error('Nenhum guildId válido encontrado (configure mainGuildId ou support.guildId)');
     if (!process.env.DISCORD_TOKEN)

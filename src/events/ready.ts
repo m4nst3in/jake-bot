@@ -11,7 +11,11 @@ export default async function ready(client: Client) {
     scheduleRankingUpdater(client);
     try {
         const cfg = loadConfig();
-        const roleId = cfg.roles?.staff || '1135122929529659472';
+        const roleId = cfg.roles?.staff;
+        if (!roleId) {
+            logger.warn('Staff role ID não encontrado na configuração');
+            return;
+        }
         const guildId = resolvePrimaryGuildId();
         if (guildId) {
             const guild = await client.guilds.fetch(guildId).catch(() => null);

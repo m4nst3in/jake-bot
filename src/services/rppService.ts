@@ -84,15 +84,15 @@ export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
     const member = await guild.members.fetch(userId).catch(() => null);
     if (!member)
         return;
-    const staffGlobalRole = cfg.roles?.staff || '1135122929529659472';
-    const recoveryRole = '1136856157835763783';
-    const permissionRoles = ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'];
-    const MAIN_AREA_ROLES: string[] = [
+    const staffGlobalRole = cfg.roles?.staff;
+    const recoveryRole = cfg.rppRoles?.recovery || '1136856157835763783';
+    const permissionRoles = cfg.permissionRoles || ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'];
+    const MAIN_AREA_ROLES: string[] = cfg.rppRoles?.mainAreaRoles || [
         '1136861840421425284', '1170196352114901052', '1136861814328668230', '1136868804677357608', '1136861844540227624', '1247967720427884587'
     ];
     const rankRoleIds: string[] = Object.entries(cfg.roles || {}).filter(([k]) => k !== 'staff').map(([, v]) => String(v));
     const toRemove: string[] = [];
-    if (member.roles.cache.has(staffGlobalRole))
+    if (staffGlobalRole && member.roles.cache.has(staffGlobalRole))
         toRemove.push(staffGlobalRole);
     for (const rid of MAIN_AREA_ROLES)
         if (member.roles.cache.has(rid))
@@ -135,12 +135,12 @@ export async function applyRppExitRoleRestore(client: Client, userId: string) {
     const member = await guild.members.fetch(userId).catch(() => null);
     if (!member)
         return;
-    const recoveryRole = '1136856157835763783';
+    const recoveryRole = cfg.rppRoles?.recovery || '1136856157835763783';
     const repo = new RppSnapshotRepository();
     const snapshot = inMemorySnapshots[userId] || await repo.get(userId);
     if (snapshot) {
         for (const rid of snapshot.roles) {
-            if (['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'].includes(rid))
+            if ((cfg.permissionRoles || ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404']).includes(rid))
                 continue;
             try {
                 if (!member.roles.cache.has(rid))
