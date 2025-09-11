@@ -76,7 +76,7 @@ export function registerProtectionListener(client: any) {
                     if (newMember.guild.id === mainGuildId) {
                         const logChannelId = logChannel || '1414540666171559966';
                         try {
-                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch((err: any) => { logger.warn({ err, logChannelId }, 'Proteção: falha fetch canal de log (remoção membro)'); return null; });
                             if (ch && ch.isTextBased()) {
                                 const embed = new EmbedBuilder()
                                     .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Remoção Bloqueada')
@@ -91,9 +91,9 @@ export function registerProtectionListener(client: any) {
                                     )
                                     .setTimestamp();
                                 const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
-                                ch.send({ content: mentionContent, embeds: [embed] }).catch(() => { });
+                ch.send({ content: mentionContent, embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
                             }
-                        } catch {}
+            } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
                     }
                 }
             }
@@ -105,8 +105,8 @@ export function registerProtectionListener(client: any) {
             const roleExecutorMap: Record<string, string | null> = {};
             const MEMBER_ROLE_UPDATE_TYPE: any = 25;
             try {
-                const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
-                for (const entry of audit.entries.values()) {
+            const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase1)'); return null; });
+        if (audit) for (const entry of audit.entries.values()) {
                     if ((entry as any).target?.id !== newMember.id)
                         continue;
                     const changes: any[] = (entry as any).changes || [];
@@ -129,8 +129,8 @@ export function registerProtectionListener(client: any) {
             if (Object.keys(roleExecutorMap).length === 0) {
                 await new Promise(res => setTimeout(res, 1200));
                 try {
-                    const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 });
-                    for (const entry of audit2.entries.values()) {
+                    const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase2)'); return null; });
+                    if (audit2) for (const entry of audit2.entries.values()) {
                         if ((entry as any).target?.id !== newMember.id)
                             continue;
                         const changes: any[] = (entry as any).changes || [];
