@@ -16,22 +16,19 @@ export default {
         const userId = parts[2];
         const staffId = interaction.user.id;
         
-        // Buscar a mensagem original do plantão para detectar menções
-        let plantaoUserIds: string[] = []; // Apenas usuários mencionados recebem pontos
+        let plantaoUserIds: string[] = [];
         
         try {
             const channel: any = PLANTAO_CHANNEL ? await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(() => null) : null;
             if (channel && channel.isTextBased()) {
                 const original = await channel.messages.fetch(messageId).catch(() => null);
                 if (original) {
-                    // Extrair menções da mensagem original (máximo 2 usuários)
                     const mentions = original.mentions.users;
                     if (mentions && mentions.size > 0) {
-                        // Apenas usuários mencionados recebem pontos (máximo 2, excluindo o autor)
                         const mentionedIds = Array.from(mentions.keys())
-                            .filter(id => id !== userId) // Excluir o autor original
-                            .slice(0, 2); // Máximo 2 usuários
-                        plantaoUserIds = mentionedIds;
+                            .filter(id => id !== userId)
+                            .slice(0, 2);
+                        plantaoUserIds = mentionedIds as string[];
                     }
                     await original.delete().catch(() => { });
                 }

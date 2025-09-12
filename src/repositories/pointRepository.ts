@@ -226,22 +226,11 @@ export class PointRepository extends BaseRepo {
 
         return stats;
     }
-        if (this.isSqlite()) {
-            return new Promise<any[]>((resolve, reject) => {
-                this.sqlite.all('SELECT user_id, points, reports_count, shifts_count FROM points WHERE area=? ORDER BY points DESC LIMIT ?', [area, limit], function (err: Error | null, rows: any[]) {
-                    if (err)
-                        reject(err);
-                    else
-                        resolve(rows);
-                });
-            });
-        }
-        return this.mongo.collection('points').find({ area }).project({ user_id: 1, points: 1, reports_count: 1, shifts_count: 1 }).sort({ points: -1 }).limit(limit).toArray();
-    }
+
     async addPointsAndReport(userId: string, area: string, delta: number, reason: string, by: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, reports_count=points.reports_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.reports_count', 'points.reports_count'), [userId, area, delta, 1, 0], function (err: Error | null) {
+                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, reports_count=reports_count+1, last_updated=CURRENT_TIMESTAMP', [userId, area, delta, 1, 0], function (err: Error | null) {
                     if (err)
                         reject(err);
                     else
@@ -265,7 +254,7 @@ export class PointRepository extends BaseRepo {
     async addShift(userId: string, area: string, delta: number, reason: string, by: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, shifts_count=points.shifts_count+1, last_updated=CURRENT_TIMESTAMP'.replace('points.shifts_count', 'points.shifts_count'), [userId, area, delta, 0, 1], function (err: Error | null) {
+                this.sqlite.run('INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id, area) DO UPDATE SET points=points+excluded.points, shifts_count=shifts_count+1, last_updated=CURRENT_TIMESTAMP', [userId, area, delta, 0, 1], function (err: Error | null) {
                     if (err)
                         reject(err);
                     else

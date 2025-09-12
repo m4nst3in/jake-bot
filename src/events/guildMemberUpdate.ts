@@ -34,18 +34,21 @@ export function registerProtectionListener(client: any) {
                 let executorId: string | null = null;
                 try {
                     const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 15 });
-                        if ((entry as any).target?.id !== newMember.id) continue;
-                        const changes: any[] = (entry as any).changes || [];
-                        for (const c of changes) {
-                            if (c.key === '$remove') {
-                                const removedArr = c['new'] || c['new_value'];
-                                if (Array.isArray(removedArr) && removedArr.some((r: any) => r.id === MEMBER_PROTECTED_ROLE_ID)) {
-                                    executorId = entry.executor?.id || null;
-                                    break;
+                    if (audit) {
+                        for (const entry of audit.entries.values()) {
+                            if ((entry as any).target?.id !== newMember.id) continue;
+                            const changes: any[] = (entry as any).changes || [];
+                            for (const c of changes) {
+                                if (c.key === '$remove') {
+                                    const removedArr = c['new'] || c['new_value'];
+                                    if (Array.isArray(removedArr) && removedArr.some((r: any) => r.id === MEMBER_PROTECTED_ROLE_ID)) {
+                                        executorId = entry.executor?.id || null;
+                                        break;
+                                    }
                                 }
                             }
+                            if (executorId) break;
                         }
-                        if (executorId) break;
                     }
                 } catch {}
                 const isOwnerExecutor = executorId ? (Array.isArray(rootCfg.owners) && rootCfg.owners.includes(executorId)) : false;
