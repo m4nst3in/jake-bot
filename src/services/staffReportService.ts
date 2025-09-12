@@ -460,22 +460,29 @@ export class StaffReportService {
 
   /**
    * Obtém metas do usuário baseadas nas configurações de metas
+   * Mostra apenas a área principal onde o usuário progride
    */
   private async getUserGoals(userId: string): Promise<UserGoals[]> {
     try {
       const userAreas = await this.getUserAreaInfo(userId);
       const goals: UserGoals[] = [];
 
+      // Determinar a área principal do usuário
+      const primaryArea = await this.getUserPrimaryArea(userId, userAreas);
+      if (!primaryArea) return [];
+
       // Carregar configuração de metas
       const metasConfig = await import('../config/metas.json', { with: { type: 'json' } });
       const metas = metasConfig.default;
 
-      for (const area of userAreas) {
-        const areaKey = area.area.toLowerCase();
-        const areaMetas = (metas as any)[areaKey];
-        
-        if (!areaMetas || !areaMetas.ranks) continue;
-
+      // Processar apenas a área principal
+      const area = primaryArea;
+      // Processar apenas a área principal
+      const area = primaryArea;
+      const areaKey = area.area.toLowerCase();
+      const areaMetas = (metas as any)[areaKey];
+      
+      if (areaMetas && areaMetas.ranks) {
         // Obter cargo atual real do usuário no servidor principal
         const actualRank = await this.getUserActualRank(userId);
         let currentRankIndex = -1;
@@ -517,6 +524,130 @@ export class StaffReportService {
           const requiredShifts = nextRankData.shifts || null;
 
           progress.points = {
+            current: area.points,
+            required: requiredPoints,
+            percentage: requiredPoints > 0 ? Math.min((area.points / requiredPoints) * 100, 100) : 100
+          };
+
+          if (requiredReports !== null) {
+            progress.reports = {
+              current: area.reports,
+              required: requiredReports,
+              percentage: Math.min((area.reports / requiredReports) * 100, 100)
+            };
+          }
+
+          if (requiredShifts !== null) {
+            progress.shifts = {
+              current: area.shifts,
+              required: requiredShifts,
+              percentage: Math.min((area.shifts / requiredShifts) * 100, 100)
+            };
+          }
+        }
+
+        const timeframe = areaMetas.ranks[currentRankIndex + 1]?.period === '1w' ? 'Semanal' : 
+                         areaMetas.ranks[currentRankIndex + 1]?.period === '1m' ? 'Mensal' : 
+                         'Por mérito';
+
+        goals.push({
+          area: area.area,
+          currentRank,
+          nextRank,
+          progress,
+          timeframe
+        });
+      }
+
+      return goals;
+    } catch (error) {
+      logger.error({ error, userId }, 'Erro ao obter metas do usuário');
+      return [];
+    }
+  }
+
+  /**
+   * Determina a área principal onde o usuário progride
+   */
+  private async getUserPrimaryArea(userId: string, userAreas: UserAreaInfo[]): Promise<UserAreaInfo | null> {
+    try {
+      const cfg: any = loadConfig();
+      const client = (globalThis as any).client;
+      
+      if (!client || !cfg.mainGuildId) {
+        // Fallback: área com mais pontos
+        return userAreas.length > 0 ? userAreas.reduce((max, area) => area.points > max.points ? area : max) : null;
+      }
+      
+      const mainGuild = client.guilds.cache.get(cfg.mainGuildId) || await client.guilds.fetch(cfg.mainGuildId);
+      const member = await mainGuild.members.fetch(userId).catch(() => null);
+      
+      if (!member) {
+        return userAreas.length > 0 ? userAreas.reduce((max, area) => area.points > max.points ? area : max) : null;
+      }
+
+      // 1. Verificar se o usuário tem cargo de liderança de alguma área específica
+      const membershipToLeadership = cfg.rppExtras?.membershipToLeadership || {};
+      const leadershipRoles = Object.values(membershipToLeadership);
+      
+      for (const roleId of member.roles.cache.keys()) {
+        if (leadershipRoles.includes(roleId)) {
+          // Encontrar qual área corresponde a este cargo de liderança
+          const memberRoleId = Object.keys(membershipToLeadership).find(
+            memberRole => membershipToLeadership[memberRole] === roleId
+          );
+          
+          if (memberRoleId && cfg.areas) {
+            const matchingCfgArea = cfg.areas.find((area: any) => 
+              area.roleIds?.member === memberRoleId
+            );
+            
+            if (matchingCfgArea) {
+              const matchingUserArea = userAreas.find(a => 
+                a.area.toLowerCase() === matchingCfgArea.name.toLowerCase()
+              );
+              if (matchingUserArea) {
+                return matchingUserArea;
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Verificar se o usuário tem cargo de membro de alguma área específica
+      if (cfg.areas) {
+        for (const cfgArea of cfg.areas) {
+          if (cfgArea.roleIds?.member && member.roles.cache.has(cfgArea.roleIds.member)) {
+            const matchingUserArea = userAreas.find(a => 
+              a.area.toLowerCase() === cfgArea.name.toLowerCase()
+            );
+            if (matchingUserArea) {
+              return matchingUserArea;
+            }
+          }
+        }
+      }
+
+      // 3. Verificar cargo de hierarquia militar (fallback)
+      const hierarchyOrder: string[] = cfg.hierarchyOrder || [];
+      const roles: Record<string, string> = cfg.roles || {};
+      
+      for (const rankName of hierarchyOrder) {
+        const roleId = roles[rankName];
+        if (roleId && member.roles.cache.has(roleId)) {
+          // Para cargos de hierarquia geral, pegar a área com mais pontos
+          return userAreas.length > 0 ? userAreas.reduce((max, area) => area.points > max.points ? area : max) : null;
+        }
+      }
+
+      // 4. Fallback final: área com mais pontos
+      return userAreas.length > 0 ? userAreas.reduce((max, area) => area.points > max.points ? area : max) : null;
+      
+    } catch (error) {
+      logger.error({ error, userId }, 'Erro ao determinar área principal');
+      return userAreas.length > 0 ? userAreas[0] : null;
+    }
+  }
             current: area.points,
             required: requiredPoints,
             percentage: requiredPoints > 0 ? Math.min((area.points / requiredPoints) * 100, 100) : 100
