@@ -648,47 +648,6 @@ export class StaffReportService {
       return userAreas.length > 0 ? userAreas[0] : null;
     }
   }
-            current: area.points,
-            required: requiredPoints,
-            percentage: requiredPoints > 0 ? Math.min((area.points / requiredPoints) * 100, 100) : 100
-          };
-
-          if (requiredReports !== null) {
-            progress.reports = {
-              current: area.reports,
-              required: requiredReports,
-              percentage: Math.min((area.reports / requiredReports) * 100, 100)
-            };
-          }
-
-          if (requiredShifts !== null) {
-            progress.shifts = {
-              current: area.shifts,
-              required: requiredShifts,
-              percentage: Math.min((area.shifts / requiredShifts) * 100, 100)
-            };
-          }
-        }
-
-        const timeframe = areaMetas.ranks[currentRankIndex + 1]?.period === '1w' ? 'Semanal' : 
-                         areaMetas.ranks[currentRankIndex + 1]?.period === '1m' ? 'Mensal' : 
-                         'Por mérito';
-
-        goals.push({
-          area: area.area,
-          currentRank,
-          nextRank,
-          progress,
-          timeframe
-        });
-      }
-
-      return goals;
-    } catch (error) {
-      logger.error({ error, userId }, 'Erro ao obter metas do usuário');
-      return [];
-    }
-  }
 
   /**
    * Obtém o cargo real do usuário no servidor principal
