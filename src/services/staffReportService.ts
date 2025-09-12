@@ -79,7 +79,7 @@ export class StaffReportService {
     const areaLines: string[] = [];
     if (userAreas.length > 0) {
       for (const area of userAreas) {
-        const leaderIcon = area.isLeader ? '👑' : '';
+        const leaderIcon = area.isLeader ? '<a:black_coroa:1121284795180269617>' : '';
         const posText = area.position && area.points > 0 ? `#${area.position}` : '-';
         const extras: string[] = [];
         if (area.reports > 0) extras.push(`🧾 ${area.reports}`);
@@ -106,27 +106,27 @@ export class StaffReportService {
     if (activeRpp) statusBadges.push('🧪 RPP Ativo');
 
     const sections = [
-      '**📊 Áreas de Atuação**',
+      '**<a:Cronwnss:1355323942705041600> Áreas de Atuação**',
       areaLines.join('\n')
     ];
 
     // Adicionar cargo de hierarquia se o usuário tiver um
     if (actualRank) {
-      sections.push('', `**🎖️ Cargo Atual:** ${actualRank}`);
+      sections.push('', `**<a:vSETAverdeclaro:1386504186396676141> Cargo Atual:** ${actualRank}`);
     }
 
     sections.push(
       '',
-      '**📅 Pontos Esta Semana**',
+      '**<a:vSETAverdeclaro:1386504186396676141> Pontos Esta Semana**',
       dailyText
     );
 
     if (statusBadges.length > 0) {
-      sections.push('', '**⚠️ Status**', statusBadges.join(' • '));
+      sections.push('', '**<a:vSETAverdeclaro:1386504186396676141> Status**', statusBadges.join(' • '));
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`📈 Relatório de Staff • ${target.username}`)
+      .setTitle(`<a:green_hypecuty_cdw:1415591722200731688><a:green_hypecuty_cdw:1415591722200731688>Relatório de Staff • ${target.username}`)
       .setDescription(sections.join('\n'))
       .setColor(0x3498DB)
       .setFooter({ 
@@ -155,11 +155,11 @@ export class StaffReportService {
       weeklyStats.forEach((week, index) => {
         const weekAgo = index === 0 ? 'Esta semana' : `${index + 1}ª semana atrás`;
         const extras: string[] = [];
-        if (week.reports > 0) extras.push(`🧾 ${week.reports}`);
-        if (week.shifts > 0) extras.push(`🕒 ${week.shifts}`);
+        if (week.reports > 0) extras.push(`<a:vSETAverdeclaro:1386504186396676141> ${week.reports}`);
+        if (week.shifts > 0) extras.push(`<a:vSETAverdeclaro:1386504186396676141> ${week.shifts}`);
         const extraText = extras.length > 0 ? ` • ${extras.join(' • ')}` : '';
         
-        weekLines.push(`📊 **${weekAgo}**: ${week.points} pts${extraText}`);
+        weekLines.push(`<a:vSETAverdeclaro:1386504186396676141> **${weekAgo}**: ${week.points} pts${extraText}`);
       });
     } else {
       weekLines.push('*Nenhum histórico encontrado*');
@@ -167,8 +167,8 @@ export class StaffReportService {
 
     // Informações de tempo como staff
     const joinText = staffJoinInfo.joinedAt 
-      ? `📅 **Staff desde**: ${staffJoinInfo.joinedAt.toLocaleDateString('pt-BR')} (${staffJoinInfo.daysAsStaff} dias)`
-      : '📅 **Staff desde**: *Não identificado*';
+      ? `<a:vSETAverdeclaro:1386504186396676141> **Staff desde**: ${staffJoinInfo.joinedAt.toLocaleDateString('pt-BR')} (${staffJoinInfo.daysAsStaff} dias)`
+      : '<a:vSETAverdeclaro:1386504186396676141> **Staff desde**: *Não identificado*';
 
     // Blacklist e ocorrências
     const issuesLines: string[] = [];
@@ -177,27 +177,27 @@ export class StaffReportService {
         .slice(0, 3)
         .map((b: any) => `• ${b.area_or_global || 'GLOBAL'}: ${b.reason || 'Sem motivo'}`)
         .join('\n');
-      issuesLines.push('⛔ **Blacklist Ativa**', blacklistText);
+      issuesLines.push('<:d_coroavermelha:1283521261426835466> **Blacklist Ativa**', blacklistText);
       if (blacklistHistory.length > 3) {
         issuesLines.push(`*... e mais ${blacklistHistory.length - 3}*`);
       }
     }
 
     if (occCount > 0) {
-      issuesLines.push('📂 **Ocorrências**: ' + occCount);
+      issuesLines.push('<:d_coroavermelha:1283521261426835466> **Ocorrências**: ' + occCount);
     }
 
     if (issuesLines.length === 0) {
-      issuesLines.push('✅ **Sem restrições ativas**');
+      issuesLines.push('<:ponto_branco:1194039643545538561> **Sem restrições ativas**');
     }
 
     const sections = [
-      '**📈 Histórico das Últimas 5 Semanas**',
+      '**<:white_rules:1414413082800820284> Histórico das Últimas 5 Semanas**',
       weekLines.join('\n'),
       '',
       joinText,
       '',
-      '**⚠️ Situação Disciplinar**',
+      '**<a:emoji_45:1316060213312487465> Situação Disciplinar**',
       issuesLines.join('\n')
     ];
 
@@ -222,7 +222,7 @@ export class StaffReportService {
 
     if (userGoals.length === 0) {
       return new EmbedBuilder()
-        .setTitle(`🎯 Metas • ${target.username}`)
+        .setTitle(`<a:green_hypecuty_cdw:1415591722200731688> Metas • ${target.username}`)
         .setDescription('*Nenhuma meta encontrada para este usuário*')
         .setColor(0xF39C12)
         .setThumbnail(target.displayAvatarURL())
@@ -238,38 +238,38 @@ export class StaffReportService {
       goalSections.push(`${leaderIcon}**${goal.area}**`);
       
       if (goal.currentRank) {
-        goalSections.push(`📊 Cargo atual: **${goal.currentRank}**`);
+        goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> Cargo atual: **${goal.currentRank}**`);
       }
       
       if (goal.nextRank) {
-        goalSections.push(`🎯 Próximo cargo: **${goal.nextRank}**`);
-        goalSections.push(`⏱️ Período: ${goal.timeframe}`);
+        goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> Próximo cargo: **${goal.nextRank}**`);
+        goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> Período: ${goal.timeframe}`);
         goalSections.push('');
 
         // Progresso de pontos
         const pointsProgress = this.generateProgressBar(goal.progress.points.percentage);
-        goalSections.push(`💎 **Pontos**: ${goal.progress.points.current}/${goal.progress.points.required} ${pointsProgress}`);
+        goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> **Pontos**: ${goal.progress.points.current}/${goal.progress.points.required} ${pointsProgress}`);
 
         // Progresso de relatórios (se aplicável)
         if (goal.progress.reports) {
           const reportsProgress = this.generateProgressBar(goal.progress.reports.percentage);
-          goalSections.push(`🧾 **Relatórios**: ${goal.progress.reports.current}/${goal.progress.reports.required} ${reportsProgress}`);
+          goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> **Relatórios**: ${goal.progress.reports.current}/${goal.progress.reports.required} ${reportsProgress}`);
         }
 
         // Progresso de plantões (se aplicável)
         if (goal.progress.shifts) {
           const shiftsProgress = this.generateProgressBar(goal.progress.shifts.percentage);
-          goalSections.push(`🕒 **Plantões**: ${goal.progress.shifts.current}/${goal.progress.shifts.required} ${shiftsProgress}`);
+          goalSections.push(`<a:vSETAverdeclaro:1386504186396676141> **Plantões**: ${goal.progress.shifts.current}/${goal.progress.shifts.required} ${shiftsProgress}`);
         }
       } else {
-        goalSections.push('🏆 **Cargo máximo atingido**');
+        goalSections.push('<a:green_star02:1180891460875325560> **Cargo máximo atingido**');
       }
       
       goalSections.push('');
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`🎯 Metas e Objetivos • ${target.username}`)
+      .setTitle(`<a:green_hypecuty_cdw:1415591722200731688> Metas e Objetivos • ${target.username}`)
       .setDescription(goalSections.join('\n'))
       .setColor(0xF39C12)
       .setThumbnail(target.displayAvatarURL())
