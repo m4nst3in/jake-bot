@@ -477,8 +477,6 @@ export class StaffReportService {
 
       // Processar apenas a área principal
       const area = primaryArea;
-      // Processar apenas a área principal
-      const area = primaryArea;
       const areaKey = area.area.toLowerCase();
       const areaMetas = (metas as any)[areaKey];
       
