@@ -30,7 +30,7 @@ function isAreaLeader(member: any): boolean {
   return false;
 }
 
-export const data = new SlashCommandBuilder()
+const data = new SlashCommandBuilder()
   .setName('reboque')
   .setDescription('Remove um staff de todos os cargos e da database')
   .addStringOption(option =>
@@ -44,26 +44,20 @@ export const data = new SlashCommandBuilder()
       .setRequired(true)
   );
 
-export async function execute(interaction: any) {
+async function execute(interaction: any) {
   try {
     await interaction.deferReply({ ephemeral: true });
 
-    const executor = interaction.user;
-    const executorMember = interaction.member;
+    const executorId = interaction.user.id;
     const targetId = interaction.options.getString('id');
     const reason = interaction.options.getString('motivo');
 
     // Verificar se o executor tem permissão
-    const isAuthorized = isOwner(executor.id) || isAreaLeader(executorMember);
+    const isAuthorized = isOwner(executorId) || isAreaLeader(interaction.member);
 
     if (!isAuthorized) {
       return await interaction.editReply({
-        content: '❌ **Acesso Negado**\n\n' +
-                '🔒 Este comando está disponível apenas para:\n' +
-                '• 👑 **Owners** do sistema\n' +
-                '• 🎖️ **Lideranças de área**\n' +
-                '• 🏆 **Liderança geral**\n\n' +
-                '💡 Se você acredita que deveria ter acesso, entre em contato com a administração.'
+        content: '❌ Você não tem permissão para usar este comando.'
       });
     }
 
@@ -75,7 +69,7 @@ export async function execute(interaction: any) {
     }
 
     // Verificar se não está tentando rebocar a si mesmo
-    if (targetId === executor.id) {
+    if (targetId === executorId) {
       return await interaction.editReply({
         content: '❌ Você não pode rebocar a si mesmo.'
       });
@@ -91,7 +85,7 @@ export async function execute(interaction: any) {
     const reboqueService = new ReboqueService();
     
     // Executar o reboque
-    const result = await reboqueService.executeReboque(targetId, executor.id, reason);
+    const result = await reboqueService.executeReboque(targetId, executorId, reason);
 
     if (result.success) {
       await interaction.editReply({
@@ -120,3 +114,5 @@ export async function execute(interaction: any) {
     }
   }
 }
+
+export default { data, execute };
