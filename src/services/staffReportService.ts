@@ -126,7 +126,7 @@ export class StaffReportService {
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`<a:green_hypecuty_cdw:1415591722200731688><a:green_hypecuty_cdw:1415591722200731688>Relatório de Staff • ${target.username}`)
+      .setTitle(`<a:green_hypecuty_cdw:1415591722200731688> Relatório de Staff • ${target.username}`)
       .setDescription(sections.join('\n'))
       .setColor(0x3498DB)
       .setFooter({ 
@@ -202,7 +202,7 @@ export class StaffReportService {
     ];
 
     const embed = new EmbedBuilder()
-      .setTitle(`📜 Histórico • ${target.username}`)
+      .setTitle(`<:crown2:1411488673924644944> Histórico • ${target.username}`)
       .setDescription(sections.join('\n'))
       .setColor(0x9B59B6)
       .setThumbnail(target.displayAvatarURL())
