@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { logger } from '../utils/logger.ts';
 import { loadConfig } from '../config/index.ts';
 import { ReboqueService } from '../services/reboqueService.ts';
@@ -42,8 +42,7 @@ export const data = new SlashCommandBuilder()
     option.setName('motivo')
       .setDescription('Motivo do reboque')
       .setRequired(true)
-  )
-  .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers);
+  );
 
 export async function execute(interaction: any) {
   try {
