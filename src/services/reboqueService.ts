@@ -5,6 +5,7 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { UserRepository } from '../repositories/userRepository.ts';
 import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
 import { RPPRepository } from '../repositories/rppRepository.ts';
+import { DatabaseManager } from '../db/manager.ts';
 
 interface ReboqueResult {
   success: boolean;
@@ -259,9 +260,9 @@ export class ReboqueService {
 
   private async removeFromDatabase(targetId: string): Promise<void> {
     try {
-      // Para SQLite, usar SQL direto
-      if (this.pointRepo.isSqlite()) {
-        const db = (this.pointRepo as any).sqlite;
+      // Verificar tipo de database usando DatabaseManager
+      if (DatabaseManager.current === 'sqlite') {
+        const db = DatabaseManager.getSqlite().connection;
         
         // Remover pontos
         await new Promise<void>((resolve, reject) => {
@@ -281,7 +282,7 @@ export class ReboqueService {
         
       } else {
         // Para MongoDB
-        const mongo = (this.pointRepo as any).mongo;
+        const mongo = DatabaseManager.getMongo().database;
         await mongo.collection('points').deleteMany({ user_id: targetId });
         await mongo.collection('point_logs').deleteMany({ user_id: targetId });
       }
