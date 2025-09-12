@@ -111,40 +111,61 @@ export function scheduleWeeklyTasks(client: Client) {
         const cfg = loadConfig();
         const rankingChannelId = (cfg as any).support?.channels?.ranking || (cfg as any).channels?.ranking;
         const supportBackupChannelId = '1414439918951993364';
+        const journalismBackupChannelId = '1414440215468048444';
         const tzNow = new Date();
-        logger.info('Executando reset semanal da área Suporte');
+        logger.info('Executando reset semanal das áreas Suporte e Jornalismo');
         const svc = new PointsService();
+        
         try {
-            const area = 'Suporte';
-            const areaData = await exportAreaPoints(area);
-            let pdfPreReset: Buffer | null = null;
+            // === BACKUP E RESET DO SUPORTE ===
+            const supportArea = 'Suporte';
+            const supportData = await exportAreaPoints(supportArea);
+            let supportPdf: Buffer | null = null;
             try {
-                pdfPreReset = await generateAreaPdf(client, area);
+                supportPdf = await generateAreaPdf(client, supportArea);
             }
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF suporte pré-reset');
             }
+
+            // === BACKUP E RESET DO JORNALISMO ===
+            const journalismArea = 'Jornalismo';
+            const journalismData = await exportAreaPoints(journalismArea);
+            let journalismPdf: Buffer | null = null;
+            try {
+                journalismPdf = await generateAreaPdf(client, journalismArea);
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha gerar PDF jornalismo pré-reset');
+            }
+
+            // Executar resets após backups
             await resetSupportOnly();
+            await resetAreaPoints('Jornalismo');
+
+            // === ENVIO DO BACKUP DO SUPORTE ===
             if (rankingChannelId) {
                 const ch: any = await client.channels.fetch(supportBackupChannelId).catch(() => null);
                 if (ch && ch.isTextBased()) {
                     try {
                         const backupEmbed = new EmbedBuilder()
                             .setTitle('🗄️ Backup Área - Suporte')
-                            .setDescription(`Registros: ${areaData.count}. Backup gerado antes do reset.`)
+                            .setDescription(`Registros: ${supportData.count}. Backup gerado antes do reset.`)
                             .setColor(0xFFFFFF)
                             .setTimestamp();
-                        const jsonFile = new AttachmentBuilder(areaData.jsonBuffer, { name: `suporte-${Date.now()}.json` });
-                        const csvFile = new AttachmentBuilder(areaData.csvBuffer, { name: `suporte-${Date.now()}.csv` });
+                        const jsonFile = new AttachmentBuilder(supportData.jsonBuffer, { name: `suporte-${Date.now()}.json` });
+                        const csvFile = new AttachmentBuilder(supportData.csvBuffer, { name: `suporte-${Date.now()}.csv` });
                         const files: any[] = [jsonFile, csvFile];
-                        if (pdfPreReset)
-                            files.push({ attachment: pdfPreReset, name: `suporte-${Date.now()}.pdf` });
+                        if (supportPdf)
+                            files.push({ attachment: supportPdf, name: `suporte-${Date.now()}.pdf` });
                         await ch.send({ embeds: [backupEmbed], files });
                     }
                     catch (e) {
                         logger.warn({ e }, 'Falha envio backup suporte');
                     }
-                    const embed = new EmbedBuilder()
+
+                    // Aviso de reset do Suporte
+                    const supportResetEmbed = new EmbedBuilder()
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Suporte** (incluindo relatórios e plantões) foi resetada.')
                         .setColor(0xFFFFFF)
@@ -153,14 +174,14 @@ export function scheduleWeeklyTasks(client: Client) {
                     try {
                         const rCh: any = await client.channels.fetch(rankingChannelId).catch(() => null);
                         if (rCh && rCh.isTextBased()) {
-                            await rCh.send({ embeds: [embed] });
+                            await rCh.send({ embeds: [supportResetEmbed] });
                             try {
                                 const rankingEmbed = await svc.buildRankingEmbedUnified('Suporte');
                                 (rankingEmbed as any).setImage && (rankingEmbed as any).setImage('https://i.imgur.com/MaXRcNR.gif');
                                 await rCh.send({ embeds: [rankingEmbed] });
                             }
                             catch (e) {
-                                logger.warn({ e }, 'Falha ao enviar ranking pós-reset');
+                                logger.warn({ e }, 'Falha ao enviar ranking pós-reset suporte');
                             }
                         }
                     }
@@ -172,9 +193,59 @@ export function scheduleWeeklyTasks(client: Client) {
             else {
                 logger.warn('Canal de ranking não configurado para enviar aviso de reset.');
             }
+
+            // === ENVIO DO BACKUP DO JORNALISMO ===
+            try {
+                const jCh: any = await client.channels.fetch(journalismBackupChannelId).catch(() => null);
+                if (jCh && jCh.isTextBased()) {
+                    try {
+                        const backupEmbed = new EmbedBuilder()
+                            .setTitle('🗄️ Backup Área - Jornalismo')
+                            .setDescription(`Registros: ${journalismData.count}. Backup gerado antes do reset.`)
+                            .setColor(0xFFB6ED)
+                            .setTimestamp();
+                        const jsonFile = new AttachmentBuilder(journalismData.jsonBuffer, { name: `jornalismo-${Date.now()}.json` });
+                        const csvFile = new AttachmentBuilder(journalismData.csvBuffer, { name: `jornalismo-${Date.now()}.csv` });
+                        const files: any[] = [jsonFile, csvFile];
+                        if (journalismPdf)
+                            files.push({ attachment: journalismPdf, name: `jornalismo-${Date.now()}.pdf` });
+                        await jCh.send({ embeds: [backupEmbed], files });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha envio backup jornalismo');
+                    }
+
+                    // Aviso de reset do Jornalismo (enviar no mesmo canal ou buscar canal específico)
+                    const journalismResetEmbed = new EmbedBuilder()
+                        .setTitle('♻️ Reset Semanal de Pontos')
+                        .setDescription('A pontuação da equipe de **Jornalismo** foi resetada.')
+                        .setColor(0xFFB6ED)
+                        .setFooter({ text: 'Novo ciclo iniciado' })
+                        .setTimestamp();
+                    
+                    // Tentar encontrar canal de ranking do jornalismo
+                    const journalismChannelId = (cfg as any).channels?.journalismRanking || journalismBackupChannelId;
+                    const jRankCh: any = await client.channels.fetch(journalismChannelId).catch(() => null);
+                    if (jRankCh && jRankCh.isTextBased()) {
+                        await jRankCh.send({ embeds: [journalismResetEmbed] });
+                        try {
+                            const journalismRankingEmbed = await svc.buildRankingEmbedUnified('Jornalismo');
+                            (journalismRankingEmbed as any).setColor && (journalismRankingEmbed as any).setColor(0xFFB6ED);
+                            await jRankCh.send({ embeds: [journalismRankingEmbed] });
+                        }
+                        catch (e) {
+                            logger.warn({ e }, 'Falha ao enviar ranking pós-reset jornalismo');
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha bloco backup/reset jornalismo');
+            }
+
         }
         catch (err) {
-            logger.error({ err }, 'Falha ao resetar suporte semanal');
+            logger.error({ err }, 'Falha ao resetar suporte e jornalismo semanal');
         }
     }, { timezone: tz });
     cron.schedule('0 0 0 * * 6', async () => {
@@ -182,7 +253,6 @@ export function scheduleWeeklyTasks(client: Client) {
         const designChannelId = '1299517485149716480';
         const eventsBackupChannelId = '1287585553889624064';
         const designBackupChannelId = '1414440305935122434';
-        const journalismBackupChannelId = '1414440215468048444';
         const svc = new PointsService();
         logger.info('Executando reset semanal das áreas Eventos e Design');
         try {
@@ -202,20 +272,7 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF design');
             }
-            let jBackup: any = null;
-            let jPdf: Buffer | null = null;
-            try {
-                jBackup = await exportAreaPoints('Jornalismo');
-                try {
-                    jPdf = await generateAreaPdf(client, 'Jornalismo');
-                }
-                catch (e) {
-                    logger.warn({ e }, 'Falha gerar PDF jornalismo');
-                }
-            }
-            catch (e) {
-                logger.warn({ e }, 'Falha export jornalismo');
-            }
+            
             await resetAreaPoints('Eventos');
             await resetAreaPoints('Design');
             try {
@@ -301,32 +358,6 @@ export function scheduleWeeklyTasks(client: Client) {
             }
             catch (e) {
                 logger.warn({ e }, 'Falha envio reset design');
-            }
-            try {
-                if (jBackup) {
-                    const jCh: any = await client.channels.fetch(journalismBackupChannelId).catch(() => null);
-                    if (jCh && jCh.isTextBased()) {
-                        try {
-                            const backupEmbed = new EmbedBuilder()
-                                .setTitle('🗄️ Backup Área - Jornalismo')
-                                .setDescription(`Registros: ${jBackup.count}. Backup gerado (sem reset).`)
-                                .setColor(0xFFB6ED)
-                                .setTimestamp();
-                            const jsonFile = new AttachmentBuilder(jBackup.jsonBuffer, { name: `jornalismo-${Date.now()}.json` });
-                            const csvFile = new AttachmentBuilder(jBackup.csvBuffer, { name: `jornalismo-${Date.now()}.csv` });
-                            const files: any[] = [jsonFile, csvFile];
-                            if (jPdf)
-                                files.push({ attachment: jPdf, name: `jornalismo-${Date.now()}.pdf` });
-                            await jCh.send({ embeds: [backupEmbed], files });
-                        }
-                        catch (e) {
-                            logger.warn({ e }, 'Falha envio backup jornalismo');
-                        }
-                    }
-                }
-            }
-            catch (e) {
-                logger.warn({ e }, 'Falha bloco backup jornalismo');
             }
         }
         catch (err) {
