@@ -62,11 +62,12 @@ export class StaffReportService {
    * Gera o embed de resumo do staff
    */
   async generateSummaryEmbed(userId: string, target: User): Promise<EmbedBuilder> {
-    const [userAreas, dailyPoints, totalOccs, activeRpp] = await Promise.all([
+    const [userAreas, dailyPoints, totalOccs, activeRpp, actualRank] = await Promise.all([
       this.getUserAreaInfo(userId),
       this.getDailyPointsThisWeek(userId),
       this.occRepo.countForUser(userId).catch(() => 0),
-      this.rppRepo.findActiveByUser(userId).catch(() => null)
+      this.rppRepo.findActiveByUser(userId).catch(() => null),
+      this.getUserActualRank(userId)
     ]);
 
     const cfg: any = loadConfig();
@@ -106,11 +107,19 @@ export class StaffReportService {
 
     const sections = [
       '**📊 Áreas de Atuação**',
-      areaLines.join('\n'),
+      areaLines.join('\n')
+    ];
+
+    // Adicionar cargo de hierarquia se o usuário tiver um
+    if (actualRank) {
+      sections.push('', `**🎖️ Cargo Atual:** ${actualRank}`);
+    }
+
+    sections.push(
       '',
       '**📅 Pontos Esta Semana**',
       dailyText
-    ];
+    );
 
     if (statusBadges.length > 0) {
       sections.push('', '**⚠️ Status**', statusBadges.join(' • '));
@@ -467,18 +476,27 @@ export class StaffReportService {
         
         if (!areaMetas || !areaMetas.ranks) continue;
 
-        // Encontrar cargo atual baseado nos pontos
+        // Obter cargo atual real do usuário no servidor principal
+        const actualRank = await this.getUserActualRank(userId);
         let currentRankIndex = -1;
-        let currentRank: string | null = null;
+        let currentRank: string | null = actualRank;
 
-        for (let i = areaMetas.ranks.length - 1; i >= 0; i--) {
-          const rank = areaMetas.ranks[i];
-          const requiredPoints = rank.upPoints || rank.points || 0;
-          
-          if (area.points >= requiredPoints) {
-            currentRankIndex = i;
-            currentRank = rank.name;
-            break;
+        // Se temos um cargo real, encontrar seu índice nas metas
+        if (actualRank) {
+          currentRankIndex = areaMetas.ranks.findIndex((rank: any) => rank.name === actualRank);
+        }
+        
+        // Se não encontrou o cargo nas metas ou não tem cargo, usar baseado nos pontos como fallback
+        if (currentRankIndex === -1) {
+          for (let i = areaMetas.ranks.length - 1; i >= 0; i--) {
+            const rank = areaMetas.ranks[i];
+            const requiredPoints = rank.upPoints || rank.points || 0;
+            
+            if (area.points >= requiredPoints) {
+              currentRankIndex = i;
+              currentRank = rank.name;
+              break;
+            }
           }
         }
 
@@ -538,6 +556,42 @@ export class StaffReportService {
     } catch (error) {
       logger.error({ error, userId }, 'Erro ao obter metas do usuário');
       return [];
+    }
+  }
+
+  /**
+   * Obtém o cargo real do usuário no servidor principal
+   */
+  private async getUserActualRank(userId: string): Promise<string | null> {
+    try {
+      const cfg: any = loadConfig();
+      const client = (globalThis as any).client;
+      
+      if (!client || !cfg.mainGuildId) return null;
+      
+      const mainGuild = client.guilds.cache.get(cfg.mainGuildId) || await client.guilds.fetch(cfg.mainGuildId);
+      const member = await mainGuild.members.fetch(userId).catch(() => null);
+      
+      if (!member) return null;
+      
+      // Verificar cargos de hierarquia em ordem decrescente (maior para menor)
+      const hierarchyOrder: string[] = cfg.hierarchyOrder || [];
+      const roles: Record<string, string> = cfg.roles || {};
+      
+      // Inverter a ordem para verificar do maior para o menor
+      for (let i = hierarchyOrder.length - 1; i >= 0; i--) {
+        const rankName = hierarchyOrder[i];
+        const roleId = roles[rankName];
+        
+        if (roleId && member.roles.cache.has(roleId)) {
+          return rankName;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      logger.warn({ error, userId }, 'Erro ao obter cargo real do usuário');
+      return null;
     }
   }
 
