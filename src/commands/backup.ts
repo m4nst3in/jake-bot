@@ -39,9 +39,9 @@ export default {
         .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
     async execute(interaction: ChatInputCommandInteraction) {
         if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            return interaction.reply({ content: 'Apenas administradores podem usar este comando.', ephemeral: true });
+            return interaction.reply({ content: 'Apenas administradores podem usar este comando.' });
         }
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
         const guildId = interaction.guildId!;
         const masterGuildId = (loadConfig() as any).mainGuildId || '934635845460303882';
         const areas = resolveAreasForGuild(guildId);
