@@ -29,14 +29,11 @@ export function registerProtectionListener(client: any) {
             const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
                const rootCfg: any = loadConfig();
             const mainGuildId = rootCfg.mainGuildId;
-            // --- Proteção Anti-Remoção de Cargo Membro ---
             const MEMBER_PROTECTED_ROLE_ID = rootCfg.protectionRoles?.memberProtected || '934635845690990632';
-            // Se o cargo protegido estava antes e não está mais agora => tentativa de remoção
             if (oldMember?.roles?.cache?.has(MEMBER_PROTECTED_ROLE_ID) && !newMember.roles.cache.has(MEMBER_PROTECTED_ROLE_ID)) {
                 let executorId: string | null = null;
                 try {
-                    const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 15 }); // MEMBER_ROLE_UPDATE
-                    for (const entry of audit.entries.values()) {
+                    const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 15 });
                         if ((entry as any).target?.id !== newMember.id) continue;
                         const changes: any[] = (entry as any).changes || [];
                         for (const c of changes) {
@@ -52,7 +49,6 @@ export function registerProtectionListener(client: any) {
                     }
                 } catch {}
                 const isOwnerExecutor = executorId ? (Array.isArray(rootCfg.owners) && rootCfg.owners.includes(executorId)) : false;
-                // Liderança = qualquer cargo em protection.areaLeaderRoles ou cargo global líder geral
                 const leadershipRoleIds: Set<string> = new Set([
                     ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
                     rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961'
@@ -70,9 +66,7 @@ export function registerProtectionListener(client: any) {
                 }
                 const allowedRemoval = isOwnerExecutor || isLeadershipExecutor;
                 if (!allowedRemoval) {
-                    // Restaura cargo
                     await newMember.roles.add(MEMBER_PROTECTED_ROLE_ID, 'Proteção: cargo membro restaurado automaticamente').catch(() => { });
-                    // Loga no canal de proteção somente no servidor principal
                     if (newMember.guild.id === mainGuildId) {
                         const logChannelId = logChannel || '1414540666171559966';
                         try {
@@ -90,7 +84,6 @@ export function registerProtectionListener(client: any) {
                                         { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
                                     )
                                     .setTimestamp();
-                                // Envia apenas o embed sem menções para remoção de cargo membro
                 ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
                             }
             } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
@@ -150,13 +143,11 @@ export function registerProtectionListener(client: any) {
                 }
                 catch { }
             }
-            // rootCfg já definido anteriormente
             const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
             const leadershipRoleIds: Set<string> = new Set([
                 ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
                 rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961'
             ]);
-            // Detecta cargo de Liderança de Recrutamento (heurística: nome 'Recrutamento' com allowedLeaderRole = Líder Geral)
             let recruitmentLeadershipRoleId: string | undefined;
             for (const [rid, info] of Object.entries((rootCfg.protection?.blockedRoles) || {})) {
                 if ((info as any).name === 'Recrutamento' && (info as any).allowedLeaderRole === (rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961')) {
@@ -215,7 +206,6 @@ export function registerProtectionListener(client: any) {
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
                 const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
                 
-                // Cargos especiais que devem ser apenas registrados (sem bloqueio)
                 const MONITORED_ROLES: Record<string, string> = {
                     '1212657992630280302': 'Community',
                     '1137176557979439246': 'Membro Ativo', 
@@ -232,7 +222,6 @@ export function registerProtectionListener(client: any) {
                         executorIdPassive = await resolveExecutorForRole(role.id);
                     }
                     
-                    // Log apenas para registro (sem menções)
                     if (newMember.guild.id === mainGuildId) {
                         const logChannelId = getProtectionConfig().logChannel || '1414540666171559966';
                         try {
@@ -321,17 +310,13 @@ export function registerProtectionListener(client: any) {
                                 if (execMember.roles.cache.has(blockInfo.allowedLeaderRole))
                                     allowed = true;
                             }
-                            // Regra: Liderança de Recrutamento pode aplicar Staff, Iniciante, cargos de equipes e hierarquia até Coronel
                             if (!allowed && recruitmentLeadershipRoleId && execMember.roles.cache.has(recruitmentLeadershipRoleId)) {
-                                // Pode aplicar Staff e Iniciante
                                 if (role.id === staffRoleId || role.id === inicianteRoleId) {
                                     allowed = true;
                                 }
-                                // Pode aplicar qualquer cargo de área/equipe (exceto Migração)
                                 else if (blockInfo && blockInfo.name && blockInfo.name !== 'Migração' && blockInfo.name !== 'Líder Geral') {
                                     allowed = true;
                                 }
-                                // Pode aplicar cargos de hierarquia até Coronel (exceto Sub Comandante para cima)
                                 else if (isGlobalHierarchy) {
                                     const roleName = globalRoleNameById[role.id];
                                     if (roleName) {

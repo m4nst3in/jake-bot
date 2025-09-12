@@ -6,6 +6,7 @@ import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
 import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
 import { RPPRepository } from '../repositories/rppRepository.ts';
 import { getMemberLeaderAreas, hasCrossGuildLeadership } from '../utils/permissions.ts';
+import { StaffReportService } from '../services/staffReportService.ts';
 
 // /perfil [user]
 export default {
@@ -137,6 +138,22 @@ export default {
       }
     } catch { embed.setColor(0x5865F2); }
 
-    await interaction.editReply({ embeds: [embed] });
+    // Verificar se o usuário é staff (tem pontos em alguma área ou é líder)
+    const isStaff = profile.total > 0 || leaderAreas.length > 0 || withPos.some(a => a.reports > 0 || a.shifts > 0);
+    
+    if (isStaff) {
+      // Gerar sistema de relatórios de staff
+      const staffReportService = new StaffReportService();
+      const summaryEmbed = await staffReportService.generateSummaryEmbed(target.id, target);
+      const navigationButtons = staffReportService.generateNavigationButtons(target.id, 'summary');
+      
+      await interaction.editReply({ 
+        embeds: [summaryEmbed], 
+        components: [navigationButtons] 
+      });
+    } else {
+      // Usuário comum - perfil básico original
+      await interaction.editReply({ embeds: [embed] });
+    }
   }
 };

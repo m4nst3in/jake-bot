@@ -139,10 +139,24 @@ export default async function messageCreate(message: Message) {
                         const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = await import('discord.js');
                         const ts = Math.floor(message.createdTimestamp / 1000);
                         const targetRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? RECRUIT_LEADERSHIP_ROLE : SUPERVISAO_ROLE;
+                        
+                        // Detectar menções na mensagem para mostrar na supervisão (máximo 2)
+                        const mentions = message.mentions.users;
+                        let usersText = 'Nenhum usuário mencionado';
+                        if (mentions && mentions.size > 0) {
+                            // Apenas usuários mencionados (máximo 2, excluindo o autor)
+                            const mentionedIds = Array.from(mentions.keys())
+                                .filter(id => id !== message.author.id)
+                                .slice(0, 2);
+                            if (mentionedIds.length > 0) {
+                                usersText = mentionedIds.map(id => `<@${id}>`).join(', ');
+                            }
+                        }
+                        
                         const embed = new EmbedBuilder()
                             .setTitle('<a:z_estrelinha_cdw:935927437647314994> Supervisão de Plantão')
                             .setColor(0x8e44ad)
-                            .setDescription(`Solicitação de supervisão registrada.\n\n<a:emoji_50:1330028935563575306> **Usuário**: <@${message.author.id}>\n<a:emoji_50:1330028935563575306> **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
+                            .setDescription(`Solicitação de supervisão registrada.\n\n<a:emoji_50:1330028935563575306> **Usuário(s)**: ${usersText}\n<a:emoji_50:1330028935563575306> **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
                             .setFooter({ text: `Msg ${message.id}` })
                             .setTimestamp();
                         const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4));

@@ -49,6 +49,184 @@ export class PointRepository extends BaseRepo {
     }
     async getTop(area: string, limit = 10) {
         if (this.isSqlite()) {
+            return new Promise<PointsRecord[]>((resolve, reject) => {
+                this.sqlite.all('SELECT user_id, area, points, reports_count, shifts_count, last_updated FROM points WHERE area=? ORDER BY points DESC LIMIT ?', [area, limit], function (err: Error | null, rows: any[]) {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(rows || []);
+                });
+            });
+        }
+        const cursor = this.mongo.collection('points').find({ area }).sort({ points: -1 }).limit(limit);
+        return cursor.toArray() as any;
+    }
+
+    async getDailyPointsThisWeek(userId: string): Promise<number[]> {
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo da semana atual
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const dailyPoints = new Array(7).fill(0);
+
+        if (this.isSqlite()) {
+            return new Promise<number[]>((resolve, reject) => {
+                const sevenDaysAgo = new Date(startOfWeek);
+                const query = `
+                    SELECT DATE(timestamp) as date, SUM(change) as total_points
+                    FROM point_logs 
+                    WHERE user_id = ? AND change > 0 AND timestamp >= ?
+                    GROUP BY DATE(timestamp)
+                    ORDER BY DATE(timestamp)
+                `;
+                
+                this.sqlite.all(query, [userId, sevenDaysAgo.toISOString()], (err: Error | null, rows: any[]) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    
+                    for (const row of rows) {
+                        const logDate = new Date(row.date);
+                        const dayOfWeek = logDate.getDay(); // 0 = Domingo, 6 = Sábado
+                        dailyPoints[dayOfWeek] = row.total_points || 0;
+                    }
+                    
+                    resolve(dailyPoints);
+                });
+            });
+        } else {
+            // MongoDB implementation
+            const sevenDaysAgo = startOfWeek.toISOString();
+            const pipeline = [
+                {
+                    $match: {
+                        user_id: userId,
+                        change: { $gt: 0 },
+                        timestamp: { $gte: sevenDaysAgo }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: { $dateFromString: { dateString: "$timestamp" } } } },
+                        total_points: { $sum: "$change" }
+                    }
+                }
+            ];
+            
+            const results = await this.mongo.collection('point_logs').aggregate(pipeline).toArray();
+            
+            for (const result of results) {
+                const logDate = new Date(result._id);
+                const dayOfWeek = logDate.getDay();
+                dailyPoints[dayOfWeek] = result.total_points || 0;
+            }
+            
+            return dailyPoints;
+        }
+    }
+
+    async getWeeklyStats(userId: string, weeksCount: number): Promise<Array<{week: number, startDate: Date, endDate: Date, points: number, reports: number, shifts: number}>> {
+        const stats: Array<{week: number, startDate: Date, endDate: Date, points: number, reports: number, shifts: number}> = [];
+        
+        for (let i = 0; i < weeksCount; i++) {
+            const now = new Date();
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - (now.getDay() + (i * 7))); // Domingo da semana
+            weekStart.setHours(0, 0, 0, 0);
+            
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            let points = 0;
+            let reports = 0;
+            let shifts = 0;
+
+            if (this.isSqlite()) {
+                const weekStats = await new Promise<{points: number, reports: number, shifts: number}>((resolve, reject) => {
+                    this.sqlite.get(`
+                        SELECT 
+                            COALESCE(SUM(CASE WHEN change > 0 THEN change ELSE 0 END), 0) as points,
+                            COALESCE(SUM(CASE WHEN reason LIKE '%relatório%' OR reason LIKE '%relatorio%' THEN 1 ELSE 0 END), 0) as reports,
+                            COALESCE(SUM(CASE WHEN reason LIKE '%plantão%' OR reason LIKE '%plantao%' THEN 1 ELSE 0 END), 0) as shifts
+                        FROM point_logs 
+                        WHERE user_id = ? AND timestamp BETWEEN ? AND ?
+                    `, [userId, weekStart.toISOString(), weekEnd.toISOString()], (err: Error | null, row: any) => {
+                        if (err) reject(err);
+                        else resolve(row || {points: 0, reports: 0, shifts: 0});
+                    });
+                });
+                
+                points = weekStats.points;
+                reports = weekStats.reports;
+                shifts = weekStats.shifts;
+            } else {
+                // MongoDB implementation
+                const pipeline = [
+                    {
+                        $match: {
+                            user_id: userId,
+                            timestamp: {
+                                $gte: weekStart.toISOString(),
+                                $lte: weekEnd.toISOString()
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            points: { $sum: { $cond: [{ $gt: ["$change", 0] }, "$change", 0] } },
+                            reports: { 
+                                $sum: { 
+                                    $cond: [
+                                        { $or: [
+                                            { $regexMatch: { input: "$reason", regex: /relatório/i } },
+                                            { $regexMatch: { input: "$reason", regex: /relatorio/i } }
+                                        ]}, 
+                                        1, 
+                                        0
+                                    ] 
+                                }
+                            },
+                            shifts: { 
+                                $sum: { 
+                                    $cond: [
+                                        { $or: [
+                                            { $regexMatch: { input: "$reason", regex: /plantão/i } },
+                                            { $regexMatch: { input: "$reason", regex: /plantao/i } }
+                                        ]}, 
+                                        1, 
+                                        0
+                                    ] 
+                                }
+                            }
+                        }
+                    }
+                ];
+                
+                const result = await this.mongo.collection('point_logs').aggregate(pipeline).toArray();
+                if (result.length > 0) {
+                    points = result[0].points || 0;
+                    reports = result[0].reports || 0;
+                    shifts = result[0].shifts || 0;
+                }
+            }
+
+            stats.push({
+                week: i,
+                startDate: weekStart,
+                endDate: weekEnd,
+                points,
+                reports,
+                shifts
+            });
+        }
+
+        return stats;
+    }
+        if (this.isSqlite()) {
             return new Promise<any[]>((resolve, reject) => {
                 this.sqlite.all('SELECT user_id, points, reports_count, shifts_count FROM points WHERE area=? ORDER BY points DESC LIMIT ?', [area, limit], function (err: Error | null, rows: any[]) {
                     if (err)
