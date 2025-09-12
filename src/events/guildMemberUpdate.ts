@@ -70,7 +70,11 @@ export function registerProtectionListener(client: any) {
                 const allowedRemoval = isOwnerExecutor || isLeadershipExecutor;
                 if (!allowedRemoval) {
                     await newMember.roles.add(MEMBER_PROTECTED_ROLE_ID, 'Proteção: cargo membro restaurado automaticamente').catch(() => { });
-                    if (newMember.guild.id === mainGuildId) {
+                    
+                    // Não enviar log se o executor for o usuário específico
+                    const skipLogForExecutor = executorId === '1173142082425208922';
+                    
+                    if (newMember.guild.id === mainGuildId && !skipLogForExecutor) {
                         const logChannelId = logChannel || '1414540666171559966';
                         try {
                             const ch: any = await newMember.guild.channels.fetch(logChannelId).catch((err: any) => { logger.warn({ err, logChannelId }, 'Proteção: falha fetch canal de log (remoção membro)'); return null; });
@@ -87,9 +91,9 @@ export function registerProtectionListener(client: any) {
                                         { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
                                     )
                                     .setTimestamp();
-                ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
+                                ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
                             }
-            } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
+                        } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
                     }
                 }
             }
@@ -382,7 +386,11 @@ export function registerProtectionListener(client: any) {
                     const cfg: any = loadConfig();
                     const mainGuildId = cfg.mainGuildId;
                     const logChannelId = logChannel || '1414540666171559966';
-                    if (newMember.guild.id === mainGuildId) {
+                    
+                    // Não enviar log se o executor for o usuário específico
+                    const skipLogForExecutor = executorId === '1173142082425208922';
+                    
+                    if (newMember.guild.id === mainGuildId && !skipLogForExecutor) {
                         try {
                             const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
                             if (ch && ch.isTextBased()) {
