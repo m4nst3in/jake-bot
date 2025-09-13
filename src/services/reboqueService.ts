@@ -84,8 +84,32 @@ export class ReboqueService {
 
   private async getUserBackupData(targetId: string, executorId: string, reason: string): Promise<UserBackupData> {
     try {
-      // Obter pontos por área
-      const pointsByArea = await this.pointRepo.getUserAllAreas(targetId);
+      // Obter pontos por área (bruto)
+      let pointsByArea = await this.pointRepo.getUserAllAreas(targetId);
+
+      // Detectar áreas ativas reais via cargos nos servidores de área (antes da remoção)
+      const cfg: any = loadConfig();
+      const activeAreasByRole = new Set<string>();
+      try {
+        const areas = (cfg.areas || []) as Array<{ name: string; guildId: string; roleIds?: { lead?: string; member?: string } }>;
+        for (const area of areas) {
+          if (!area?.guildId) continue;
+          const g: Guild | null = this.client.guilds.cache.get(area.guildId) || await this.client.guilds.fetch(area.guildId).catch(() => null);
+          if (!g) continue;
+          const mem: GuildMember | null = await g.members.fetch(targetId).catch(() => null);
+          if (!mem) continue;
+          const leadId = area.roleIds?.lead;
+          const memberId = area.roleIds?.member;
+          if ((leadId && mem.roles.cache.has(leadId)) || (memberId && mem.roles.cache.has(memberId))) {
+            activeAreasByRole.add((area.name || '').toUpperCase());
+          }
+        }
+      } catch {}
+
+      // Se encontramos áreas ativas por cargo, filtrar pontos para apenas essas áreas
+      if (activeAreasByRole.size > 0) {
+        pointsByArea = pointsByArea.filter((p: any) => activeAreasByRole.has(String(p.area || '').toUpperCase()));
+      }
       const totalPoints = pointsByArea.reduce((sum, area) => sum + (area.points || 0), 0);
       
       // Obter informações do usuário
@@ -314,9 +338,9 @@ export class ReboqueService {
       }
       
       const embed = new EmbedBuilder()
-        .setTitle('🚨 REBOQUE DE STAFF EXECUTADO')
+        .setTitle('🚨 STAFF REBOCADO')
         .setColor(0xFF0000)
-        .setDescription('**Um staff foi rebocado do sistema**')
+        .setDescription('**Um staff foi rebocado do servidor!**')
         .addFields(
           { 
             name: '👤 Staff Rebocado', 
@@ -338,7 +362,7 @@ export class ReboqueService {
             value: reason || 'Não especificado'
           },
           { 
-            name: '📊 Estatísticas', 
+            name: '📊 Informações', 
             value: `🔄 **Cargos removidos:** ${rolesRemoved}\n` +
                    `⭐ **Total de pontos:** ${backupData.totalPoints}\n` +
                    `📍 **Áreas ativas:** ${backupData.areas.length}\n` +
