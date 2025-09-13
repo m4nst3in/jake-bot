@@ -9,7 +9,7 @@ interface MemberRow {
     points: number;
     reports_count: number;
     shifts_count: number;
-    rankName?: string; // patente atual no servidor principal
+    rankName?: string;
 }
 async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]> {
     const sort = (a: MemberRow, b: MemberRow) => b.points - a.points;
@@ -28,7 +28,6 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
     }
     try {
         const cfg: any = loadConfig();
-        // Carregar guild principal para obter patente atual
         let mainGuild: any = null;
         if (cfg.mainGuildId) {
             mainGuild = client.guilds.cache.get(cfg.mainGuildId) || await client.guilds.fetch(cfg.mainGuildId).catch(() => null);
@@ -68,20 +67,22 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                 }
             }
         }
-        // Atribuir rankName para cada row via hierarquia definida
         if (mainGuild) {
             const hierarchy: string[] = cfg.hierarchyOrder || [];
-            const roleNameById: Record<string,string> = {};
+            const roleNameById: Record<string, string> = {};
             Object.entries(cfg.roles || {}).forEach(([name, id]) => roleNameById[id as string] = name);
             rows.forEach(r => {
                 const member: GuildMember | undefined = mainGuild.members.cache.get(r.user_id);
-                if (!member) return;
-                // Encontrar maior patente do usuário de acordo com hierarchyOrder
+                if (!member)
+                    return;
                 let found: string | undefined;
                 for (let i = hierarchy.length - 1; i >= 0; i--) {
                     const rankName = hierarchy[i];
                     const roleId = (cfg.roles || {})[rankName];
-                    if (roleId && member.roles.cache.has(roleId)) { found = rankName; break; }
+                    if (roleId && member.roles.cache.has(roleId)) {
+                        found = rankName;
+                        break;
+                    }
                 }
                 r.rankName = found;
             });
@@ -171,20 +172,29 @@ function prepareFonts(doc: any): Fonts {
 }
 export async function generateAreaPdf(client: Client, area: string): Promise<Buffer> {
     const rows = await fetchAreaRows(client, area);
-    // Carregar metas externas unificadas
-    interface RankGoal { name: string; period: string; points?: number; reports?: number; upPoints?: number; maintainPoints?: number; }
-    type AreaGoals = { ranks: RankGoal[]; maintain?: any };
+    interface RankGoal {
+        name: string;
+        period: string;
+        points?: number;
+        reports?: number;
+        upPoints?: number;
+        maintainPoints?: number;
+    }
+    type AreaGoals = {
+        ranks: RankGoal[];
+        maintain?: any;
+    };
     let metas: Record<string, AreaGoals> = {};
     const metasRankIndex: Record<string, Record<string, RankGoal>> = {};
     const normalizeRank = (n?: string) => (n || '')
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // remove acentos
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/º|°/g, '')
         .replace(/terceir[oa]/g, '3')
         .replace(/segund[oa]/g, '2')
         .replace(/primeir[oa]/g, '1')
-        .replace(/\bcapitao\b/g, 'capitan') // evitar variação? (exemplo)
+        .replace(/\bcapitao\b/g, 'capitan')
         .replace(/-/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -192,21 +202,25 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         const metasPath = path.resolve('src/config/metas.json');
         const raw = readFileSync(metasPath, 'utf8');
         metas = JSON.parse(raw);
-        Object.entries(metas).forEach(([areaKey, data]: [string, any]) => {
+        Object.entries(metas).forEach(([areaKey, data]: [
+            string,
+            any
+        ]) => {
             const idx: Record<string, RankGoal> = {};
             (data.ranks || []).forEach((rg: any) => {
                 const base = normalizeRank(rg.name);
                 idx[base] = rg;
-                // adicionar variantes numericas <-> palavra para 1/2/3 se necessário
                 const wordVariant = base
                     .replace(/\b1\b/g, 'primeiro')
                     .replace(/\b2\b/g, 'segundo')
                     .replace(/\b3\b/g, 'terceiro');
-                if (!idx[wordVariant]) idx[wordVariant] = rg;
+                if (!idx[wordVariant])
+                    idx[wordVariant] = rg;
             });
             metasRankIndex[areaKey.toLowerCase()] = idx;
         });
-    } catch { }
+    }
+    catch { }
     const { primary, secondary } = areaAccent(area);
     const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
     const out: Buffer[] = [];
@@ -355,7 +369,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             const overallHit = hitPoints && hitReports && hitShifts;
             return { overallHit, hitPoints, hitReports, hitShifts, pointGoal, reportsGoal, shiftsGoal: SUPPORT_PLANTOES_META, g };
         }
-        if (!g) return { overallHit: true, g: undefined };
+        if (!g)
+            return { overallHit: true, g: undefined };
         const threshold = g.upPoints ?? g.points ?? 0;
         const hitPoints = threshold ? r.points >= threshold : true;
         return { overallHit: hitPoints, g, threshold, hitPoints };
@@ -414,8 +429,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.circle(badgeX + 18, badgeY + 18, 18).fill(circleColor);
         doc.fillColor('#fff').font(fonts.bold).fontSize(15).text(String(idx), badgeX + 6, badgeY + 8, { width: 24, align: 'center' });
         doc.restore();
-    const evalRes = evaluate(r);
-    const user = await client.users.fetch(r.user_id).catch(() => null);
+        const evalRes = evaluate(r);
+        const user = await client.users.fetch(r.user_id).catch(() => null);
         let avatarDrawn = false;
         if (user) {
             const av = user.displayAvatarURL({ size: 128, extension: 'png' } as any);
@@ -440,67 +455,74 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         doc.font(fonts.regular).fontSize(8).fillColor('#666').text(`ID: ${r.user_id}`, infoX, cursorY);
         cursorY += 12;
         const rankLabel = r.rankName ? ` • ${r.rankName}` : '';
-        // Indicador de status (badge à direita do card)
         try {
             const success = evalRes.overallHit;
             const badgeColor = success ? '#1abc9c' : '#e74c3c';
             const label = success ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA';
             const cardRight = doc.page.margins.left + contentWidth;
             const badgeHeight = 22;
-                const textWidth = doc.widthOfString(label);
-                const badgeWidth = Math.min(Math.max(textWidth + 24, 90), 170); // padding horizontal 12px cada lado, limites
+            const textWidth = doc.widthOfString(label);
+            const badgeWidth = Math.min(Math.max(textWidth + 24, 90), 170);
             let badgeY = startY + 16;
-            if (idx === 1) badgeY = startY + 44; // abaixo do ribbon
+            if (idx === 1)
+                badgeY = startY + 44;
             const badgeX = cardRight - badgeWidth - 18;
             doc.save();
             doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 12).fill(badgeColor);
             doc.fillColor('#fff').font(fonts.bold).fontSize(10).text(label, badgeX, badgeY + 5, { width: badgeWidth, align: 'center' });
             doc.restore();
-        } catch {}
+        }
+        catch { }
         doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
         cursorY += 16;
         const pctTotal = totalPoints ? (r.points / totalPoints * 100) : 0;
         doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
         cursorY += 12;
         if (areaKey === 'suporte') {
-            // Pontos
             if (evalRes.pointGoal !== undefined) {
                 if (evalRes.hitPoints) {
                     doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta Pontos: ${evalRes.pointGoal} ok`, infoX, cursorY);
-                } else {
+                }
+                else {
                     const diff = Math.max(0, evalRes.pointGoal - r.points);
                     doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta Pontos: ${evalRes.pointGoal} (faltam ${diff})`, infoX, cursorY);
                 }
                 cursorY += 12;
             }
-            // Relatórios
             if (evalRes.reportsGoal !== undefined) {
                 const have = r.reports_count || 0;
                 const need: number = evalRes.reportsGoal ?? 0;
                 const hit = evalRes.hitReports;
                 const diff = Math.max(0, need - have);
-                if (hit) doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Relatórios: ${have}/${need} ok`, infoX, cursorY);
-                else doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Relatórios: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
+                if (hit)
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Relatórios: ${have}/${need} ok`, infoX, cursorY);
+                else
+                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Relatórios: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
                 cursorY += 12;
             }
-            // Plantões
             {
                 const have = r.shifts_count || 0;
                 const need: number = evalRes.shiftsGoal ?? SUPPORT_PLANTOES_META;
                 const hit = evalRes.hitShifts;
                 const diff = Math.max(0, need - have);
-                if (hit) doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Plantões: ${have}/${need} ok`, infoX, cursorY);
-                else doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Plantões: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
+                if (hit)
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Plantões: ${have}/${need} ok`, infoX, cursorY);
+                else
+                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Plantões: ${have}/${need} (faltam ${diff})`, infoX, cursorY);
                 cursorY += 12;
             }
-        } else if (evalRes.g) {
+        }
+        else if (evalRes.g) {
             const up = evalRes.g.upPoints ?? evalRes.g.points;
             if (up && up > 0) {
                 if (!evalRes.overallHit) {
                     const diff = Math.max(0, up - r.points);
-                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up}${diff > 0 ? ` (faltam ${diff})` : ''}`, infoX, cursorY); cursorY += 12;
-                } else {
-                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY); cursorY += 12;
+                    doc.font(fonts.regular).fontSize(8).fillColor('#b00').text(`Meta: ${up}${diff > 0 ? ` (faltam ${diff})` : ''}`, infoX, cursorY);
+                    cursorY += 12;
+                }
+                else {
+                    doc.font(fonts.regular).fontSize(8).fillColor('#0a7').text(`Meta: ${up} ok`, infoX, cursorY);
+                    cursorY += 12;
                 }
             }
         }

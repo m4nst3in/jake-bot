@@ -27,7 +27,7 @@ export function registerProtectionListener(client: any) {
             if (!newMember || !newMember.guild)
                 return;
             const { botRoles, blockedRoles, alertRole, alertUsers, logChannel } = getProtectionConfig();
-               const rootCfg: any = loadConfig();
+            const rootCfg: any = loadConfig();
             const mainGuildId = rootCfg.mainGuildId;
             const MEMBER_PROTECTED_ROLE_ID = rootCfg.protectionRoles?.memberProtected || '934635845690990632';
             if (oldMember?.roles?.cache?.has(MEMBER_PROTECTED_ROLE_ID) && !newMember.roles.cache.has(MEMBER_PROTECTED_ROLE_ID)) {
@@ -36,7 +36,8 @@ export function registerProtectionListener(client: any) {
                     const audit = await newMember.guild.fetchAuditLogs({ type: 25, limit: 15 });
                     if (audit) {
                         for (const entry of audit.entries.values()) {
-                            if ((entry as any).target?.id !== newMember.id) continue;
+                            if ((entry as any).target?.id !== newMember.id)
+                                continue;
                             const changes: any[] = (entry as any).changes || [];
                             for (const c of changes) {
                                 if (c.key === '$remove') {
@@ -47,10 +48,12 @@ export function registerProtectionListener(client: any) {
                                     }
                                 }
                             }
-                            if (executorId) break;
+                            if (executorId)
+                                break;
                         }
                     }
-                } catch {}
+                }
+                catch { }
                 const isOwnerExecutor = executorId ? (Array.isArray(rootCfg.owners) && rootCfg.owners.includes(executorId)) : false;
                 const leadershipRoleIds: Set<string> = new Set([
                     ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
@@ -65,15 +68,13 @@ export function registerProtectionListener(client: any) {
                                 isLeadershipExecutor = true;
                             }
                         }
-                    } catch {}
+                    }
+                    catch { }
                 }
                 const allowedRemoval = isOwnerExecutor || isLeadershipExecutor;
                 if (!allowedRemoval) {
                     await newMember.roles.add(MEMBER_PROTECTED_ROLE_ID, 'Proteção: cargo membro restaurado automaticamente').catch(() => { });
-                    
-                    // Não enviar log se o executor for o usuário específico
                     const skipLogForExecutor = executorId === '1173142082425208922';
-                    
                     if (newMember.guild.id === mainGuildId && !skipLogForExecutor) {
                         const logChannelId = logChannel || '1414540666171559966';
                         try {
@@ -83,17 +84,14 @@ export function registerProtectionListener(client: any) {
                                     .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Remoção Bloqueada')
                                     .setColor(0xE67E22)
                                     .setDescription('O cargo de membro foi removido e restaurado automaticamente.')
-                                    .addFields(
-                                        { name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
-                                        { name: 'Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' },
-                                        { name: 'Cargo Restaurado', value: `<@&${MEMBER_PROTECTED_ROLE_ID}>\n\`${MEMBER_PROTECTED_ROLE_ID}\`` },
-                                        { name: 'Ação', value: 'Remoção revertida (não autorizado)' },
-                                        { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
-                                    )
+                                    .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' }, { name: 'Cargo Restaurado', value: `<@&${MEMBER_PROTECTED_ROLE_ID}>\n\`${MEMBER_PROTECTED_ROLE_ID}\`` }, { name: 'Ação', value: 'Remoção revertida (não autorizado)' }, { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log remoção membro'); });
                             }
-                        } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log remoção membro'); }
+                        }
+                        catch (err: any) {
+                            logger.warn({ err }, 'Proteção: erro bloco log remoção membro');
+                        }
                     }
                 }
             }
@@ -105,32 +103,9 @@ export function registerProtectionListener(client: any) {
             const roleExecutorMap: Record<string, string | null> = {};
             const MEMBER_ROLE_UPDATE_TYPE: any = 25;
             try {
-            const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase1)'); return null; });
-        if (audit) for (const entry of audit.entries.values()) {
-                    if ((entry as any).target?.id !== newMember.id)
-                        continue;
-                    const changes: any[] = (entry as any).changes || [];
-                    for (const c of changes) {
-                        if (c.key === '$add') {
-                            const arr = c['new'] || c['new_value'];
-                            if (Array.isArray(arr)) {
-                                for (const r of arr) {
-                                    if (!roleExecutorMap[r.id]) {
-                                        roleExecutorMap[r.id] = entry.executor?.id || null;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch {
-            }
-            if (Object.keys(roleExecutorMap).length === 0) {
-                await new Promise(res => setTimeout(res, 1200));
-                try {
-                    const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase2)'); return null; });
-                    if (audit2) for (const entry of audit2.entries.values()) {
+                const audit = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase1)'); return null; });
+                if (audit)
+                    for (const entry of audit.entries.values()) {
                         if ((entry as any).target?.id !== newMember.id)
                             continue;
                         const changes: any[] = (entry as any).changes || [];
@@ -147,6 +122,31 @@ export function registerProtectionListener(client: any) {
                             }
                         }
                     }
+            }
+            catch {
+            }
+            if (Object.keys(roleExecutorMap).length === 0) {
+                await new Promise(res => setTimeout(res, 1200));
+                try {
+                    const audit2 = await newMember.guild.fetchAuditLogs({ type: MEMBER_ROLE_UPDATE_TYPE, limit: 20 }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha fetch audit (fase2)'); return null; });
+                    if (audit2)
+                        for (const entry of audit2.entries.values()) {
+                            if ((entry as any).target?.id !== newMember.id)
+                                continue;
+                            const changes: any[] = (entry as any).changes || [];
+                            for (const c of changes) {
+                                if (c.key === '$add') {
+                                    const arr = c['new'] || c['new_value'];
+                                    if (Array.isArray(arr)) {
+                                        for (const r of arr) {
+                                            if (!roleExecutorMap[r.id]) {
+                                                roleExecutorMap[r.id] = entry.executor?.id || null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                 }
                 catch { }
             }
@@ -212,23 +212,19 @@ export function registerProtectionListener(client: any) {
             for (const role of added.values()) {
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
                 const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
-                
                 const MONITORED_ROLES: Record<string, string> = {
                     '1212657992630280302': 'Community',
-                    '1137176557979439246': 'Membro Ativo', 
+                    '1137176557979439246': 'Membro Ativo',
                     '1055316223639945367': 'Verificado'
                 };
-                
                 const isVip = vipRoleIds.has(role.id);
                 const isPerm = permissionRoleIds.has(role.id);
                 const isMonitored = MONITORED_ROLES[role.id];
-                
                 if (isMonitored) {
                     let executorIdPassive = roleExecutorMap[role.id] ?? null;
                     if (!executorIdPassive) {
                         executorIdPassive = await resolveExecutorForRole(role.id);
                     }
-                    
                     if (newMember.guild.id === mainGuildId) {
                         const logChannelId = getProtectionConfig().logChannel || '1414540666171559966';
                         try {
@@ -238,23 +234,18 @@ export function registerProtectionListener(client: any) {
                                     .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
                                     .setColor(0x3498DB)
                                     .setDescription(`Um cargo monitorado foi adicionado e registrado.`)
-                                    .addFields(
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isMonitored },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Apenas registrado (sem bloqueio)' },
-                                        { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` }
-                                    )
+                                    .addFields({ name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isMonitored }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Apenas registrado (sem bloqueio)' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
                                     .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log cargo monitorado'); });
                             }
-                        } catch (err: any) { logger.warn({ err }, 'Proteção: erro bloco log cargo monitorado'); }
+                        }
+                        catch (err: any) {
+                            logger.warn({ err }, 'Proteção: erro bloco log cargo monitorado');
+                        }
                     }
                     continue;
                 }
-                
                 if (isVip || isPerm) {
                     let executorIdPassive = roleExecutorMap[role.id] ?? null;
                     if (!executorIdPassive) {
@@ -386,10 +377,7 @@ export function registerProtectionListener(client: any) {
                     const cfg: any = loadConfig();
                     const mainGuildId = cfg.mainGuildId;
                     const logChannelId = logChannel || '1414540666171559966';
-                    
-                    // Não enviar log se o executor for o usuário específico
                     const skipLogForExecutor = executorId === '1173142082425208922';
-                    
                     if (newMember.guild.id === mainGuildId && !skipLogForExecutor) {
                         try {
                             const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);

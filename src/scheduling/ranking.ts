@@ -91,7 +91,10 @@ export function scheduleRankingUpdater(client: Client) {
                 }
                 await channel.send({ embeds: [embed] });
                 logger.info({ area }, 'Ranking atualizado (recriado).');
-                try { markRankingUpdate(); } catch {}
+                try {
+                    markRankingUpdate();
+                }
+                catch { }
             }
             if (supportChannelId)
                 await processChannel(supportChannelId);
@@ -132,7 +135,10 @@ export function scheduleRankingUpdater(client: Client) {
                         }
                         await evCh.send({ embeds: [embed] });
                         logger.info({ area }, 'Ranking Eventos atualizado.');
-                        try { markRankingUpdate(); } catch {}
+                        try {
+                            markRankingUpdate();
+                        }
+                        catch { }
                     }
                 }
                 catch (err) {
@@ -166,7 +172,10 @@ export function scheduleRankingUpdater(client: Client) {
                         }
                         await jrCh.send({ embeds: [embed] });
                         logger.info({ area }, 'Ranking Jornalismo atualizado.');
-                        try { markRankingUpdate(); } catch {}
+                        try {
+                            markRankingUpdate();
+                        }
+                        catch { }
                     }
                 }
                 catch (err) {
@@ -200,7 +209,6 @@ export function scheduleRankingUpdater(client: Client) {
                         (rankingEmbed as any).data.description = cleaned;
                     else
                         (rankingEmbed as any).setDescription(cleaned);
-                    // Enforce unified Design color
                     (rankingEmbed as any).setColor && (rankingEmbed as any).setColor(0xE67E22);
                     (rankingEmbed as any).setImage && (rankingEmbed as any).setImage(null);
                     const prev = await dChannel.messages.fetch({ limit: 10 }).catch(() => null);
@@ -211,7 +219,10 @@ export function scheduleRankingUpdater(client: Client) {
                     }
                     await dChannel.send({ embeds: [rankingEmbed] });
                     logger.info({ area: 'Design' }, 'Ranking Design atualizado (especial).');
-                    try { markRankingUpdate(); } catch {}
+                    try {
+                        markRankingUpdate();
+                    }
+                    catch { }
                 }
             }
             catch (err) {

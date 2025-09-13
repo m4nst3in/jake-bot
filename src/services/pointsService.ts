@@ -2,9 +2,12 @@ import { PointRepository } from '../repositories/pointRepository.ts';
 import { baseEmbed } from '../utils/embeds.ts';
 import { sendPointsLog } from '../utils/pointsLogger.ts';
 import { loadConfig } from '../config/index.ts';
-
-// Public type for user profile area summary (used in return type inference)
-export interface UserAreaSummary { area: string; points: number; reports: number; shifts: number; }
+export interface UserAreaSummary {
+    area: string;
+    points: number;
+    reports: number;
+    shifts: number;
+}
 export class PointsService {
     constructor(private repo = new PointRepository()) { }
     async adicionar(userId: string, area: string, quantidade: number, reason: string, by: string) {
@@ -66,7 +69,8 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (excluded.has(m.id)) return; // never include excluded users
+                        if (excluded.has(m.id))
+                            return;
                         if (!m.roles.cache.has(memberRoleId))
                             return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
@@ -79,7 +83,8 @@ export class PointsService {
                         }
                     });
                     extended = extended.filter(r => {
-                        if (excluded.has(r.user_id)) return false; // filter excluded users
+                        if (excluded.has(r.user_id))
+                            return false;
                         if (r.points > 0)
                             return true;
                         const mem = g.members.cache.get(r.user_id);
@@ -147,7 +152,8 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (excluded.has(m.id)) return; // never include excluded users
+                        if (excluded.has(m.id))
+                            return;
                         if (!m.roles.cache.has(memberRoleId))
                             return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
@@ -160,7 +166,8 @@ export class PointsService {
                         }
                     });
                     extended = extended.filter(r => {
-                        if (excluded.has(r.user_id)) return false; // filter excluded users
+                        if (excluded.has(r.user_id))
+                            return false;
                         if (r.points > 0)
                             return true;
                         const mem = g.members.cache.get(r.user_id);

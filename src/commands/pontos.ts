@@ -5,13 +5,13 @@ export default {
     data: new SlashCommandBuilder().setName('pontos').setDescription('Painel de gestão de pontos'),
     async execute(interaction: ChatInputCommandInteraction) {
         const member = interaction.member as GuildMember | null;
-    const isAdm = isAdminFromMember(member || null);
-    let hasLeadership = hasAnyLeadership(member || null);
-    const extraAreas = getMemberExtraManagedAreas(member || null);
+        const isAdm = isAdminFromMember(member || null);
+        let hasLeadership = hasAnyLeadership(member || null);
+        const extraAreas = getMemberExtraManagedAreas(member || null);
         if (!hasLeadership && member) {
             hasLeadership = await hasCrossGuildLeadership(interaction.client, member.id);
         }
-    if (!isAdm && !hasLeadership && extraAreas.length === 0) {
+        if (!isAdm && !hasLeadership && extraAreas.length === 0) {
             await interaction.reply({ content: 'Apenas liderança, administradores ou donos.', ephemeral: true });
             return;
         }

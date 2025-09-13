@@ -113,7 +113,10 @@ export default async function messageCreate(message: Message) {
     try {
         if (message.author.bot)
             return;
-    try { (await import('../commands/status.ts')).incMessageProcessed?.(); } catch {}
+        try {
+            (await import('../commands/status.ts')).incMessageProcessed?.();
+        }
+        catch { }
         const cfg = loadConfig();
         const supportCfg: any = (cfg as any).support;
         const recruitCfg: any = (cfg as any).recruitBanca;
@@ -123,9 +126,9 @@ export default async function messageCreate(message: Message) {
         const SUPERVISAO_ROLE = supportCfg?.roles?.supervisao;
         const LOG_CHANNEL = supportCfg?.channels?.plantaoLog;
         const ACCEPT_EMOJI = supportCfg?.emojis?.checkAnim;
-    const RECRUIT_PLANTAO_CHANNEL = recruitCfg?.plantaoChannelId || '1230111166261493801';
-    const RECRUIT_SUPERVISAO_CHANNEL = recruitCfg?.supervisaoChannelId || '1414387744368492686';
-    const RECRUIT_LOG_CHANNEL = recruitCfg?.plantaoLogChannelId || '1414388997257429042';
+        const RECRUIT_PLANTAO_CHANNEL = recruitCfg?.plantaoChannelId || '1230111166261493801';
+        const RECRUIT_SUPERVISAO_CHANNEL = recruitCfg?.supervisaoChannelId || '1414387744368492686';
+        const RECRUIT_LOG_CHANNEL = recruitCfg?.plantaoLogChannelId || '1414388997257429042';
         const RECRUIT_LEADERSHIP_ROLE = recruitCfg?.leadershipRoleId;
         const isRecruitGuild = message.guild?.id === recruitCfg?.guildId;
         if (message.guild && (message.channelId === PLANTAO_CHANNEL || message.channelId === RECRUIT_PLANTAO_CHANNEL)) {
@@ -139,12 +142,9 @@ export default async function messageCreate(message: Message) {
                         const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = await import('discord.js');
                         const ts = Math.floor(message.createdTimestamp / 1000);
                         const targetRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? RECRUIT_LEADERSHIP_ROLE : SUPERVISAO_ROLE;
-                        
-                        // Detectar menções na mensagem para mostrar na supervisão (máximo 2)
                         const mentions = message.mentions.users;
                         let usersText = 'Nenhum usuário mencionado';
                         if (mentions && mentions.size > 0) {
-                            // Apenas usuários mencionados (máximo 2, excluindo o autor)
                             const mentionedIds = Array.from(mentions.keys())
                                 .filter(id => id !== message.author.id)
                                 .slice(0, 2);
@@ -152,7 +152,6 @@ export default async function messageCreate(message: Message) {
                                 usersText = mentionedIds.map(id => `<@${id}>`).join(', ');
                             }
                         }
-                        
                         const embed = new EmbedBuilder()
                             .setTitle('<a:z_estrelinha_cdw:935927437647314994> Supervisão de Plantão')
                             .setColor(0x8e44ad)

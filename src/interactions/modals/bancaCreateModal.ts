@@ -46,7 +46,6 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                 { id: staffId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                 { id: interaction.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
             ] };
-        // If creating in the Support guild, allow all Support members to read (no writing)
         try {
             const supportGuildId = (config as any).banca?.supportGuildId;
             if (interaction.guild.id === supportGuildId) {
@@ -60,7 +59,8 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                     });
                 }
             }
-        } catch {}
+        }
+        catch { }
         if (interaction.guild.id === recruitCfg?.guildId && recruitCfg?.categoryId) {
             createOptions.parent = recruitCfg.categoryId;
         }
@@ -207,7 +207,8 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             if (movGuild && interaction.guild.id === movGuild) {
                 embed.setColor(0x8B0000);
             }
-        } catch {}
+        }
+        catch { }
         if (config.banca?.bannerUrl)
             embed.setImage(config.banca.bannerUrl);
         await textChannel.send({ embeds: [embed] });

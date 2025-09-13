@@ -24,12 +24,9 @@ export default {
         const created = await service.requestRPP(userId, motivo, retornoIso);
         let dispatched = false;
         let dispatchedGuildName: string | undefined;
-        
-        // Verifica se o usuário é staff de recrutamento
         const recruitAreaConfig = (cfg.areas || []).find((area: any) => area.name === 'RECRUTAMENTO');
         const recruitGuildId = recruitAreaConfig?.guildId;
         const recruitMemberRoleId = recruitAreaConfig?.roleIds?.member;
-        
         let isRecruitmentStaff = false;
         if (recruitGuildId && recruitMemberRoleId) {
             try {
@@ -40,11 +37,10 @@ export default {
                         isRecruitmentStaff = true;
                     }
                 }
-            } catch {}
+            }
+            catch { }
         }
-        
         if (interaction.guild?.id === mainGuildId) {
-            // Se é staff de recrutamento, enviar apenas para o servidor de recrutamento
             if (isRecruitmentStaff && recruitGuildId) {
                 const recruitGuild = await interaction.client.guilds.fetch(recruitGuildId).catch(() => null);
                 if (recruitGuild) {
@@ -53,7 +49,6 @@ export default {
                     dispatchedGuildName = recruitGuild.name;
                 }
             }
-            // Lógica padrão para outros staffs
             else {
                 const rppGuildIds: string[] = Object.keys(cfg.rpp?.guilds || {});
                 const prog: any = cfg.progressionRoles || {};

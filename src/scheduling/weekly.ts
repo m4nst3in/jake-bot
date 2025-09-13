@@ -115,9 +115,7 @@ export function scheduleWeeklyTasks(client: Client) {
         const tzNow = new Date();
         logger.info('Executando reset semanal das áreas Suporte e Jornalismo');
         const svc = new PointsService();
-        
         try {
-            // === BACKUP E RESET DO SUPORTE ===
             const supportArea = 'Suporte';
             const supportData = await exportAreaPoints(supportArea);
             let supportPdf: Buffer | null = null;
@@ -127,8 +125,6 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF suporte pré-reset');
             }
-
-            // === BACKUP E RESET DO JORNALISMO ===
             const journalismArea = 'Jornalismo';
             const journalismData = await exportAreaPoints(journalismArea);
             let journalismPdf: Buffer | null = null;
@@ -138,12 +134,8 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF jornalismo pré-reset');
             }
-
-            // Executar resets após backups
             await resetSupportOnly();
             await resetAreaPoints('Jornalismo');
-
-            // === ENVIO DO BACKUP DO SUPORTE ===
             if (rankingChannelId) {
                 const ch: any = await client.channels.fetch(supportBackupChannelId).catch(() => null);
                 if (ch && ch.isTextBased()) {
@@ -163,8 +155,6 @@ export function scheduleWeeklyTasks(client: Client) {
                     catch (e) {
                         logger.warn({ e }, 'Falha envio backup suporte');
                     }
-
-                    // Aviso de reset do Suporte
                     const supportResetEmbed = new EmbedBuilder()
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Suporte** (incluindo relatórios e plantões) foi resetada.')
@@ -193,8 +183,6 @@ export function scheduleWeeklyTasks(client: Client) {
             else {
                 logger.warn('Canal de ranking não configurado para enviar aviso de reset.');
             }
-
-            // === ENVIO DO BACKUP DO JORNALISMO ===
             try {
                 const jCh: any = await client.channels.fetch(journalismBackupChannelId).catch(() => null);
                 if (jCh && jCh.isTextBased()) {
@@ -214,16 +202,12 @@ export function scheduleWeeklyTasks(client: Client) {
                     catch (e) {
                         logger.warn({ e }, 'Falha envio backup jornalismo');
                     }
-
-                    // Aviso de reset do Jornalismo (enviar no mesmo canal ou buscar canal específico)
                     const journalismResetEmbed = new EmbedBuilder()
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Jornalismo** foi resetada.')
                         .setColor(0xFFB6ED)
                         .setFooter({ text: 'Novo ciclo iniciado' })
                         .setTimestamp();
-                    
-                    // Tentar encontrar canal de ranking do jornalismo
                     const journalismChannelId = (cfg as any).channels?.journalismRanking || journalismBackupChannelId;
                     const jRankCh: any = await client.channels.fetch(journalismChannelId).catch(() => null);
                     if (jRankCh && jRankCh.isTextBased()) {
@@ -242,7 +226,6 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha bloco backup/reset jornalismo');
             }
-
         }
         catch (err) {
             logger.error({ err }, 'Falha ao resetar suporte e jornalismo semanal');
@@ -272,7 +255,6 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF design');
             }
-            
             await resetAreaPoints('Eventos');
             await resetAreaPoints('Design');
             try {
@@ -459,7 +441,8 @@ export function scheduleWeeklyTasks(client: Client) {
                     if (movGuild && ch.guild?.id === movGuild) {
                         embed.setColor(0x8B0000);
                     }
-                } catch {}
+                }
+                catch { }
                 await ch.send({ embeds: [embed] }).catch(() => { });
             };
             await Promise.all([

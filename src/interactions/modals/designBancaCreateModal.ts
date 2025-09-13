@@ -42,7 +42,6 @@ export default {
         }
         catch { }
         const ownerMention = `<@${donoId}>`;
-        // Texto customizado solicitado para a embed de portfólio
         const portfolioDescription = [
             '<a:o_sparkle02:1413296730350293085>  <:abo_letterp:1413296132196401193>  <:abo_lettero:1413296193152483429>  <:abo_letterr:1413296230179537056>  <:abo_lettert:1413296291169042494>  <:abo_letterf:1413296762931777697>  <:abo_lettero:1413296193152483429>  <:abo_letterl:1413296498019536896>  <:abo_letteri:1413296398090371082>  <:abo_lettero:1413296193152483429>  <:o_bow01:1413296911741616170>   <:abo_letterc:1413296963390148730> <:abo_letterd:1413297001268908052> <:abo_letterw:1413297041353867335> <a:o_sparkle02:1413296730350293085>',
             `<:cdwdsg_ponto_mexendo:1190435485043138671>   *Seja bem-vindo(a), ${ownerMention}*\n*Aqui será o espaço do seu portfólio, onde você poderá postar todas as suas artes.*`,

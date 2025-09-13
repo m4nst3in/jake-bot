@@ -31,19 +31,23 @@ export function loadConfig(): ConfigRoot {
     }
     const parsed = JSON.parse(raw);
     cached = validateConfig(parsed);
-        try {
-            const issues: string[] = [];
-            if (!(cached as any).areas || !(cached as any).areas.length) issues.push('Nenhuma área configurada.');
-            const dupGuilds = new Map<string, number>();
-            for (const a of (cached as any).areas || []) {
-                if (!a.guildId) issues.push(`Área ${a.name} sem guildId`);
-                if (a.guildId) dupGuilds.set(a.guildId, (dupGuilds.get(a.guildId) || 0) + 1);
-            }
-            [...dupGuilds.entries()].filter(([, c]) => c > 1).forEach(([g]) => issues.push(`Guild repetido em múltiplas áreas: ${g}`));
-            if (issues.length) {
-                console.warn('[CONFIG VALIDATION]', issues.join(' | '));
-            }
-        } catch { }
+    try {
+        const issues: string[] = [];
+        if (!(cached as any).areas || !(cached as any).areas.length)
+            issues.push('Nenhuma área configurada.');
+        const dupGuilds = new Map<string, number>();
+        for (const a of (cached as any).areas || []) {
+            if (!a.guildId)
+                issues.push(`Área ${a.name} sem guildId`);
+            if (a.guildId)
+                dupGuilds.set(a.guildId, (dupGuilds.get(a.guildId) || 0) + 1);
+        }
+        [...dupGuilds.entries()].filter(([, c]) => c > 1).forEach(([g]) => issues.push(`Guild repetido em múltiplas áreas: ${g}`));
+        if (issues.length) {
+            console.warn('[CONFIG VALIDATION]', issues.join(' | '));
+        }
+    }
+    catch { }
     return cached;
 }
 export function getAreaByName(name: string) {

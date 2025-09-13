@@ -61,15 +61,12 @@ export class PointRepository extends BaseRepo {
         const cursor = this.mongo.collection('points').find({ area }).sort({ points: -1 }).limit(limit);
         return cursor.toArray() as any;
     }
-
     async getDailyPointsThisWeek(userId: string): Promise<number[]> {
         const now = new Date();
         const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo da semana atual
+        startOfWeek.setDate(now.getDate() - now.getDay());
         startOfWeek.setHours(0, 0, 0, 0);
-
         const dailyPoints = new Array(7).fill(0);
-
         if (this.isSqlite()) {
             return new Promise<number[]>((resolve, reject) => {
                 const sevenDaysAgo = new Date(startOfWeek);
@@ -80,24 +77,21 @@ export class PointRepository extends BaseRepo {
                     GROUP BY DATE(timestamp)
                     ORDER BY DATE(timestamp)
                 `;
-                
                 this.sqlite.all(query, [userId, sevenDaysAgo.toISOString()], (err: Error | null, rows: any[]) => {
                     if (err) {
                         reject(err);
                         return;
                     }
-                    
                     for (const row of rows) {
                         const logDate = new Date(row.date);
-                        const dayOfWeek = logDate.getDay(); // 0 = Domingo, 6 = Sábado
+                        const dayOfWeek = logDate.getDay();
                         dailyPoints[dayOfWeek] = row.total_points || 0;
                     }
-                    
                     resolve(dailyPoints);
                 });
             });
-        } else {
-            // MongoDB implementation
+        }
+        else {
             const sevenDaysAgo = startOfWeek.toISOString();
             const pipeline = [
                 {
@@ -114,38 +108,48 @@ export class PointRepository extends BaseRepo {
                     }
                 }
             ];
-            
             const results = await this.mongo.collection('point_logs').aggregate(pipeline).toArray();
-            
             for (const result of results) {
                 const logDate = new Date(result._id);
                 const dayOfWeek = logDate.getDay();
                 dailyPoints[dayOfWeek] = result.total_points || 0;
             }
-            
             return dailyPoints;
         }
     }
-
-    async getWeeklyStats(userId: string, weeksCount: number): Promise<Array<{week: number, startDate: Date, endDate: Date, points: number, reports: number, shifts: number}>> {
-        const stats: Array<{week: number, startDate: Date, endDate: Date, points: number, reports: number, shifts: number}> = [];
-        
+    async getWeeklyStats(userId: string, weeksCount: number): Promise<Array<{
+        week: number;
+        startDate: Date;
+        endDate: Date;
+        points: number;
+        reports: number;
+        shifts: number;
+    }>> {
+        const stats: Array<{
+            week: number;
+            startDate: Date;
+            endDate: Date;
+            points: number;
+            reports: number;
+            shifts: number;
+        }> = [];
         for (let i = 0; i < weeksCount; i++) {
             const now = new Date();
             const weekStart = new Date(now);
-            weekStart.setDate(now.getDate() - (now.getDay() + (i * 7))); // Domingo da semana
+            weekStart.setDate(now.getDate() - (now.getDay() + (i * 7)));
             weekStart.setHours(0, 0, 0, 0);
-            
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 6);
             weekEnd.setHours(23, 59, 59, 999);
-
             let points = 0;
             let reports = 0;
             let shifts = 0;
-
             if (this.isSqlite()) {
-                const weekStats = await new Promise<{points: number, reports: number, shifts: number}>((resolve, reject) => {
+                const weekStats = await new Promise<{
+                    points: number;
+                    reports: number;
+                    shifts: number;
+                }>((resolve, reject) => {
                     this.sqlite.get(`
                         SELECT 
                             COALESCE(SUM(CASE WHEN change > 0 THEN change ELSE 0 END), 0) as points,
@@ -154,16 +158,17 @@ export class PointRepository extends BaseRepo {
                         FROM point_logs 
                         WHERE user_id = ? AND timestamp BETWEEN ? AND ?
                     `, [userId, weekStart.toISOString(), weekEnd.toISOString()], (err: Error | null, row: any) => {
-                        if (err) reject(err);
-                        else resolve(row || {points: 0, reports: 0, shifts: 0});
+                        if (err)
+                            reject(err);
+                        else
+                            resolve(row || { points: 0, reports: 0, shifts: 0 });
                     });
                 });
-                
                 points = weekStats.points;
                 reports = weekStats.reports;
                 shifts = weekStats.shifts;
-            } else {
-                // MongoDB implementation
+            }
+            else {
                 const pipeline = [
                     {
                         $match: {
@@ -178,34 +183,33 @@ export class PointRepository extends BaseRepo {
                         $group: {
                             _id: null,
                             points: { $sum: { $cond: [{ $gt: ["$change", 0] }, "$change", 0] } },
-                            reports: { 
-                                $sum: { 
+                            reports: {
+                                $sum: {
                                     $cond: [
                                         { $or: [
-                                            { $regexMatch: { input: "$reason", regex: /relatório/i } },
-                                            { $regexMatch: { input: "$reason", regex: /relatorio/i } }
-                                        ]}, 
-                                        1, 
+                                                { $regexMatch: { input: "$reason", regex: /relatório/i } },
+                                                { $regexMatch: { input: "$reason", regex: /relatorio/i } }
+                                            ] },
+                                        1,
                                         0
-                                    ] 
+                                    ]
                                 }
                             },
-                            shifts: { 
-                                $sum: { 
+                            shifts: {
+                                $sum: {
                                     $cond: [
                                         { $or: [
-                                            { $regexMatch: { input: "$reason", regex: /plantão/i } },
-                                            { $regexMatch: { input: "$reason", regex: /plantao/i } }
-                                        ]}, 
-                                        1, 
+                                                { $regexMatch: { input: "$reason", regex: /plantão/i } },
+                                                { $regexMatch: { input: "$reason", regex: /plantao/i } }
+                                            ] },
+                                        1,
                                         0
-                                    ] 
+                                    ]
                                 }
                             }
                         }
                     }
                 ];
-                
                 const result = await this.mongo.collection('point_logs').aggregate(pipeline).toArray();
                 if (result.length > 0) {
                     points = result[0].points || 0;
@@ -213,7 +217,6 @@ export class PointRepository extends BaseRepo {
                     shifts = result[0].shifts || 0;
                 }
             }
-
             stats.push({
                 week: i,
                 startDate: weekStart,
@@ -223,10 +226,8 @@ export class PointRepository extends BaseRepo {
                 shifts
             });
         }
-
         return stats;
     }
-
     async addPointsAndReport(userId: string, area: string, delta: number, reason: string, by: string) {
         if (this.isSqlite()) {
             await new Promise<void>((resolve, reject) => {
@@ -336,7 +337,10 @@ export class PointRepository extends BaseRepo {
         if (this.isSqlite()) {
             return new Promise<any[]>((resolve, reject) => {
                 this.sqlite.all('SELECT area, points, reports_count, shifts_count FROM points WHERE user_id=?', [userId], function (err: Error | null, rows: any[]) {
-                    if (err) reject(err); else resolve(rows || []);
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(rows || []);
                 });
             });
         }
@@ -346,7 +350,10 @@ export class PointRepository extends BaseRepo {
         if (this.isSqlite()) {
             return new Promise<number>((resolve, reject) => {
                 this.sqlite.get('SELECT COUNT(DISTINCT user_id) c FROM points', [], function (err: Error | null, row: any) {
-                    if (err) reject(err); else resolve(row?.c || 0);
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(row?.c || 0);
                 });
             });
         }
@@ -357,18 +364,22 @@ export class PointRepository extends BaseRepo {
         if (this.isSqlite()) {
             return new Promise<number | null>((resolve, reject) => {
                 this.sqlite.get('SELECT points FROM points WHERE user_id=? AND area=?', [userId, area], (err: Error | null, row: any) => {
-                    if (err) return reject(err);
-                    if (!row) return resolve(null);
+                    if (err)
+                        return reject(err);
+                    if (!row)
+                        return resolve(null);
                     const userPts = row.points || 0;
                     this.sqlite.get('SELECT COUNT(*) c FROM points WHERE area=? AND points > ?', [area, userPts], (err2: Error | null, row2: any) => {
-                        if (err2) return reject(err2);
+                        if (err2)
+                            return reject(err2);
                         resolve((row2?.c || 0) + 1);
                     });
                 });
             });
         }
         const doc = await this.mongo.collection('points').findOne({ user_id: userId, area });
-        if (!doc) return null;
+        if (!doc)
+            return null;
         const userPts = doc.points || 0;
         const ahead = await this.mongo.collection('points').countDocuments({ area, points: { $gt: userPts } });
         return ahead + 1;

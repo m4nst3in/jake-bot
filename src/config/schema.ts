@@ -33,7 +33,7 @@ export interface ConfigRoot {
     staffRankMirrors?: Record<string, Record<string, string>>;
     staffRankFallbacks?: Record<string, string>;
     hierarchyOrder?: string[];
-    primaryGuildTeamRoles?: Record<string, string>; // mapa de cargos de equipe no servidor principal (/recrutar)
+    primaryGuildTeamRoles?: Record<string, string>;
     progressionRoles?: Record<string, {
         upa: string[];
         naoUpa?: string[];
@@ -61,7 +61,7 @@ export interface ConfigRoot {
         guildId: string;
         reactionEmoji: string;
         pointsPerMessage: number;
-    shiftPoints?: number;
+        shiftPoints?: number;
         keyword: string;
         pointsLogChannelId: string;
         bannerUrl?: string;

@@ -18,13 +18,12 @@ export default {
             const roleId = movConfig.roleId || '1136861814328668230';
             const extraLeadRoleId = movConfig.extraLeadRoleId || '1136864678253969430';
             const openGif = movConfig.openGif || 'https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif';
-            
             const member = interaction.member as any;
             const hasRole = (id: string) => member?.roles?.cache?.has(id);
             const allowed = owners.includes(interaction.user.id)
-                            || (movLeadId && hasRole(movLeadId))
-                            || hasRole(extraLeadRoleId)
-                            || (globalMovLeadId && hasRole(globalMovLeadId));
+                || (movLeadId && hasRole(movLeadId))
+                || hasRole(extraLeadRoleId)
+                || (globalMovLeadId && hasRole(globalMovLeadId));
             if (!allowed) {
                 await interaction.editReply('Você não tem permissão para usar este comando.');
                 return;

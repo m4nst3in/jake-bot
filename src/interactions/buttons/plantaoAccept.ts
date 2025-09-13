@@ -15,9 +15,7 @@ export default {
         const messageId = parts[1];
         const userId = parts[2];
         const staffId = interaction.user.id;
-        
         let plantaoUserIds: string[] = [];
-        
         try {
             const channel: any = PLANTAO_CHANNEL ? await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(() => null) : null;
             if (channel && channel.isTextBased()) {
@@ -35,35 +33,30 @@ export default {
             }
         }
         catch { }
-        
         const pointsPerUser = 20;
         const successfulPoints: string[] = [];
         const failedPoints: string[] = [];
-        
         for (const targetUserId of plantaoUserIds) {
             try {
                 await pointsService.registrarPlantao(targetUserId, 'Suporte', pointsPerUser, staffId);
                 successfulPoints.push(targetUserId);
-            } catch {
+            }
+            catch {
                 failedPoints.push(targetUserId);
             }
         }
-        
         if (!PLANTAO_CHANNEL || !LOG_CHANNEL) {
             logger.warn({ PLANTAO_CHANNEL, LOG_CHANNEL }, 'Config de plantão incompleta no bot');
         }
-        
         try {
             await interaction.message.delete().catch(() => { });
         }
         catch { }
-        
         try {
             const logCh: any = LOG_CHANNEL ? await interaction.client.channels.fetch(LOG_CHANNEL).catch(() => null) : null;
             if (logCh && logCh.isTextBased()) {
                 const usersList = successfulPoints.length > 0 ? successfulPoints.map(id => `<@${id}>`).join(', ') : 'Nenhum usuário mencionado';
                 const totalPoints = successfulPoints.length * pointsPerUser;
-                
                 const embed = new EmbedBuilder()
                     .setTitle('✅ Plantão Aceito')
                     .setColor(0x2ecc71)
@@ -73,11 +66,9 @@ export default {
             }
         }
         catch { }
-        
-        const resultMessage = successfulPoints.length > 0 
-            ? `Plantão aceito. Pontos adicionados para ${successfulPoints.length} usuário(s) mencionado(s).` 
+        const resultMessage = successfulPoints.length > 0
+            ? `Plantão aceito. Pontos adicionados para ${successfulPoints.length} usuário(s) mencionado(s).`
             : 'Plantão aceito. Nenhum usuário mencionado encontrado.';
-        
         await interaction.editReply({ content: resultMessage });
     }
 };
