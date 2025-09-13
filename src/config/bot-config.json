@@ -352,7 +352,7 @@
   "recruitBanca": {
     "guildId": "1180721287476289596",
     "reactionEmoji": "<a:Check:1217789508939157515>",
-    "pointsPerMessage": 10,
+  "pointsPerMessage": 20,
   "shiftPoints": 20,
     "keyword": "recrutamento",
   "pointsLogChannelId": "1263455658594926644",
@@ -619,6 +619,6 @@
   "0 0 17 * * 5",
   "0 0 20 * * 5"
     ],
-    "reopenAfterMinutes": 60
+  "reopenAfterMinutes": 120
   }
 }

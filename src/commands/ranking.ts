@@ -36,7 +36,7 @@ export default { data: new SlashCommandBuilder().setName('ranking').setDescripti
             const data: any = (embed as any).data || {};
             const desc = data.description || (embed as any).description || '';
             const cfg = loadConfig() as any;
-            const pointsPerMsg = cfg.recruitBanca?.pointsPerMessage || 10;
+            const pointsPerMsg = cfg.recruitBanca?.pointsPerMessage || 20;
             const augmented = desc.split('\n').map((line: string) => {
                 if (!line.trim())
                     return line;

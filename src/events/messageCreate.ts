@@ -174,7 +174,7 @@ export default async function messageCreate(message: Message) {
                         await logChannel.send({ embeds: [embed] });
                     }
                     if (isRecruitShift) {
-                        const shiftPoints = typeof recruitCfg?.shiftPoints === 'number' ? recruitCfg.shiftPoints : (recruitCfg?.pointsPerMessage || 10);
+                        const shiftPoints = typeof recruitCfg?.shiftPoints === 'number' ? recruitCfg.shiftPoints : (recruitCfg?.pointsPerMessage || 20);
                         await pointsService.registrarPlantao(message.author.id, 'Recrutamento', shiftPoints, 'system');
                     }
                 }
@@ -204,7 +204,7 @@ export default async function messageCreate(message: Message) {
                 const contentLower = message.content.toLowerCase();
                 const keyword = (recruitCfg.keyword || 'recrutamento').toLowerCase();
                 if (contentLower.includes(keyword)) {
-                    await (pointsService as any).adicionarComRelatorio(message.author.id, 'Recrutamento', recruitCfg.pointsPerMessage || 10, message.author.id);
+                    await (pointsService as any).adicionarComRelatorio(message.author.id, 'Recrutamento', recruitCfg.pointsPerMessage || 20, message.author.id);
                     const emojiId = extractEmojiId(recruitCfg.reactionEmoji || '');
                     await message.react(emojiId).catch(() => { });
                     if (recruitCfg.bannerUrl) {
@@ -219,7 +219,7 @@ export default async function messageCreate(message: Message) {
                             const embed = new EmbedBuilder()
                                 .setTitle('Pontos de Recrutamento')
                                 .setColor(0x39ff14)
-                                .setDescription(`**Usuário:** <@${message.author.id}> (${message.author.id})\n**Pontos:** +${recruitCfg.pointsPerMessage || 10}\n**Canal:** <#${message.channel.id}>`)
+                                .setDescription(`**Usuário:** <@${message.author.id}> (${message.author.id})\n**Pontos:** +${recruitCfg.pointsPerMessage || 20}\n**Canal:** <#${message.channel.id}>`)
                                 .setTimestamp();
                             await logCh.send({ embeds: [embed] }).catch(() => { });
                         }

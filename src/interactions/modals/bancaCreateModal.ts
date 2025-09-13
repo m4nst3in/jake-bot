@@ -166,20 +166,20 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             const CORRETORES_ROLE = '1318739533759643648';
             const texto = [
                 '<:p_letter_b:1361713669959848127> <:p_letter_a:1361713698967654491> <:p_letter_n:1361715135646924831> <:p_letter_c:1361715223026995425> <:p_letter_a:1361713698967654491> <:p_21:1361715342568587366> <:p_letter_c:1361715223026995425> <:p_letter_d:1361715405256790317> <:p_letter_w:1361715458809528482>',
-                `- *Olá, <@${staffId}> ! Seja muito bem vindo(a) à equipe de Jornalismo! Este é o espaço para enviar suas matérias antes de irem ao servidor principal.*`,
+                `- *Olá, <@${staffId}>! Bem-vindo(a) à equipe de Jornalismo. Este é o seu espaço para enviar as matérias antes da publicação no servidor principal.*`,
                 '',
                 '<:p_dot02:1312933729525694494><:p_letter_g:1361716479015391292><:p_letter_u:1361716250916683836><:p_letter_i:1361716331581280397><:p_letter_a:1361713698967654491><:p_dot02:1312933729525694494>',
-                '> - <#1275118710532870245> Aqui estão os horários de postagem semanal, escolha os que estiver melhor para você;',
-                '> -  <#1414589956856483952> Seus pontos diários aparecerão neste chat;',
-                '> - <#1401275385802526891> Caso queira uma arte específica para seu material, solicite neste canal.',
+                '> - <#1275118710532870245> Confira e escolha seus horários de postagem semanal;',
+                '> - <#1414589956856483952> Aqui você acompanha seus pontos diários;',
+                '> - <#1401275385802526891> Precisa de arte para sua pauta? Solicite aqui.',
                 '',
-                '<:p_dot02:1312933729525694494> Lembre-se: Aceitaremos a postagem de seu material caso ele for postado neste canal com no máximo 1h de antecedência da postagem oficial.',
-                `<:6rosa_stars:1361717290621472788> **Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}> . Qualquer dúvida pode chamar alguém que tiver este cargo no privado.**`
+                '<:p_dot02:1312933729525694494> Lembre-se: aceitamos a postagem do seu material se ele for enviado neste canal com no máximo 1h de antecedência da postagem oficial.',
+                `<:6rosa_stars:1361717290621472788> **Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}>. Em caso de dúvidas, chame alguém com esse cargo no privado.**`
             ].join('\n');
             const embed = new EmbedBuilder()
                 .setColor(0xFFB6ED)
                 .setDescription(texto)
-                .setImage('https://cdn.discordapp.com/attachments/1397985579320213504/1416253742138785984/Jo-banner_20250912_043741_0001.gif?ex=68c62c94&is=68c4db14&hm=38bdbbd401652a4a8a269402233763b884e3501f7b697e7f923e5c8d87e0b5e5&')
+                .setImage('https://cdn.discordapp.com/attachments/1397985579320213504/1416253613633699870/Jo-banner_20250912_011943_0020.gif?ex=68c62c76&is=68c4daf6&hm=f815b96bff10ce61f3373dc87973d414b5749847cd7ef15a53d9ea5f8ba7fad9&')
                 .setFooter({ text: 'Liderança de Jornalismo - CDW KL' });
             await textChannel.send({ embeds: [embed] });
             return;

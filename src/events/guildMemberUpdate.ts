@@ -214,6 +214,7 @@ export function registerProtectionListener(client: any) {
             for (const role of added.values()) {
                 const vipRoleIds = new Set(Object.values(rootCfg.vipRoles || {}).map((v: any) => String(v)));
                 const permissionRoleIds = new Set((rootCfg.permissionRoles || []).map((v: any) => String(v)));
+                const purchasableRoleIds = new Set(Object.values(rootCfg.purchasableRoles || {}).map((v: any) => String(v)));
                 const MONITORED_ROLES: Record<string, string> = {
                     '1212657992630280302': 'Community',
                     '1137176557979439246': 'Membro Ativo',
@@ -221,6 +222,7 @@ export function registerProtectionListener(client: any) {
                 };
                 const isVip = vipRoleIds.has(role.id);
                 const isPerm = permissionRoleIds.has(role.id);
+                const isPurch = purchasableRoleIds.has(role.id);
                 const isMonitored = MONITORED_ROLES[role.id];
                 if (isMonitored) {
                     let executorIdPassive = roleExecutorMap[role.id] ?? null;
@@ -265,6 +267,67 @@ export function registerProtectionListener(client: any) {
                                     .setColor(isVip ? 0x9B59B6 : 0x3498DB)
                                     .setDescription('Um cargo monitorado (VIP ou Permissão) foi adicionado e apenas registrado.')
                                     .addFields({ name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isVip ? 'VIP' : 'Permissão' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Não fiz nada, apenas registrei' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setTimestamp();
+                                ch.send({ embeds: [embed] }).catch(() => { });
+                            }
+                        }
+                        catch { }
+                    }
+                    continue;
+                }
+                // Purchasable roles: only bots and owners are allowed to assign
+                if (isPurch) {
+                    let executorId = roleExecutorMap[role.id] ?? null;
+                    if (!executorId) executorId = await resolveExecutorForRole(role.id);
+                    const cfg: any = loadConfig();
+                    const mainGuildId = cfg.mainGuildId;
+                    let allowed = false;
+                    if (executorId) {
+                        if (isOwner(executorId)) allowed = true;
+                        else {
+                            const execMember = await newMember.guild.members.fetch(executorId).catch(() => null);
+                            const botId = cfg.botId;
+                            if (botId && executorId === botId) allowed = true;
+                            else if (execMember && Array.isArray(getProtectionConfig().botRoles) && getProtectionConfig().botRoles.some((id: string) => execMember.roles.cache.has(id))) allowed = true;
+                        }
+                    }
+                    if (!executorId) {
+                        logger.info({ user: newMember.id, role: role.id }, 'Proteção: cargo comprável adicionado (executor ausente no audit log)');
+                        continue;
+                    }
+                    const logChannelId = getProtectionConfig().logChannel || rootCfg.protection?.logChannel || '1414540666171559966';
+                    if (!allowed) {
+                        await newMember.roles.remove(role.id).catch(() => { });
+                        logger.warn({ user: newMember.id, role: role.id, executorId }, 'Proteção: cargo comprável removido (não autorizado)');
+                        const skipLogForExecutor = executorId === '1173142082425208922';
+                        if (newMember.guild.id === mainGuildId && !skipLogForExecutor) {
+                            try {
+                                const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                                if (ch && ch.isTextBased()) {
+                                    const embed = new EmbedBuilder()
+                                        .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Ação Executada')
+                                        .setColor(0xE74C3C)
+                                        .setDescription('Um cargo comprável foi aplicado de forma não autorizada e removido imediatamente.')
+                                        .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' }, { name: 'Cargo Bloqueado', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: 'Ação', value: 'Cargo removido automaticamente' }, { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
+                                        .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                        .setTimestamp();
+                                    const { alertRole, alertUsers } = getProtectionConfig();
+                                    const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
+                                    ch.send({ content: mentionContent, embeds: [embed] }).catch(() => { });
+                                }
+                            }
+                            catch { }
+                        }
+                    } else if (newMember.guild.id === mainGuildId) {
+                        try {
+                            const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
+                            if (ch && ch.isTextBased()) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle('<:z_mod_DiscordShield:934654129811357726> Proteção de Cargos • Registro')
+                                    .setColor(0x2ECC71)
+                                    .setDescription('Cargo comprável aplicado por agente autorizado (owner/bot).')
+                                    .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: `<@${executorId}>\n\`${executorId}\`` }, { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: 'Ação', value: 'Apenas registrado' }, { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
                                     .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch(() => { });

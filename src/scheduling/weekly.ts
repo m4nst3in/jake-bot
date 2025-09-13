@@ -27,7 +27,7 @@ function loadMovConfig(): MovWindowConfig | null {
             closeGif: m.closeGif,
             openGif: m.openGif,
             windows: m.windows || [],
-            reopenAfterMinutes: m.reopenAfterMinutes || 60
+            reopenAfterMinutes: m.reopenAfterMinutes || 120
         };
     }
     catch {
