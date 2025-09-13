@@ -153,11 +153,12 @@ export default {
             const banner = banners[interaction.guildId!];
             let embed: EmbedBuilder;
             if (interaction.guildId === MIG_GUILD_ID) {
-                const desc = [
-                    '>  Anexe/envie uma print dos seus cargos na Central das Web, e mencione <@&1355243896971464895>, comprovando que você possui a tag de migração no servidor principal, para que seus cargos sejam atualizados aqui.'
-                ].join('');
                 const MIG_BANNER = 'https://media.discordapp.net/attachments/1355346364212580494/1356477847300210728/1.png?format=webp&quality=lossless&';
                 const MIG_HEADER = 'https://media.discordapp.net/attachments/1355346364212580494/1355619532554899477/Design_sem_nome_5.png?format=webp&quality=lossless&';
+                const desc = [
+                    'Clique no botão abaixo para iniciar a verificação automática.',
+                    'Não é necessário enviar prints nem marcar ninguém — o sistema fará tudo sozinho.'
+                ].join('\n\n');
                 embed = new EmbedBuilder()
                     .setAuthor({ name: 'CDW - MIGRAÇÃO', iconURL: MIG_HEADER })
                     .setTitle('<:cdw_e_verificado:1116425488773152899> **VERIFICAÇÃO** <:cdw_e_verificado:1116425488773152899>')
