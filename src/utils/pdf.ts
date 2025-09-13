@@ -46,25 +46,37 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
                 const owners: string[] = cfg.owners || [];
                 const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                 const existing = new Set(rows.map(r => r.user_id));
+                // Remove leaders and owners from initial rows
+                rows = rows.filter(r => {
+                    const m = g.members.cache.get(r.user_id);
+                    if (!m) return false;
+                    if (owners.includes(r.user_id)) return false; // remove owners entirely
+                    if (leadRoleId && m.roles.cache.has(leadRoleId)) return false; // remove leaders entirely
+                    return true;
+                });
                 g.members.cache.forEach(m => {
                     if (!m.roles.cache.has(memberRoleId))
                         return;
                     const rec = rows.find(r => r.user_id === m.id);
                     const hasPoints = !!rec && rec.points > 0;
                     if (!hasPoints) {
-                        if (leadRoleId && m.roles.cache.has(leadRoleId))
-                            return;
-                        if (owners.includes(m.id) && !alwaysShow.includes(m.id))
-                            return;
+                        // don't include leaders or owners even with 0 points
+                        if (leadRoleId && m.roles.cache.has(leadRoleId)) return;
+                        if (owners.includes(m.id)) return;
                     }
                     if (!existing.has(m.id)) {
                         rows.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                         existing.add(m.id);
                     }
                 });
-                if (owners.length) {
-                    rows = rows.filter(r => !owners.includes(r.user_id) || alwaysShow.includes(r.user_id));
-                }
+                // Final guard to exclude any lingering owners/leaders
+                rows = rows.filter(r => {
+                    const m = g.members.cache.get(r.user_id);
+                    if (!m) return false;
+                    if (owners.includes(r.user_id)) return false;
+                    if (leadRoleId && m.roles.cache.has(leadRoleId)) return false;
+                    return true;
+                });
             }
         }
         if (mainGuild) {
@@ -347,6 +359,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     doc.x = doc.page.margins.left;
     doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
     doc.moveDown(0.6);
+    // Use array index for numbering to avoid any carryover issues
     let position = 0;
     const medalColors = ['#D4AF37', '#C0C0C0', '#CD7F32'];
     let cardsOnCurrentPage = 0;
@@ -375,7 +388,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         const hitPoints = threshold ? r.points >= threshold : true;
         return { overallHit: hitPoints, g, threshold, hitPoints };
     }
-    for (const r of rows) {
+    for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
         const cardHeight = suporte ? 120 : 108;
         const cardWithMargin = cardHeight + 20;
         const spaceNeeded = cardWithMargin + (position === 0 ? 30 : 0);
@@ -402,7 +416,8 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
             doc.moveDown(0.6);
         }
-        const idx = ++position;
+        const idx = i + 1;
+        position = idx;
         const startY = doc.y;
         doc.save();
         const cardColor = idx % 2 === 0 ? '#FFFFFF' : secondary;

@@ -69,31 +69,22 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (excluded.has(m.id))
-                            return;
-                        if (!m.roles.cache.has(memberRoleId))
-                            return;
-                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
-                            return;
-                        if (owners.includes(m.id) && !(extended.find(r => r.user_id === m.id && r.points > 0)) && !alwaysShow.includes(m.id))
-                            return;
+                        if (excluded.has(m.id)) return;
+                        if (!m.roles.cache.has(memberRoleId)) return;
+                        // Exclude leaders and owners entirely
+                        if (leadRoleId && m.roles.cache.has(leadRoleId)) return;
+                        if (owners.includes(m.id)) return;
                         if (!existingIds.has(m.id)) {
                             extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                             existingIds.add(m.id);
                         }
                     });
                     extended = extended.filter(r => {
-                        if (excluded.has(r.user_id))
-                            return false;
-                        if (r.points > 0)
-                            return true;
+                        if (excluded.has(r.user_id)) return false;
                         const mem = g.members.cache.get(r.user_id);
-                        if (!mem)
-                            return true;
-                        if (leadRoleId && mem.roles.cache.has(leadRoleId))
-                            return false;
-                        if ((cfg.owners || []).includes(r.user_id) && !alwaysShow.includes(r.user_id))
-                            return false;
+                        if (!mem) return false;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
+                        if ((cfg.owners || []).includes(r.user_id)) return false;
                         return true;
                     });
                 }
@@ -152,31 +143,22 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
-                        if (excluded.has(m.id))
-                            return;
-                        if (!m.roles.cache.has(memberRoleId))
-                            return;
-                        if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
-                            return;
-                        if (owners.includes(m.id) && !(extended.find(r => r.user_id === m.id && r.points > 0)) && !alwaysShow.includes(m.id))
-                            return;
+                        if (excluded.has(m.id)) return;
+                        if (!m.roles.cache.has(memberRoleId)) return;
+                        // Exclude leaders and owners entirely
+                        if (leadRoleId && m.roles.cache.has(leadRoleId)) return;
+                        if (owners.includes(m.id)) return;
                         if (!existingIds.has(m.id)) {
                             extended.push({ user_id: m.id, points: 0, reports_count: 0, shifts_count: 0 });
                             existingIds.add(m.id);
                         }
                     });
                     extended = extended.filter(r => {
-                        if (excluded.has(r.user_id))
-                            return false;
-                        if (r.points > 0)
-                            return true;
+                        if (excluded.has(r.user_id)) return false;
                         const mem = g.members.cache.get(r.user_id);
-                        if (!mem)
-                            return true;
-                        if (leadRoleId && mem.roles.cache.has(leadRoleId))
-                            return false;
-                        if ((cfg.owners || []).includes(r.user_id) && !alwaysShow.includes(r.user_id))
-                            return false;
+                        if (!mem) return false;
+                        if (leadRoleId && mem.roles.cache.has(leadRoleId)) return false;
+                        if ((cfg.owners || []).includes(r.user_id)) return false;
                         return true;
                     });
                 }
