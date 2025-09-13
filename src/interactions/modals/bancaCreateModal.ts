@@ -163,34 +163,22 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
         if (journalismGuildId && interaction.guild.id === journalismGuildId) {
             await interaction.editReply(`Banca de jornalismo criada: <#${channel.id}>`);
             const textChannel = channel as TextChannel;
-            const EMO = {
-                b: '<:p_letter_b:1361713669959848127>',
-                a: '<:p_letter_a:1361713698967654491>',
-                n: '<:p_letter_n:1361715135646924831>',
-                c: '<:p_letter_c:1361715223026995425>',
-                d: '<:p_letter_d:1361715405256790317>',
-                w: '<:p_letter_w:1361715458809528482>',
-                bow: '<:p_bow02:1312933529100750858>',
-                g: '<:p_letter_g:1361716479015391292>',
-                u: '<:p_letter_u:1361716250916683836>',
-                i: '<:p_letter_i:1361716331581280397>'
-            };
-            const PONTO = '<:pink_ponto:1312760191636471848>';
-            const STAR = '<:6rosa_stars:1361717290621472788>';
             const CORRETORES_ROLE = '1318739533759643648';
-            const header = `${EMO.b} ${EMO.a} ${EMO.n} ${EMO.c} ${EMO.a} ${EMO.bow} ${EMO.c} ${EMO.d} ${EMO.w}`;
-            const guiaTitle = `${EMO.g} ${EMO.u} ${EMO.i} ${EMO.a}`;
-            const blocoGuia = [
-                `${PONTO} **Olá, <@${staffId}>!** Seja muito bem vindo(a) à equipe de Jornalismo! Este é o espaço para enviar suas matérias antes de irem ao servidor principal.`,
-                ' ',
-                `${PONTO} **G U I A**`,
-                '```#️⃣  ▪ planilha-post  Aqui estão os horários de postagem semanal, escolha os que estiver melhor para você;\n#️⃣  ▪ pontuação      Seus pontos diários aparecerão neste chat;\n#️⃣  ▪ pedidos        Caso queira uma arte específica para seu material, solicite neste canal.```',
-                `${PONTO} *Lembre-se:* Aceitaremos a postagem de seu material caso ele for postado neste canal com no máximo 1h de antecedência da postagem oficial.`,
-                `${STAR} **Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}>. Qualquer dúvida pode chamar alguém que tiver este cargo no privado.**`
-            ].join('\n\n');
+            const texto = [
+                '<:p_letter_b:1361713669959848127> <:p_letter_a:1361713698967654491> <:p_letter_n:1361715135646924831> <:p_letter_c:1361715223026995425> <:p_letter_a:1361713698967654491> <:p_21:1361715342568587366> <:p_letter_c:1361715223026995425> <:p_letter_d:1361715405256790317> <:p_letter_w:1361715458809528482>',
+                `- *Olá, <@${staffId}> ! Seja muito bem vindo(a) à equipe de Jornalismo! Este é o espaço para enviar suas matérias antes de irem ao servidor principal.*`,
+                '',
+                '<:p_dot02:1312933729525694494><:p_letter_g:1361716479015391292><:p_letter_u:1361716250916683836><:p_letter_i:1361716331581280397><:p_letter_a:1361713698967654491><:p_dot02:1312933729525694494>',
+                '> - <#1275118710532870245> Aqui estão os horários de postagem semanal, escolha os que estiver melhor para você;',
+                '> -  <#1414589956856483952> Seus pontos diários aparecerão neste chat;',
+                '> - <#1401275385802526891> Caso queira uma arte específica para seu material, solicite neste canal.',
+                '',
+                '<:p_dot02:1312933729525694494> Lembre-se: Aceitaremos a postagem de seu material caso ele for postado neste canal com no máximo 1h de antecedência da postagem oficial.',
+                `<:6rosa_stars:1361717290621472788> **Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}> . Qualquer dúvida pode chamar alguém que tiver este cargo no privado.**`
+            ].join('\n');
             const embed = new EmbedBuilder()
                 .setColor(0xFFB6ED)
-                .setDescription(`${header}\n\n${blocoGuia}`)
+                .setDescription(texto)
                 .setImage('https://cdn.discordapp.com/attachments/1397985579320213504/1416253742138785984/Jo-banner_20250912_043741_0001.gif?ex=68c62c94&is=68c4db14&hm=38bdbbd401652a4a8a269402233763b884e3501f7b697e7f923e5c8d87e0b5e5&')
                 .setFooter({ text: 'Liderança de Jornalismo - CDW KL' });
             await textChannel.send({ embeds: [embed] });

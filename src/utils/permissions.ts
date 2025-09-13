@@ -101,10 +101,28 @@ export function assertAreaPermission(member: GuildMember | null | undefined, are
 export function canManageAnyArea(member: GuildMember | null | undefined) {
     return isOwner(member);
 }
-export function canUsePdfForArea(member: GuildMember | null | undefined, areaName: string) {
+export async function canUsePdfForArea(member: GuildMember | null | undefined, areaName: string) {
     if (isOwner(member))
         return true;
-    return isAreaLeader(member, areaName);
+    if (!member)
+        return false;
+    const area = getAreaConfigByName(areaName);
+    const leadRole = area?.roleIds?.lead;
+    const guildId = area?.guildId;
+    if (!leadRole || !guildId)
+        return false;
+    // Local guild check first
+    if (member.roles.cache.has(leadRole))
+        return true;
+    // Cross-guild: check the area guild
+    try {
+        const guild = member.client.guilds.cache.get(guildId) || await member.client.guilds.fetch(guildId);
+        const areaMember = await guild.members.fetch(member.id).catch(() => null);
+        if (areaMember && areaMember.roles.cache.has(leadRole))
+            return true;
+    }
+    catch { }
+    return false;
 }
 export function canUseRppArea(member: GuildMember | null | undefined, areaName: string) {
     if (isOwner(member))
