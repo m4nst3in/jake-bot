@@ -151,9 +151,11 @@ export function registerProtectionListener(client: any) {
                 catch { }
             }
             const globalProtectedRoleIds: Set<string> = new Set(Object.values(rootCfg.roles || {}).map((v: any) => String(v)));
+            const areaLeaderRoleIds: Set<string> = new Set(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v)));
+            const leaderGeneralRoleId: string = rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961';
             const leadershipRoleIds: Set<string> = new Set([
-                ...(Object.values(rootCfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v))),
-                rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961'
+                ...Array.from(areaLeaderRoleIds),
+                leaderGeneralRoleId
             ]);
             let recruitmentLeadershipRoleId: string | undefined;
             for (const [rid, info] of Object.entries((rootCfg.protection?.blockedRoles) || {})) {
@@ -297,8 +299,35 @@ export function registerProtectionListener(client: any) {
                             if (botRoles.some((id: string) => execMember.roles.cache.has(id))) {
                                 allowed = true;
                             }
-                            else if (leaderUsers.includes(executorId) && role.id !== (rootCfg.protectionRoles?.leaderGeneral || '1411223951350435961')) {
-                                allowed = true;
+                            else if (leaderUsers.includes(executorId)) {
+                                // Leader users override: follow hierarchy rules
+                                if (isGlobalHierarchy) {
+                                    if (role.id === leaderGeneralRoleId) {
+                                        // Never allow setting Leader General via this override
+                                        allowed = false;
+                                    } else {
+                                        const roleName = globalRoleNameById[role.id];
+                                        if (roleName) {
+                                            const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
+                                            const targetIdx = hierarchyOrder.indexOf(roleName);
+                                            if (targetIdx !== -1) {
+                                                if (targetIdx < subCmdIndex) {
+                                                    // Below Sub Comandante: any leadership OK
+                                                    if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                                        allowed = true;
+                                                    }
+                                                } else {
+                                                    // Sub Comandante or above: only area leaders
+                                                    if (Array.from(areaLeaderRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                                        allowed = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    allowed = true;
+                                }
                             }
                             else if (blockInfo.allowedLeaderRoles && blockInfo.allowedLeaderRoles.length) {
                                 if (blockInfo.allowedLeaderRoles.some(rid => execMember.roles.cache.has(rid)))
@@ -327,8 +356,23 @@ export function registerProtectionListener(client: any) {
                                 }
                             }
                             if (!allowed && isGlobalHierarchy) {
-                                if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
-                                    allowed = true;
+                                const roleName = globalRoleNameById[role.id];
+                                if (roleName) {
+                                    const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
+                                    const targetIdx = hierarchyOrder.indexOf(roleName);
+                                    if (targetIdx !== -1) {
+                                        if (targetIdx < subCmdIndex) {
+                                            // Below Sub Comandante: any leadership can set
+                                            if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                                allowed = true;
+                                            }
+                                        } else {
+                                            // Sub Comandante or above: only area leaders
+                                            if (Array.from(areaLeaderRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                                allowed = true;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             if (!allowed && execHasMigration && isGlobalHierarchy) {
