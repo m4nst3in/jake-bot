@@ -103,10 +103,33 @@ export class StaffReportService {
             statusBadges.push(`📂 ${totalOccs} ocorrência(s)`);
         if (activeRpp)
             statusBadges.push('🧪 RPP Ativo');
+        // Detect primary progression area (where the user 'upa') by checking progressionRoles per area guild
+        let upaArea: string | null = null;
+        try {
+            const prog: any = (cfg as any).progressionRoles || {};
+            const discordClient: any = (globalThis as any).client;
+            if (discordClient) {
+                for (const a of (cfg.areas || [])) {
+                    const gId = a.guildId;
+                    const upaRoles: string[] = prog[gId]?.upa || [];
+                    if (!gId || !upaRoles?.length) continue;
+                    const guildObj = discordClient.guilds.cache.get(gId) || await discordClient.guilds.fetch(gId).catch(() => null);
+                    if (!guildObj) continue;
+                    const memberObj = await guildObj.members.fetch(userId).catch(() => null);
+                    if (memberObj && upaRoles.some((rid: string) => memberObj.roles.cache.has(rid))) {
+                        upaArea = a.name;
+                        break;
+                    }
+                }
+            }
+        } catch {}
         const sections = [
             '**<a:Cronwnss:1355323942705041600> Áreas de Atuação**',
             areaLines.join('\n')
         ];
+        if (upaArea) {
+            sections.splice(1, 0, `<a:vSETAverdeclaro:1386504186396676141> Upa por: **${upaArea}**`);
+        }
         if (actualRank) {
             sections.push('', `**<a:vSETAverdeclaro:1386504186396676141> Cargo Atual:** ${actualRank}`);
         }

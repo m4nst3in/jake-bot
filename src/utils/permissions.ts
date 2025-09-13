@@ -23,7 +23,8 @@ export function isAdminFromMember(member: GuildMember | null | undefined) {
 }
 export function getAreaConfigByName(areaName: string) {
     const cfg: any = loadConfig();
-    return (cfg.areas || []).find((a: any) => norm(a.name) === norm(areaName));
+    const key = (s: string) => norm(s).normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^a-z0-9]/g, '');
+    return (cfg.areas || []).find((a: any) => key(a.name) === key(areaName));
 }
 export function isAreaLeader(member: GuildMember | null | undefined, areaName: string) {
     if (!member)
@@ -120,6 +121,22 @@ export async function canUsePdfForArea(member: GuildMember | null | undefined, a
         const areaMember = await guild.members.fetch(member.id).catch(() => null);
         if (areaMember && areaMember.roles.cache.has(leadRole))
             return true;
+    }
+    catch { }
+    // Global leadership on main guild can also generate PDFs for the area
+    try {
+        const cfg: any = loadConfig();
+        const mainGuildId: string | undefined = cfg.mainGuildId;
+        // Prefer explicit mapping from area guildId -> global leadership role
+        const areaLeaderRoles: Record<string, string> = (cfg.protection?.areaLeaderRoles) || {};
+        const globalLeaderRoleId: string | undefined = areaLeaderRoles[guildId!];
+        if (mainGuildId && globalLeaderRoleId) {
+            const mainGuild = member.client.guilds.cache.get(mainGuildId) || await member.client.guilds.fetch(mainGuildId);
+            const mainMember = await mainGuild.members.fetch(member.id).catch(() => null);
+            if (mainMember?.roles?.cache?.has(globalLeaderRoleId)) {
+                return true;
+            }
+        }
     }
     catch { }
     return false;
