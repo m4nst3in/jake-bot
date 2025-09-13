@@ -84,10 +84,8 @@ export class ReboqueService {
 
   private async getUserBackupData(targetId: string, executorId: string, reason: string): Promise<UserBackupData> {
     try {
-      // Obter pontos por área (bruto)
       let pointsByArea = await this.pointRepo.getUserAllAreas(targetId);
 
-      // Detectar áreas ativas reais via cargos nos servidores de área (antes da remoção)
       const cfg: any = loadConfig();
       const activeAreasByRole = new Set<string>();
       try {
@@ -106,13 +104,11 @@ export class ReboqueService {
         }
       } catch {}
 
-      // Se encontramos áreas ativas por cargo, filtrar pontos para apenas essas áreas
       if (activeAreasByRole.size > 0) {
         pointsByArea = pointsByArea.filter((p: any) => activeAreasByRole.has(String(p.area || '').toUpperCase()));
       }
       const totalPoints = pointsByArea.reduce((sum, area) => sum + (area.points || 0), 0);
       
-      // Obter informações do usuário
       const userInfo = await this.getUserInfo(targetId);
       
       return {
