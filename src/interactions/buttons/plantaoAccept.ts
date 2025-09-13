@@ -15,19 +15,20 @@ export default {
         const messageId = parts[1];
         const userId = parts[2];
         const staffId = interaction.user.id;
-        let plantaoUserIds: string[] = [];
+    let plantaoUserIds: string[] = [];
         try {
             const channel: any = PLANTAO_CHANNEL ? await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(() => null) : null;
             if (channel && channel.isTextBased()) {
                 const original = await channel.messages.fetch(messageId).catch(() => null);
                 if (original) {
-                    const mentions = original.mentions.users;
-                    if (mentions && mentions.size > 0) {
-                        const mentionedIds = Array.from(mentions.keys())
-                            .filter(id => id !== userId)
-                            .slice(0, 2);
-                        plantaoUserIds = mentionedIds as string[];
-                    }
+            // Parse mentions robustly from message content to avoid collection quirks
+                    const rawMatches = Array.from((original.content || '').matchAll(/<@!?([0-9]{6,})>/g));
+                    const rawIds = rawMatches.map((m) => (m as RegExpMatchArray)[1]);
+            const uniqueIds = Array.from(new Set(rawIds));
+            // Always prioritize the author; include at most one other (the last mentioned) non-author
+            const nonAuthorIds = uniqueIds.filter(id => id !== userId);
+            const lastNonAuthor = nonAuthorIds.length > 0 ? nonAuthorIds[nonAuthorIds.length - 1] : undefined;
+            plantaoUserIds = [userId, ...(lastNonAuthor ? [lastNonAuthor] : [])];
                     await original.delete().catch(() => { });
                 }
             }
@@ -55,20 +56,20 @@ export default {
         try {
             const logCh: any = LOG_CHANNEL ? await interaction.client.channels.fetch(LOG_CHANNEL).catch(() => null) : null;
             if (logCh && logCh.isTextBased()) {
-                const usersList = successfulPoints.length > 0 ? successfulPoints.map(id => `<@${id}>`).join(', ') : 'Nenhum usuário mencionado';
                 const totalPoints = successfulPoints.length * pointsPerUser;
+                const participants = successfulPoints.map(id => `<@${id}>`).join(', ') || `<@${userId}>`;
                 const embed = new EmbedBuilder()
                     .setTitle('✅ Plantão Aceito')
                     .setColor(0x2ecc71)
-                    .setDescription(`**Usuário(s) mencionado(s):** ${usersList}\n**Staff:** <@${staffId}>\n**Pontos concedidos:** **${totalPoints}** (${pointsPerUser} por pessoa)${failedPoints.length ? `\n**⚠️ Falha:** ${failedPoints.map(id => `\`${id}\``).join(', ')}` : ''}`)
+                    .setDescription(`**Participantes:** ${participants}\n**Staff:** <@${staffId}>\n**Pontos concedidos:** **${totalPoints}** (${pointsPerUser} por pessoa)${failedPoints.length ? `\n**⚠️ Falha:** ${failedPoints.map(id => `\`${id}\``).join(', ')}` : ''}`)
                     .setTimestamp();
                 await logCh.send({ embeds: [embed] });
             }
         }
         catch { }
         const resultMessage = successfulPoints.length > 0
-            ? `Plantão aceito. Pontos adicionados para ${successfulPoints.length} usuário(s) mencionado(s).`
-            : 'Plantão aceito. Nenhum usuário mencionado encontrado.';
+            ? `Plantão aceito. Pontos adicionados para ${successfulPoints.length} participante(s).`
+            : 'Plantão aceito. Nenhum participante pontuado.';
         await interaction.editReply({ content: resultMessage });
     }
 };
