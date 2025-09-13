@@ -33,6 +33,18 @@ export function isAreaLeader(member: GuildMember | null | undefined, areaName: s
         return false;
     return member.roles.cache.has(area.roleIds.lead);
 }
+// Extra area managers (e.g., Mov Call Monitores) allowed to manage points only for specific area
+export function isExtraAreaManager(member: GuildMember | null | undefined, areaName: string) {
+    if (!member) return false;
+    const cfg: any = loadConfig();
+    const areaCfg = getAreaConfigByName(areaName);
+    if (!areaCfg) return false;
+    const extras: Record<string, string[] | undefined> = (cfg.permissions?.points?.extraManagers) || {};
+    const key = (areaCfg.name || '').toUpperCase();
+    const roles = extras[key];
+    if (!roles || roles.length === 0) return false;
+    return roles.some(rid => member.roles.cache.has(rid));
+}
 export function getMemberLeaderAreas(member: GuildMember | null | undefined) {
     if (!member)
         return [] as string[];
@@ -41,6 +53,17 @@ export function getMemberLeaderAreas(member: GuildMember | null | undefined) {
     for (const a of (cfg.areas || [])) {
         if (a.roleIds?.lead && member.roles.cache.has(a.roleIds.lead))
             out.push(a.name);
+    }
+    return out;
+}
+export function getMemberExtraManagedAreas(member: GuildMember | null | undefined) {
+    if (!member) return [] as string[];
+    const cfg: any = loadConfig();
+    const extras: Record<string, string[] | undefined> = (cfg.permissions?.points?.extraManagers) || {};
+    const out: string[] = [];
+    for (const [area, roleIds] of Object.entries(extras)) {
+        if (!roleIds || roleIds.length === 0) continue;
+        if (roleIds.some(rid => member.roles.cache.has(rid))) out.push(area);
     }
     return out;
 }
@@ -68,7 +91,7 @@ export async function hasCrossGuildLeadership(client: Client, userId: string) {
 export function assertAreaPermission(member: GuildMember | null | undefined, areaName: string) {
     if (isOwner(member))
         return true;
-    return isAdminFromMember(member) || isAreaLeader(member, areaName);
+    return isAdminFromMember(member) || isAreaLeader(member, areaName) || isExtraAreaManager(member, areaName);
 }
 export function canManageAnyArea(member: GuildMember | null | undefined) {
     return isOwner(member);

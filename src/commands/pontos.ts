@@ -1,16 +1,17 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, GuildMember } from 'discord.js';
-import { hasAnyLeadership, isAdminFromMember, isOwner, hasCrossGuildLeadership } from '@utils/permissions.ts';
+import { hasAnyLeadership, isAdminFromMember, isOwner, hasCrossGuildLeadership, getMemberExtraManagedAreas } from '@utils/permissions.ts';
 import { loadConfig } from '../config/index.ts';
 export default {
     data: new SlashCommandBuilder().setName('pontos').setDescription('Painel de gestão de pontos'),
     async execute(interaction: ChatInputCommandInteraction) {
         const member = interaction.member as GuildMember | null;
-        const isAdm = isAdminFromMember(member || null);
-        let hasLeadership = hasAnyLeadership(member || null);
+    const isAdm = isAdminFromMember(member || null);
+    let hasLeadership = hasAnyLeadership(member || null);
+    const extraAreas = getMemberExtraManagedAreas(member || null);
         if (!hasLeadership && member) {
             hasLeadership = await hasCrossGuildLeadership(interaction.client, member.id);
         }
-        if (!isAdm && !hasLeadership) {
+    if (!isAdm && !hasLeadership && extraAreas.length === 0) {
             await interaction.reply({ content: 'Apenas liderança, administradores ou donos.', ephemeral: true });
             return;
         }
@@ -34,7 +35,7 @@ export default {
         })())
             .setTitle(`${champion} Painel de Pontos`)
             .setDescription([
-            `${dot} Gerencie pontos rapidamente nas áreas onde você tem liderança${isOwner(member) ? ' (owner: todas as áreas)' : ''}.`,
+            `${dot} Gerencie pontos rapidamente nas áreas onde você tem liderança${isOwner(member) ? ' (owner: todas as áreas)' : (extraAreas.length ? ' (inclui permissões especiais)' : '')}.`,
             `${dot} Use os botões abaixo para adicionar ou remover; tudo é logado automaticamente.`
         ].join('\n\n'))
             .setFooter({ text: 'Sistema de Pontos' });

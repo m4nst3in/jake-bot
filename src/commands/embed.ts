@@ -146,7 +146,7 @@ export default {
                 '1190515971035774996': 'https://media.discordapp.net/attachments/1190515971706863619/1395923621544726538/IMG_1883.png?format=webp&quality=lossless',
                 '1183909149784952902': 'https://i.imgur.com/8IT7TcG.gif',
                 '1180721287476289596': 'https://cdn.discordapp.com/attachments/1196606614149533698/1247228834944647198/verifique-se2.png',
-                '1224414082866745405': 'https://cdn.discordapp.com/attachments/1241547833186844735/1351381015771480074/CDW_20250316_093847_0000.png',
+                '1224414082866745405': 'https://cdn.discordapp.com/attachments/1397985579320213504/1416253683116540115/Jo-banner_20250911_120511_0006.gif?ex=68c62c86&is=68c4db06&hm=f60573c44279f8e573ce94619fdbc59a7768a5a86411348ec89d8778e6f2b683&',
                 '1283125240368730132': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif',
                 '1355239902169796881': 'https://cdn.discordapp.com/attachments/1337257115848282203/1411457007088570499/Comp_1.gif'
             };

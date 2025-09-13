@@ -46,6 +46,21 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                 { id: staffId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] },
                 { id: interaction.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages] }
             ] };
+        // If creating in the Support guild, allow all Support members to read (no writing)
+        try {
+            const supportGuildId = (config as any).banca?.supportGuildId;
+            if (interaction.guild.id === supportGuildId) {
+                const supportArea = (config as any).areas?.find((a: any) => a.name === 'SUPORTE');
+                const supportMemberRoleId = supportArea?.roleIds?.member;
+                if (supportMemberRoleId) {
+                    createOptions.permissionOverwrites.push({
+                        id: supportMemberRoleId,
+                        allow: [PermissionsBitField.Flags.ViewChannel],
+                        deny: [PermissionsBitField.Flags.SendMessages]
+                    });
+                }
+            }
+        } catch {}
         if (interaction.guild.id === recruitCfg?.guildId && recruitCfg?.categoryId) {
             createOptions.parent = recruitCfg.categoryId;
         }
@@ -176,7 +191,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             const embed = new EmbedBuilder()
                 .setColor(0xFFB6ED)
                 .setDescription(`${header}\n\n${blocoGuia}`)
-                .setImage('https://i.imgur.com/Q1wltMJ.gif')
+                .setImage('https://cdn.discordapp.com/attachments/1397985579320213504/1416253742138785984/Jo-banner_20250912_043741_0001.gif?ex=68c62c94&is=68c4db14&hm=38bdbbd401652a4a8a269402233763b884e3501f7b697e7f923e5c8d87e0b5e5&')
                 .setFooter({ text: 'Liderança de Jornalismo - CDW KL' });
             await textChannel.send({ embeds: [embed] });
             return;

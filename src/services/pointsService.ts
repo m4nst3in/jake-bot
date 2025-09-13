@@ -39,13 +39,16 @@ export class PointsService {
     async ranking(area: string) {
         const top = await this.repo.getTop(area, 10);
         const cfg: any = loadConfig();
+        const excluded: Set<string> = new Set((cfg.ranking?.excludedUserIds || []) as string[]);
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
-        return baseEmbed({ title: `${designEmote} Ranking - ${area}`, description: top.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — ${r.points} pts`).join('\n') || 'Sem dados ainda', color: 0xf1c40f });
+        const filteredTop = top.filter((r: any) => !excluded.has(r.user_id));
+        return baseEmbed({ title: `${designEmote} Ranking - ${area}`, description: filteredTop.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — ${r.points} pts`).join('\n') || 'Sem dados ainda', color: 0xf1c40f });
     }
     async richRanking(area: string) {
         const [top, total] = await Promise.all([this.repo.getTop(area, 200), this.repo.countArea(area)]);
         const cfg: any = loadConfig();
+        const excluded: Set<string> = new Set((cfg.ranking?.excludedUserIds || []) as string[]);
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
         let extended: any[] = [...top];
@@ -63,6 +66,7 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
+                        if (excluded.has(m.id)) return; // never include excluded users
                         if (!m.roles.cache.has(memberRoleId))
                             return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
@@ -75,6 +79,7 @@ export class PointsService {
                         }
                     });
                     extended = extended.filter(r => {
+                        if (excluded.has(r.user_id)) return false; // filter excluded users
                         if (r.points > 0)
                             return true;
                         const mem = g.members.cache.get(r.user_id);
@@ -91,7 +96,7 @@ export class PointsService {
         }
         catch { }
         extended.sort((a, b) => (b.points || 0) - (a.points || 0));
-        const filtered = extended;
+        const filtered = extended.filter((r: any) => !excluded.has(r.user_id));
         const lines = filtered.map((r: any, i: number) => {
             const base = `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts`;
             if (area === 'Recrutamento') {
@@ -124,6 +129,7 @@ export class PointsService {
             (this.repo as any).sumReports(area)
         ]);
         const cfg: any = loadConfig();
+        const excluded: Set<string> = new Set((cfg.ranking?.excludedUserIds || []) as string[]);
         const flame = cfg.emojis?.flame || '<a:Blue_Flame:placeholder>';
         const designEmote = cfg.emojis?.design || '<:Design:placeholder>';
         let extended: any[] = [...top];
@@ -141,6 +147,7 @@ export class PointsService {
                     const alwaysShow: string[] = (cfg.ranking?.alwaysShowOwnerIds) || [];
                     const existingIds = new Set(extended.map(r => r.user_id));
                     g.members.cache.forEach((m: any) => {
+                        if (excluded.has(m.id)) return; // never include excluded users
                         if (!m.roles.cache.has(memberRoleId))
                             return;
                         if (leadRoleId && m.roles.cache.has(leadRoleId) && !(extended.find(r => r.user_id === m.id && r.points > 0)))
@@ -153,6 +160,7 @@ export class PointsService {
                         }
                     });
                     extended = extended.filter(r => {
+                        if (excluded.has(r.user_id)) return false; // filter excluded users
                         if (r.points > 0)
                             return true;
                         const mem = g.members.cache.get(r.user_id);
@@ -169,7 +177,7 @@ export class PointsService {
         }
         catch { }
         extended.sort((a, b) => (b.points || 0) - (a.points || 0));
-        const filtered = extended;
+        const filtered = extended.filter((r: any) => !excluded.has(r.user_id));
         const lines = filtered.map((r: any, i: number) => `${flame} **${i + 1}.** <@${r.user_id}> — **${r.points}** pts • 🧾 ${r.reports_count || 0} rel. • 🕒 ${r.shifts_count || 0} plant.`);
         return baseEmbed({
             title: `${designEmote} Ranking de Suporte`,

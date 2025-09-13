@@ -1,12 +1,14 @@
 import { ButtonInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, GuildMember } from 'discord.js';
 import { loadConfig } from '../../config/index.ts';
-import { getMemberLeaderAreas, isAdminFromMember, isOwner } from '../../utils/permissions.ts';
+import { getMemberLeaderAreas, isOwner, getMemberExtraManagedAreas } from '../../utils/permissions.ts';
 function getAllowedAreas(member: GuildMember | null) {
     const cfg: any = loadConfig();
     if (isOwner(member))
         return (cfg.areas || []).map((a: any) => a.name.charAt(0) + a.name.slice(1).toLowerCase());
     const owned = getMemberLeaderAreas(member);
-    return owned.map(a => a.charAt(0) + a.slice(1).toLowerCase());
+    const extras = getMemberExtraManagedAreas(member);
+    const merged = Array.from(new Set([...owned, ...extras]));
+    return merged.map(a => a.charAt(0) + a.slice(1).toLowerCase());
 }
 export default {
     id: /^pts_action:(add|remove)$/,

@@ -335,7 +335,7 @@
     "bonusChannelId": "1190515972239528004",
     "supervisionChannelId": "1288659402588422165",
     "reactionEmoji": "<a:check2:1413993680313909350>",
-    "bannerUrl": "https://cdn.discordapp.com/attachments/1396327164131016854/1413733584656666746/rWAS6pU.gif?ex=68bdaa40&is=68bc58c0&hm=f77c534a722719c36ea086a06dcd5cce6fa05e0f048c97e24c5613f558951b45&",
+  "bannerUrl": "https://cdn.discordapp.com/attachments/1190515971706863619/1411164508411400333/rWAS6pU.gif?ex=68c61ddc&is=68c4cc5c&hm=bedc8f7ae1ffd9e91765579b1952689002ac9ddb718cc7e0bde1c24d51ee3496&",
     "basePoints": 10,
     "bonusPoints": 15,
     "supervisionPoints": 10
@@ -432,7 +432,7 @@
           "section2": "<:pink_dot:1312933271792910347>",
           "bullet": "<:pink_dot:1312933271792910347>",
           "button": "<:pink_dot:1312933271792910347>",
-          "image": "https://images-ext-1.discordapp.net/external/oXhFBQ1_D75dquVDcMbOgFLNisGvBdboX4BAGsAznQU/https/i.imgur.com/94gDPHh.gif"
+          "image": "https://cdn.discordapp.com/attachments/1397985579320213504/1416253613633699870/Jo-banner_20250912_011943_0020.gif?ex=68c62c76&is=68c4daf6&hm=f815b96bff10ce61f3373dc87973d414b5749847cd7ef15a53d9ea5f8ba7fad9&"
         }
       },
       "1283125240368730132": {
@@ -519,6 +519,13 @@
         "1411223951350435961"
       ]
     },
+    "points": {
+      "extraManagers": {
+        "MOVCALL": [
+          "1190390194566873154"
+        ]
+      }
+    },
     "rpp": {
       "allowedRoles": [
         "1411223951350435961",
@@ -593,7 +600,8 @@
   },
   "__comment_ranking": "Config específica dos rankings.",
   "ranking": {
-    "alwaysShowOwnerIds": ["418824536570593280"]
+  "alwaysShowOwnerIds": [],
+  "excludedUserIds": ["418824536570593280"]
   },
   "__comment_movOrg": "Configuração da rotina de fechamento/abertura da ORG-MOV.",
   "movOrg": {
