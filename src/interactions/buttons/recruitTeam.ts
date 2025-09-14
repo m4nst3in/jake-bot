@@ -92,21 +92,6 @@ export default {
         );
         await interaction.editReply({ embeds: [embed], components: [row] });
 
-        // Log no canal principal (início do fluxo)
-        try {
-            const ch: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL_ID).catch(() => null);
-            if (ch && ch.isTextBased()) {
-                const log = new EmbedBuilder()
-                    .setTitle('Recrutamento • Iniciado')
-                    .setColor(color)
-                    .setDescription([
-                        `Moderador: <@${interaction.user.id}>`,
-                        `Usuário: <@${userId}> (${userId})`,
-                        `Equipe: **${team.toUpperCase()}**`
-                    ].join('\n'))
-                    .setTimestamp();
-                await ch.send({ embeds: [log] }).catch(() => {});
-            }
-        } catch {}
+    // Não enviar logs aqui; apenas quando o recrutamento for concluído (embed final).
     }
 };

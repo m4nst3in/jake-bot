@@ -87,26 +87,51 @@ export default {
 
         const embed = new EmbedBuilder()
           .setColor(0x2ecc71)
-          .setTitle('Recrutamento • Iniciante')
-          .setDescription([
-            `Usuário: <@${userId}>`,
-            `Cargos aplicados: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`
-          ].join('\n'))
-          .setFooter({ text: `Moderador: ${interaction.user.tag}` as any })
+          .setTitle('<a:asparkles:1118602923346243615> Recrutamento Efetuado')
+          .addFields(
+            { name: '<:branco_membros:1303749626062573610> Usuário', value: `<@${userId}>\n(${userId})`, inline: true },
+            { name: '<:crown2:1411488673924644944> Staff', value: `<@${interaction.user.id}>\n(${interaction.user.id})`, inline: true },
+            { name: '<a:staff_cdw:934664526639562872> Equipe', value: String(team || '').toUpperCase(), inline: true },
+          )
+          .addFields({
+            name: '<:x_hype:1283509028995207241> Cargos Atribuídos',
+            value: (() => {
+              const primaryMap = (cfg as any).primaryGuildTeamRoles || {};
+              const areaCfg = (cfg as any).areas?.find((a: any) => a.name.toLowerCase() === team);
+              const teamRoleId = primaryMap[team as any] || areaCfg?.roleIds?.member;
+              const r: string[] = [];
+              if (teamRoleId) r.push(`<@&${teamRoleId}>`);
+              if (inic) r.push(`<@&${inic}>`);
+              if (cfg.roles?.staff) r.push(`<@&${cfg.roles.staff}>`);
+              return r.join(' ')
+            })()
+          })
           .setTimestamp();
         // Send ephemeral confirmation
         await interaction.editReply({ embeds: [embed] });
-        // Audit log to recruitment points/log channel
+        // Audit log to recruitment points/log channel (only final log)
         try {
           const logEmbed = new EmbedBuilder()
             .setColor(0x2ecc71)
-            .setTitle('Recrutamento • Iniciante aplicado')
-            .setDescription([
-              `Usuário: <@${userId}> (${userId})`,
-              `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
-              `Equipe: ${String(team || '').toUpperCase() || '—'}`,
-              `Cargos aplicados: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`
-            ].join('\n'))
+            .setTitle('Recrutamento Efetuado')
+            .addFields(
+              { name: '👤 Usuário', value: `<@${userId}>\n(${userId})`, inline: true },
+              { name: '👑 Staff', value: `<@${interaction.user.id}>\n(${interaction.user.id})`, inline: true },
+              { name: '🏳️ Equipe', value: String(team || '').toUpperCase(), inline: true },
+            )
+            .addFields({
+              name: '⭐ Cargos Atribuídos',
+              value: (() => {
+                const primaryMap = (cfg as any).primaryGuildTeamRoles || {};
+                const areaCfg = (cfg as any).areas?.find((a: any) => a.name.toLowerCase() === team);
+                const teamRoleId = primaryMap[team as any] || areaCfg?.roleIds?.member;
+                const r: string[] = [];
+                if (teamRoleId) r.push(`<@&${teamRoleId}>`);
+                if (inic) r.push(`<@&${inic}>`);
+                if ((cfg as any).roles?.staff) r.push(`<@&${(cfg as any).roles.staff}>`);
+                return r.join(' ');
+              })()
+            })
             .setTimestamp();
           const MAIN_LOG_CHANNEL = '1414539961515900979';
           const mainCh: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL).catch(() => null);

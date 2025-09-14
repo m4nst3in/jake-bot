@@ -75,23 +75,54 @@ export default {
       } catch {}
 
       const embed = new EmbedBuilder()
-        .setColor(0x3498db)
-        .setTitle('Recrutamento • Migração')
-        .setDescription(`Definido cargo **${roleName || roleId}** para <@${userId}>.`)
+        .setColor(0x2ecc71)
+        .setTitle('Recrutamento Efetuado')
+        .addFields(
+          { name: '👤 Usuário', value: `<@${userId}>\n(${userId})`, inline: true },
+          { name: '👑 Staff', value: `<@${interaction.user.id}>\n(${interaction.user.id})`, inline: true },
+          { name: '🏳️ Equipe', value: String(team || '').toUpperCase(), inline: true }
+        )
+        .addFields({
+          name: '⭐ Cargos Atribuídos',
+          value: (() => {
+            const cfgAny: any = cfg;
+            const primaryMap = cfgAny.primaryGuildTeamRoles || {};
+            const areaCfg = cfgAny.areas?.find((a: any) => a.name.toLowerCase() === team);
+            const teamRoleId = primaryMap[team as any] || areaCfg?.roleIds?.member;
+            const r: string[] = [];
+            if (teamRoleId) r.push(`<@&${teamRoleId}>`);
+            r.push(`<@&${roleId}>`);
+            if (cfgAny.roles?.staff) r.push(`<@&${cfgAny.roles.staff}>`);
+            return r.join(' ');
+          })()
+        })
         .setTimestamp();
       // Ephemeral confirmation
       await interaction.editReply({ embeds: [embed], components: [] });
-      // Audit log to recruitment log/points channel
+      // Audit log to recruitment log/points channel (only final log)
       try {
         const logEmbed = new EmbedBuilder()
-          .setColor(0x3498db)
-          .setTitle('Recrutamento • Migração aplicada')
-          .setDescription([
-            `Usuário: <@${userId}> (${userId})`,
-            `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
-            `Equipe: ${String(team || '').toUpperCase() || '—'}`,
-            `Cargo: ${roleName || roleId}`
-          ].join('\n'))
+          .setColor(0x2ecc71)
+          .setTitle('Recrutamento Efetuado')
+          .addFields(
+            { name: '👤 Usuário', value: `<@${userId}>\n(${userId})`, inline: true },
+            { name: '👑 Staff', value: `<@${interaction.user.id}>\n(${interaction.user.id})`, inline: true },
+            { name: '🏳️ Equipe', value: String(team || '').toUpperCase(), inline: true }
+          )
+          .addFields({
+            name: '⭐ Cargos Atribuídos',
+            value: (() => {
+              const cfgAny: any = cfg;
+              const primaryMap = cfgAny.primaryGuildTeamRoles || {};
+              const areaCfg = cfgAny.areas?.find((a: any) => a.name.toLowerCase() === team);
+              const teamRoleId = primaryMap[team as any] || areaCfg?.roleIds?.member;
+              const r: string[] = [];
+              if (teamRoleId) r.push(`<@&${teamRoleId}>`);
+              r.push(`<@&${roleId}>`);
+              if (cfgAny.roles?.staff) r.push(`<@&${cfgAny.roles.staff}>`);
+              return r.join(' ');
+            })()
+          })
           .setTimestamp();
         const MAIN_LOG_CHANNEL = '1414539961515900979';
         const mainCh: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL).catch(() => null);
