@@ -82,13 +82,15 @@ export default {
                 '',
                 'Escolha como deseja prosseguir:',
                 '• Iniciante — aplica o cargo Iniciante',
-                '• Migração — seleciona cargo da hierarquia conforme o tempo'
+                '• Migração — seleciona cargo da hierarquia conforme o tempo',
+                '• Equipe — aplica apenas o cargo da equipe + Staff'
             ].join('\n'))
             .setFooter({ text: `ID do usuário: ${userId}` })
             .setTimestamp();
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder().setCustomId(`recruit_mode:inic:${team}:${userId}`).setLabel('Iniciante').setStyle(3),
-            new ButtonBuilder().setCustomId(`recruit_mode:mig:${team}:${userId}`).setLabel('Migração').setStyle(1)
+            new ButtonBuilder().setCustomId(`recruit_mode:mig:${team}:${userId}`).setLabel('Migração').setStyle(1),
+            new ButtonBuilder().setCustomId(`recruit_mode:team:${team}:${userId}`).setLabel('Equipe').setStyle(2)
         );
         await interaction.editReply({ embeds: [embed], components: [row] });
 

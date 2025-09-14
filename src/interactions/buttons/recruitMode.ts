@@ -140,6 +140,67 @@ export default {
         return;
       }
 
+      if (mode === 'team') {
+        // Same permissions as Iniciante
+        if (!canSetIniciante(interaction.member as GuildMember)) return interaction.editReply('Sem permissão para definir cargo de equipe.');
+        const added: string[] = [];
+        try {
+          // Determine team role to add (prefer primary on main guild)
+          const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
+          const primaryMap = cfg.primaryGuildTeamRoles || {};
+          const primaryRoleId = primaryMap[team as any];
+          let teamRoleId = areaCfg?.roleIds?.member;
+          if (interaction.guildId === cfg.mainGuildId && primaryRoleId) teamRoleId = primaryRoleId;
+          if (!teamRoleId) return interaction.editReply('Cargo de equipe não configurado.');
+          if (!target.roles.cache.has(String(teamRoleId))) {
+            await target.roles.add(String(teamRoleId), 'Recrutamento: cargo de equipe').catch(() => {});
+            added.push(String(teamRoleId));
+          }
+        } catch {}
+
+        // Ensure Staff on main guild
+        try {
+          const staff = cfg.roles?.staff;
+          const mainGuildId: string | undefined = cfg.mainGuildId;
+          if (staff && mainGuildId) {
+            const mainGuild: any = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId).catch(() => null);
+            const mainMember = mainGuild ? await mainGuild.members.fetch(userId).catch(() => null) : null;
+            if (mainMember && !mainMember.roles.cache.has(staff)) {
+              await mainMember.roles.add(staff, 'Recrutamento (Equipe) • Staff global').catch(() => {});
+              added.push(staff);
+            }
+          }
+        } catch {}
+
+        // Build confirmation + log embed in old style
+        const buildEmbed = (cfg: any) => {
+          const primaryMap = (cfg as any).primaryGuildTeamRoles || {};
+          const areaCfg = (cfg as any).areas?.find((a: any) => a.name.toLowerCase() === team);
+          const teamRoleId = primaryMap[team as any] || areaCfg?.roleIds?.member;
+          const rolesLine = [teamRoleId && `<@&${teamRoleId}>`, (cfg as any).roles?.staff && `<@&${(cfg as any).roles.staff}>`].filter(Boolean).join(' ');
+          return new EmbedBuilder()
+            .setColor(0x2ecc71)
+            .setTitle('<a:asparkles:1118602923346243615> Recrutamento Efetuado')
+            .addFields(
+              { name: '<:branco_membros:1303749626062573610> Usuário', value: `<@${userId}>\n(${userId})`, inline: true },
+              { name: '<:crown2:1411488673924644944> Staff', value: `<@${interaction.user.id}>\n(${interaction.user.id})`, inline: true },
+              { name: '<a:staff_cdw:934664526639562872> Equipe', value: String(team || '').toUpperCase(), inline: true }
+            )
+            .addFields({ name: '<:x_hype:1283509028995207241> Cargos Atribuídos', value: rolesLine || '—' })
+            .setTimestamp();
+        };
+
+        const ephem = buildEmbed(cfg);
+        await interaction.editReply({ embeds: [ephem] });
+        try {
+          const logEmbed = buildEmbed(cfg);
+          const MAIN_LOG_CHANNEL = '1414539961515900979';
+          const mainCh: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL).catch(() => null);
+          if (mainCh && mainCh.isTextBased()) await mainCh.send({ embeds: [logEmbed] }).catch(() => {});
+        } catch {}
+        return;
+      }
+
       if (mode === 'mig') {
         if (!canSetWeeks(interaction.member as GuildMember)) return interaction.editReply('Sem permissão para migração.');
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
