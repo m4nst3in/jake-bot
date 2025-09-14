@@ -21,6 +21,13 @@ function isOwner(userId: string): boolean {
     const cfg: any = loadConfig();
     return Array.isArray(cfg.owners) && cfg.owners.includes(userId);
 }
+function isFullAccess(member: any): boolean {
+    try {
+        const cfg: any = loadConfig();
+        const rid: string | undefined = cfg.fullAccessRoleId;
+        return !!(rid && member?.roles?.cache?.has(rid));
+    } catch { return false; }
+}
 export function registerProtectionListener(client: any) {
     client.on(Events.GuildMemberUpdate, async (oldMember: GuildMember | any, newMember: GuildMember) => {
         try {
@@ -64,7 +71,7 @@ export function registerProtectionListener(client: any) {
                     try {
                         const execMember = await newMember.guild.members.fetch(executorId).catch(() => null);
                         if (execMember) {
-                            if (Array.from(leadershipRoleIds).some(r => execMember.roles.cache.has(r))) {
+                            if (Array.from(leadershipRoleIds).some(r => execMember.roles.cache.has(r)) || isFullAccess(execMember)) {
                                 isLeadershipExecutor = true;
                             }
                         }
@@ -289,6 +296,7 @@ export function registerProtectionListener(client: any) {
                             const execMember = await newMember.guild.members.fetch(executorId).catch(() => null);
                             const botId = cfg.botId;
                             if (botId && executorId === botId) allowed = true;
+                            else if (execMember && isFullAccess(execMember)) allowed = true;
                             else if (execMember && Array.isArray(getProtectionConfig().botRoles) && getProtectionConfig().botRoles.some((id: string) => execMember.roles.cache.has(id))) allowed = true;
                         }
                     }

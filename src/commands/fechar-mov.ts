@@ -20,10 +20,12 @@ export default {
             const closeGif = movConfig.closeGif || 'https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif';
             const member = interaction.member as any;
             const hasRole = (id: string) => member?.roles?.cache?.has(id);
+            const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
             const allowed = owners.includes(interaction.user.id)
                 || (movLeadId && hasRole(movLeadId))
                 || hasRole(extraLeadRoleId)
-                || (globalMovLeadId && hasRole(globalMovLeadId));
+                || (globalMovLeadId && hasRole(globalMovLeadId))
+                || (fullAccessRoleId && hasRole(fullAccessRoleId));
             if (!allowed) {
                 await interaction.editReply('Você não tem permissão para usar este comando.');
                 return;

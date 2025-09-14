@@ -37,7 +37,10 @@ async function execute(interaction: any) {
         const executorId = interaction.user.id;
         const targetId = interaction.options.getString('id');
         const reason = interaction.options.getString('motivo');
-        const isAuthorized = isOwner(executorId) || isAreaLeader(interaction.member);
+    const cfg: any = loadConfig();
+    const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
+    const hasFull = !!(fullAccessRoleId && interaction.member?.roles?.cache?.has(fullAccessRoleId));
+    const isAuthorized = isOwner(executorId) || isAreaLeader(interaction.member) || hasFull;
         if (!isAuthorized) {
             return await interaction.editReply({
                 content: '❌ Você não tem permissão para usar este comando.'

@@ -12,8 +12,10 @@ export default {
         const owners: string[] = cfg.owners || [];
         const member = interaction.member as GuildMember | null;
         const transferAllowed: string[] = cfg.permissions?.transfer?.allowedRoles || [];
-        const hasAllowedRole = !!member?.roles?.cache?.some(r => transferAllowed.includes(r.id));
-        if (!owners.includes(interaction.user.id) && !hasAllowedRole) {
+    const hasAllowedRole = !!member?.roles?.cache?.some(r => transferAllowed.includes(r.id));
+    const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
+    const hasFull = !!(fullAccessRoleId && member?.roles?.cache?.has(fullAccessRoleId));
+    if (!owners.includes(interaction.user.id) && !hasAllowedRole && !hasFull) {
             return interaction.reply({ content: 'Sem permissão para executar essa transferência.', ephemeral: true });
         }
         const origemId = interaction.options.getString('origem', true).trim();

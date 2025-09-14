@@ -19,8 +19,10 @@ export default {
         .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
     async execute(interaction: ChatInputCommandInteraction) {
         const cfg: any = (await import('../config/index.ts')).loadConfig();
-        const owners: string[] = cfg.owners || [];
-        if (!owners.includes(interaction.user.id)) {
+    const owners: string[] = cfg.owners || [];
+    const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
+    const hasFull = !!(fullAccessRoleId && (interaction.member as any)?.roles?.cache?.has(fullAccessRoleId));
+    if (!owners.includes(interaction.user.id) && !hasFull) {
             return interaction.reply({ content: 'Sem permissão para resetar, tá metendo o nariz aonde não deve.', ephemeral: true });
         }
         const tipo = interaction.options.getString('tipo', true);

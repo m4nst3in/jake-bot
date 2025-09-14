@@ -13,7 +13,9 @@
     "1382506667211493429",
     "199242071507337216",
     "418824536570593280",
-    "1016542932284747836"
+  "1016542932284747836",
+  "861030522889175050",
+  "1328359370731552809"
   ],
 
   "__comment_roles": "Cargos globais no servidor principal: hierarquia militar + especiais.",
@@ -51,6 +53,8 @@
     "Almirante": "1411961026995290162",
     "Manager": "1134940087973593168"
   },
+  "__comment_fullAccessRoleId": "Cargo com acesso total a todas as funcionalidades do bot (além de owners).",
+  "fullAccessRoleId": "1162659302071353364",
   "__comment_primaryGuildTeamRoles": "Cargos de equipe no servidor principal usados pelo /recrutar (áreas).",
   "primaryGuildTeamRoles": {
     "movcall": "1136861814328668230",
@@ -361,7 +365,7 @@
   "supervisaoChannelId": "1414387744368492686",
     "leadershipRoleId": "1182824023344812154",
     "bannerUrl": "https://cdn.discordapp.com/attachments/1402340536630902805/1406084689093201941/qQgrG2G.png?ex=68be2ee9&is=68bcdd69&hm=acd9357dd2c4a68a569344d7f83f7732975c4d1f022f8a59f06fbdf9854e7bd6&",
-    "prefix": "🟢・",
+  "prefix": "�・",
     "categoryId": "1242538995649351820"
   },
 
