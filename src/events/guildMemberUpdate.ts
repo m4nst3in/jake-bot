@@ -426,6 +426,12 @@ export function registerProtectionListener(client: any) {
                                     }
                                 }
                             }
+                            // Allow any area leadership to set the staff role
+                            if (!allowed && role.id === staffRoleId) {
+                                if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
+                                    allowed = true;
+                                }
+                            }
                             if (!allowed && isGlobalHierarchy) {
                                 const roleName = globalRoleNameById[role.id];
                                 if (roleName) {
