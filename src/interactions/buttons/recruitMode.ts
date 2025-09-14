@@ -47,9 +47,9 @@ export default {
 
       if (mode === 'inic') {
         if (!canSetIniciante(interaction.member as GuildMember)) return interaction.editReply('Sem permissão para definir Iniciante.');
-        const inic = cfg.roles?.Iniciante;
-        const staff = cfg.roles?.staff;
-        const added: string[] = [];
+  const inic = cfg.roles?.Iniciante;
+  const staff = cfg.roles?.staff;
+  const added: string[] = [];
         // Remove other hierarchy roles (keep staff)
         const keepRoleNames = new Set(['staff']);
         for (const [name, id] of Object.entries(cfg.roles || {})) {
@@ -60,33 +60,57 @@ export default {
           }
         }
         if (inic && !target.roles.cache.has(inic)) { await target.roles.add(inic, 'Recrutamento (Iniciante)').catch(() => {}); added.push(inic); }
-        if (staff && !target.roles.cache.has(staff)) { await target.roles.add(staff, 'Recrutamento (Iniciante)').catch(() => {}); added.push(staff); }
+        // Garantir Staff no servidor principal
+        try {
+          const mainGuildId: string | undefined = cfg.mainGuildId;
+          if (staff && mainGuildId) {
+            const mainGuild: any = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId).catch(() => null);
+            const mainMember = mainGuild ? await mainGuild.members.fetch(userId).catch(() => null) : null;
+            if (mainMember && !mainMember.roles.cache.has(staff)) {
+              await mainMember.roles.add(staff, 'Recrutamento (Iniciante) • Staff global').catch(() => {});
+              added.push(staff);
+            }
+          }
+        } catch {}
+
+        // Aplicar cargo de equipe agora (após finalização)
+        try {
+          const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
+          const primaryMap = cfg.primaryGuildTeamRoles || {};
+          const primaryRoleId = primaryMap[team as any];
+          let teamRoleId = areaCfg?.roleIds?.member;
+          if (interaction.guildId === cfg.mainGuildId && primaryRoleId) teamRoleId = primaryRoleId;
+          if (teamRoleId && !String(teamRoleId).startsWith('ROLE_ID_') && !target.roles.cache.has(String(teamRoleId))) {
+            await target.roles.add(String(teamRoleId), 'Recrutamento: cargo de equipe (após Iniciante)').catch(() => {});
+          }
+        } catch {}
+
         const embed = new EmbedBuilder()
           .setColor(0x2ecc71)
           .setTitle('Recrutamento • Iniciante')
-          .setDescription(`Definido Iniciante para <@${userId}>. Cargos: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`)
+          .setDescription([
+            `Usuário: <@${userId}>`,
+            `Cargos aplicados: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`
+          ].join('\n'))
+          .setFooter({ text: `Moderador: ${interaction.user.tag}` as any })
           .setTimestamp();
         // Send ephemeral confirmation
         await interaction.editReply({ embeds: [embed] });
         // Audit log to recruitment points/log channel
         try {
-          const logChannelId = cfg.recruitBanca?.pointsLogChannelId || cfg.channels?.recruitPointsLog || cfg.channels?.recruitRanking;
-          if (logChannelId) {
-            const ch: any = await interaction.client.channels.fetch(logChannelId).catch(() => null);
-            if (ch && ch.isTextBased()) {
-              const logEmbed = new EmbedBuilder()
-                .setColor(0x2ecc71)
-                .setTitle('Recrutamento • Iniciante aplicado')
-                .setDescription([
-                  `Usuário: <@${userId}> (${userId})`,
-                  `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
-                  `Equipe: ${String(team || '').toUpperCase() || '—'}`,
-                  `Cargos aplicados: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`
-                ].join('\n'))
-                .setTimestamp();
-              await ch.send({ embeds: [logEmbed] }).catch(() => {});
-            }
-          }
+          const logEmbed = new EmbedBuilder()
+            .setColor(0x2ecc71)
+            .setTitle('Recrutamento • Iniciante aplicado')
+            .setDescription([
+              `Usuário: <@${userId}> (${userId})`,
+              `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
+              `Equipe: ${String(team || '').toUpperCase() || '—'}`,
+              `Cargos aplicados: ${added.map(id => `<@&${id}>`).join(' ') || '—'}`
+            ].join('\n'))
+            .setTimestamp();
+          const MAIN_LOG_CHANNEL = '1414539961515900979';
+          const mainCh: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL).catch(() => null);
+          if (mainCh && mainCh.isTextBased()) await mainCh.send({ embeds: [logEmbed] }).catch(() => {});
         } catch {}
         return;
       }
@@ -99,7 +123,14 @@ export default {
           new ButtonBuilder().setCustomId(`recruit_mig_weeks:3:${team}:${userId}`).setLabel('3 Semanas').setStyle(1),
           new ButtonBuilder().setCustomId(`recruit_mig_weeks:merit:${team}:${userId}`).setLabel('Mérito').setStyle(4)
         );
-        return interaction.editReply({ content: 'Selecione o tipo de migração:', components: [row] });
+        const color = 0x3498db;
+        const embed = new EmbedBuilder()
+          .setTitle('Recrutamento • Migração')
+          .setColor(color)
+          .setDescription('Selecione o tipo de migração:')
+          .setFooter({ text: `Usuário: ${userId}` })
+          .setTimestamp();
+        return interaction.editReply({ embeds: [embed], components: [row] });
       }
 
       return interaction.editReply('Modo inválido.');

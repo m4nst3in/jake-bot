@@ -49,6 +49,31 @@ export default {
       }
       await target.roles.add(roleId, 'Migração: aplicação de hierarquia').catch(() => {});
 
+      // Garantir Staff no main guild
+      try {
+        const staff = cfg.roles?.staff;
+        const mainGuildId: string | undefined = cfg.mainGuildId;
+        if (staff && mainGuildId) {
+          const mainGuild: any = interaction.client.guilds.cache.get(mainGuildId) || await interaction.client.guilds.fetch(mainGuildId).catch(() => null);
+          const mainMember = mainGuild ? await mainGuild.members.fetch(userId).catch(() => null) : null;
+          if (mainMember && !mainMember.roles.cache.has(staff)) {
+            await mainMember.roles.add(staff, 'Migração • Staff global').catch(() => {});
+          }
+        }
+      } catch {}
+
+      // Aplicar cargo de equipe somente agora
+      try {
+        const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
+        const primaryMap = cfg.primaryGuildTeamRoles || {};
+        const primaryRoleId = primaryMap[team as any];
+        let teamRoleId = areaCfg?.roleIds?.member;
+        if (interaction.guildId === cfg.mainGuildId && primaryRoleId) teamRoleId = primaryRoleId;
+        if (teamRoleId && !String(teamRoleId).startsWith('ROLE_ID_') && !target.roles.cache.has(String(teamRoleId))) {
+          await target.roles.add(String(teamRoleId), 'Recrutamento: cargo de equipe (após Migração)').catch(() => {});
+        }
+      } catch {}
+
       const embed = new EmbedBuilder()
         .setColor(0x3498db)
         .setTitle('Recrutamento • Migração')
@@ -58,23 +83,19 @@ export default {
       await interaction.editReply({ embeds: [embed], components: [] });
       // Audit log to recruitment log/points channel
       try {
-        const logChannelId = cfg.recruitBanca?.pointsLogChannelId || cfg.channels?.recruitPointsLog || cfg.channels?.recruitRanking;
-        if (logChannelId) {
-          const ch: any = await interaction.client.channels.fetch(logChannelId).catch(() => null);
-          if (ch && ch.isTextBased()) {
-            const logEmbed = new EmbedBuilder()
-              .setColor(0x3498db)
-              .setTitle('Recrutamento • Migração aplicada')
-              .setDescription([
-                `Usuário: <@${userId}> (${userId})`,
-                `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
-                `Equipe: ${String(team || '').toUpperCase() || '—'}`,
-                `Cargo: ${roleName || roleId}`
-              ].join('\n'))
-              .setTimestamp();
-            await ch.send({ embeds: [logEmbed] }).catch(() => {});
-          }
-        }
+        const logEmbed = new EmbedBuilder()
+          .setColor(0x3498db)
+          .setTitle('Recrutamento • Migração aplicada')
+          .setDescription([
+            `Usuário: <@${userId}> (${userId})`,
+            `Moderador: <@${interaction.user.id}> (${interaction.user.id})`,
+            `Equipe: ${String(team || '').toUpperCase() || '—'}`,
+            `Cargo: ${roleName || roleId}`
+          ].join('\n'))
+          .setTimestamp();
+        const MAIN_LOG_CHANNEL = '1414539961515900979';
+        const mainCh: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL).catch(() => null);
+        if (mainCh && mainCh.isTextBased()) await mainCh.send({ embeds: [logEmbed] }).catch(() => {});
       } catch {}
       return;
     } catch (e) {

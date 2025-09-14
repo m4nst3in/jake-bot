@@ -2,7 +2,7 @@ import { ButtonInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder } from
 import { loadConfig, reloadConfig } from '../../config/index.ts';
 import { RECRUIT_AREAS } from '../../commands/recrutar.ts';
 import { BlacklistRepository } from '../../repositories/blacklistRepository.ts';
-const LOG_CHANNEL_ID = '1414539961515900979';
+const MAIN_LOG_CHANNEL_ID = '1414539961515900979';
 const TEAM_COLORS: Record<string, number> = {
     movcall: 0x1abc9c,
     design: 0xe67e22,
@@ -44,21 +44,14 @@ export default {
             await interaction.editReply('Usuário não encontrado no servidor.');
             return;
         }
-        const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
-        const primaryMap = cfg.primaryGuildTeamRoles || {};
-        const primaryRoleId = primaryMap[team];
-        let roleId = areaCfg?.roleIds?.member || 'ROLE_ID_PLACEHOLDER';
-        if (interaction.guildId === cfg.mainGuildId && primaryRoleId) {
-            roleId = primaryRoleId;
-        }
-        if (!areaCfg && !primaryRoleId) {
+    const areaCfg = (cfg.areas || []).find((a: any) => a.name.toLowerCase() === team);
+    const primaryMap = cfg.primaryGuildTeamRoles || {};
+    const primaryRoleId = primaryMap[team];
+    if (!areaCfg && !primaryRoleId) {
             await interaction.editReply('Config da equipe não encontrada.');
             return;
         }
-        // Always ensure the team role is applied immediately
-        if (!roleId.startsWith('ROLE_ID_') && !member.roles.cache.has(roleId)) {
-            await member.roles.add(roleId, 'Recrutamento: aplicação de cargo de equipe').catch(() => { });
-        }
+    // Não aplicar o cargo de equipe agora; somente após escolher Iniciante ou a hierarquia.
         // Disable original area selection buttons to prevent duplicate actions
         try {
             if (interaction.message.editable) {
@@ -78,11 +71,42 @@ export default {
         }
         catch { }
 
-        // Present next step: Iniciante vs Migração
+        // Apresentar próximo passo: Iniciante vs Migração (embed decorado)
+        const color = TEAM_COLORS[team] || 0x3498db;
+        const embed = new EmbedBuilder()
+            .setTitle('Recrutamento • Seleção de Modo')
+            .setColor(color)
+            .setDescription([
+                `Equipe selecionada: **${team.toUpperCase()}**`,
+                `Candidato: <@${userId}>`,
+                '',
+                'Escolha como deseja prosseguir:',
+                '• Iniciante — aplica o cargo Iniciante',
+                '• Migração — seleciona cargo da hierarquia conforme o tempo'
+            ].join('\n'))
+            .setFooter({ text: `ID do usuário: ${userId}` })
+            .setTimestamp();
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder().setCustomId(`recruit_mode:inic:${team}:${userId}`).setLabel('Iniciante').setStyle(3),
             new ButtonBuilder().setCustomId(`recruit_mode:mig:${team}:${userId}`).setLabel('Migração').setStyle(1)
         );
-        await interaction.editReply({ content: `Equipe aplicada para <@${userId}> em **${team.toUpperCase()}**. Escolha o modo:`, components: [row] });
+        await interaction.editReply({ embeds: [embed], components: [row] });
+
+        // Log no canal principal (início do fluxo)
+        try {
+            const ch: any = await interaction.client.channels.fetch(MAIN_LOG_CHANNEL_ID).catch(() => null);
+            if (ch && ch.isTextBased()) {
+                const log = new EmbedBuilder()
+                    .setTitle('Recrutamento • Iniciado')
+                    .setColor(color)
+                    .setDescription([
+                        `Moderador: <@${interaction.user.id}>`,
+                        `Usuário: <@${userId}> (${userId})`,
+                        `Equipe: **${team.toUpperCase()}**`
+                    ].join('\n'))
+                    .setTimestamp();
+                await ch.send({ embeds: [log] }).catch(() => {});
+            }
+        } catch {}
     }
 };

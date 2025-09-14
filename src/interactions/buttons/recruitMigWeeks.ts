@@ -51,7 +51,7 @@ export default {
       const ranks = getHierarchyRange(cfg, slot as any);
       if (ranks.length === 0) return interaction.editReply('Faixa de cargos indisponível.');
 
-      const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+  const rows: ActionRowBuilder<ButtonBuilder>[] = [];
       let row = new ActionRowBuilder<ButtonBuilder>();
       for (const rank of ranks) {
         const rid = cfg.roles?.[rank];
@@ -61,7 +61,14 @@ export default {
       }
       if (row.components.length) rows.push(row);
       if (!rows.length) return interaction.editReply('Nenhum cargo configurado para essa faixa.');
-      return interaction.editReply({ content: 'Selecione o cargo da hierarquia:', components: rows });
+      const titleMap: any = { '1': '1 Semana', '2': '2 Semanas', '3': '3 Semanas', 'merit': 'Mérito' };
+      const embed = new EmbedBuilder()
+        .setTitle(`Recrutamento • ${titleMap[slot] || 'Migração'}`)
+        .setColor(0x3498db)
+        .setDescription('Selecione o cargo da hierarquia:')
+        .setFooter({ text: `Usuário: ${userId}` })
+        .setTimestamp();
+      return interaction.editReply({ embeds: [embed], components: rows });
     } catch (e) {
       logger.warn({ e }, 'recruit_mig_weeks failed');
       return interaction.editReply('Erro ao carregar cargos.');
