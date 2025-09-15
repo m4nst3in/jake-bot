@@ -8,7 +8,12 @@ import {
     ButtonStyle,
     PermissionFlagsBits,
     GuildMember,
-    User
+    User,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    ComponentType,
+    Message
 } from 'discord.js';
 import { loadConfig } from '../config/index.ts';
 import { logger } from '../utils/logger.ts';
@@ -36,7 +41,8 @@ async function applyPunishment(
     target: GuildMember, 
     punishment: PunishmentData, 
     executor: GuildMember,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
+    proofUrl?: string
 ): Promise<boolean> {
     try {
         const config = loadConfig();
@@ -95,8 +101,16 @@ async function applyPunishment(
                 throw new Error(`Tipo de punição não implementado: ${punishmentType.type}`);
         }
 
-        // Log da punição
-        await logPunishmentUtil(target, punishment, executor, interaction.guild!, punishmentType);
+        // Log da punição com prova
+        await logPunishmentUtil(target, punishment, executor, interaction.guild!, punishmentType, proofUrl);
+
+        logger.info({ 
+            targetId: target.id, 
+            executorId: executor.id, 
+            punishmentType: punishment.type,
+            reason: punishment.reason,
+            proofUrl: proofUrl || 'N/A'
+        }, 'Punição aplicada com sucesso');
 
         return true;
     } catch (error) {
@@ -373,40 +387,119 @@ export default {
                             return;
                         }
 
-                        await i.deferUpdate();
+                        // Solicitar prova antes de aplicar punição
+                        const proofEmbed = new EmbedBuilder()
+                            .setTitle('<a:mov_call1:1252739847614103687> Prova Necessária')
+                            .setDescription(`Para aplicar a punição **${punishmentConfig.punishmentTypes[punishment.type].name}** em **${target.displayName}**, você deve enviar uma prova (print, vídeo, etc.).`)
+                            .addFields(
+                                { name: '<a:setabranca:1417092970380791850> Instruções', value: 'Envie sua mensagem com o anexo da prova nos próximos 5 minutos.', inline: false },
+                                { name: '<a:setabranca:1417092970380791850> Motivo', value: punishment.reason, inline: false }
+                            )
+                            .setColor(0xF39C12)
+                            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
+                            .setTimestamp();
 
-                        // Aplicar punição
-                        const success = await applyPunishment(target, punishment, executor, interaction);
+                        const cancelProofButton = new ButtonBuilder()
+                            .setCustomId('cancel_proof_request')
+                            .setLabel('Cancelar')
+                            .setStyle(ButtonStyle.Secondary);
 
-                        if (success) {
-                            const successEmbed = new EmbedBuilder()
-                                .setTitle('<a:sim:1293359353180454933> Punição Aplicada')
-                                .setDescription(`A punição foi aplicada com sucesso em **${target.displayName}**.`)
-                                .addFields(
-                                    { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
-                                    { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }
-                                )
-                                .setColor(0x2ECC71)
-                                .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
-                                .setTimestamp();
+                        const proofRow = new ActionRowBuilder<ButtonBuilder>()
+                            .addComponents(cancelProofButton);
 
-                            await i.editReply({
-                                embeds: [successEmbed],
-                                components: []
+                        await i.update({
+                            embeds: [proofEmbed],
+                            components: [proofRow]
+                        });
+
+                        // Aguardar mensagem com prova
+                        try {
+                            const filter = (msg: Message) => msg.author.id === executor.id && msg.attachments.size > 0;
+                            const channel = interaction.channel;
+                            if (!channel || !('awaitMessages' in channel)) {
+                                throw new Error('Canal não suporta aguardar mensagens');
+                            }
+                            const proofMessage = await channel.awaitMessages({
+                                filter,
+                                max: 1,
+                                time: 300000, // 5 minutos
+                                errors: ['time']
                             });
-                        } else {
-                            const errorEmbed = new EmbedBuilder()
-                                .setTitle('<a:nao:1293359397040427029> Erro ao Aplicar Punição')
-                                .setDescription('Ocorreu um erro ao aplicar a punição. Verifique os logs para mais detalhes.')
-                                .setColor(0xE74C3C)
+
+                            if (proofMessage && proofMessage.size > 0) {
+                                const proof = proofMessage.first();
+                                
+                                // Aplicar punição com prova
+                                const success = await applyPunishment(target, punishment, executor, interaction, proof?.attachments.first()?.url);
+
+                                if (success) {
+                                    const successEmbed = new EmbedBuilder()
+                                        .setTitle('<a:sim:1293359353180454933> Punição Aplicada')
+                                        .setDescription(`A punição foi aplicada com sucesso em **${target.displayName}**.`)
+                                        .addFields(
+                                            { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
+                                            { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false },
+                                            { name: '<a:mov_call1:1252739847614103687> Prova', value: `[Anexo enviado](${proof?.attachments.first()?.url})`, inline: false }
+                                        )
+                                        .setColor(0x2ECC71)
+                                        .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
+                                        .setTimestamp();
+
+                                    await i.editReply({
+                                        embeds: [successEmbed],
+                                        components: []
+                                    });
+
+                                    // Deletar mensagem da prova para manter o canal limpo
+                                    try {
+                                        await proof?.delete();
+                                    } catch (error) {
+                                        logger.warn({ error }, 'Não foi possível deletar mensagem da prova');
+                                    }
+                                } else {
+                                    const errorEmbed = new EmbedBuilder()
+                                        .setTitle('<a:nao:1293359397040427029> Erro ao Aplicar Punição')
+                                        .setDescription('Ocorreu um erro ao aplicar a punição. Verifique os logs para mais detalhes.')
+                                        .setColor(0xE74C3C)
+                                        .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
+                                        .setTimestamp();
+
+                                    await i.editReply({
+                                        embeds: [errorEmbed],
+                                        components: []
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            // Timeout - não recebeu prova
+                            const timeoutEmbed = new EmbedBuilder()
+                                .setTitle('⏰ Tempo Esgotado')
+                                .setDescription('Não foi enviada uma prova dentro do tempo limite. A punição foi cancelada.')
+                                .setColor(0x95A5A6)
                                 .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                                 .setTimestamp();
 
                             await i.editReply({
-                                embeds: [errorEmbed],
+                                embeds: [timeoutEmbed],
                                 components: []
                             });
                         }
+
+                        collector.stop();
+                    }
+
+                    if (i.customId === 'cancel_proof_request') {
+                        const cancelEmbed = new EmbedBuilder()
+                            .setTitle('<a:nao:1293359397040427029> Solicitação de Prova Cancelada')
+                            .setDescription('A solicitação de prova foi cancelada. A punição não foi aplicada.')
+                            .setColor(0x95A5A6)
+                            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
+                            .setTimestamp();
+
+                        await i.update({
+                            embeds: [cancelEmbed],
+                            components: []
+                        });
 
                         collector.stop();
                     }
