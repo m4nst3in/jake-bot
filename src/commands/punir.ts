@@ -115,7 +115,7 @@ export default {
                 .setDescription('Usuário a ser punido')
                 .setRequired(true)
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .setDefaultMemberPermissions(null)
         .setDMPermission(false),
 
     async execute(interaction: ChatInputCommandInteraction) {
