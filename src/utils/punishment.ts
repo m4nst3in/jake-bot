@@ -182,6 +182,79 @@ export function calculateExpirationTime(duration: number, durationType: string):
     }
 }
 
+export async function sendPunishmentDM(
+    target: GuildMember,
+    punishment: any,
+    punishmentType: any,
+    durationText: string
+): Promise<void> {
+    try {
+        const config = loadConfig() as any;
+        const guildName = target.guild.name;
+        
+        // Criar embed para DM
+        const dmEmbed = new EmbedBuilder()
+            .setTitle(`<:cdw_white_pomba:1137012314445463663> Notificação de Punição`)
+            .setDescription(`Você recebeu uma punição no servidor **${guildName}**.`)
+            .addFields(
+                { name: '<a:setabranca:1417092970380791850> Tipo de Punição', value: punishmentType.name, inline: true },
+                { name: '<a:setabranca:1417092970380791850> Duração', value: durationText, inline: true },
+                { name: '<a:setabranca:1417092970380791850> Motivo', value: punishment.reason, inline: false }
+            )
+            .setColor(0xE74C3C)
+            .setFooter({ text: `${guildName} - Sistema de Punições`, iconURL: target.guild.iconURL() || undefined })
+            .setTimestamp();
+
+        // Adicionar informações sobre banimento se aplicável
+        if (punishment.bannable) {
+            dmEmbed.addFields({ 
+                name: '<a:setabranca:1417092970380791850> Atenção', 
+                value: 'Esta infração pode resultar em banimento permanente se for considerada de alta intensidade.', 
+                inline: false 
+            });
+        }
+
+        // Adicionar informações de suporte se disponível
+        const supportInfo = config.supportInfo;
+        if (supportInfo && supportInfo.enabled) {
+            let supportText = '';
+            if (supportInfo.discordInvite) {
+                supportText += `📞 **Suporte Discord**: ${supportInfo.discordInvite}\n`;
+            }
+            if (supportInfo.email) {
+                supportText += `📧 **Email**: ${supportInfo.email}\n`;
+            }
+            if (supportInfo.website) {
+                supportText += `🌐 **Website**: ${supportInfo.website}`;
+            }
+            
+            if (supportText) {
+                dmEmbed.addFields({ 
+                    name: '<a:setabranca:1417092970380791850> Precisa de Ajuda?', 
+                    value: supportText, 
+                    inline: false 
+                });
+            }
+        }
+
+        // Tentar enviar DM
+        await target.send({ embeds: [dmEmbed] });
+        
+        logger.info({ 
+            targetId: target.id, 
+            punishmentType: punishmentType.name 
+        }, 'DM de punição enviada com sucesso');
+        
+    } catch (error) {
+        // Log do erro mas não falha a operação principal
+        logger.warn({ 
+            error, 
+            targetId: target.id, 
+            punishmentType: punishmentType.name 
+        }, 'Não foi possível enviar DM de punição para o usuário');
+    }
+}
+
 export async function logPunishment(
     target: GuildMember,
     punishment: any,
@@ -236,6 +309,9 @@ export async function logPunishment(
         }
 
         await logChannel.send({ embeds: [embed] });
+        
+        // Enviar DM para o usuário punido
+        await sendPunishmentDM(target, punishment, punishmentType, durationText);
         
         logger.info({ 
             targetId: target.id, 
