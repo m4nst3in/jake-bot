@@ -225,7 +225,8 @@ export function registerProtectionListener(client: any) {
                 const MONITORED_ROLES: Record<string, string> = {
                     '1212657992630280302': 'Community',
                     '1137176557979439246': 'Membro Ativo',
-                    '1055316223639945367': 'Verificado'
+                    '1055316223639945367': 'Verificado',
+                    ...Object.fromEntries(Object.entries(rootCfg.monitoredRoles || {}).map(([name, id]) => [String(id), name]))
                 };
                 const isVip = vipRoleIds.has(role.id);
                 const isPerm = permissionRoleIds.has(role.id);

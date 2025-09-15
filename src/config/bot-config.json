@@ -92,8 +92,7 @@
   "purchasableRoles": {
     "Presidencial": "1136850373383045121",
     "Owner": "1134927238391935027",
-    "Global Owner": "1136857095950581800",
-    "Primeira Dama": "1137332200413597716"
+    "Global Owner": "1136857095950581800"
   },
 
   "__comment_staffRankMirrors": "Espelhos de ranks: guildId(area) -> cargos equivalentes por nome de rank global.",
@@ -563,6 +562,11 @@
     "gm": "1080746284434071582",
     "Admin": "1156383581099274250",
     "🍃": "1271086030984052788"
+  },
+
+  "__comment_monitoredRoles": "Cargos apenas monitorados (não bloqueados) - apenas registram logs sem remoção.",
+  "monitoredRoles": {
+    "Primeira Dama": "1137332200413597716"
   },
   "__comment_baseMemberRole": "Cargo base aplicado se após transferência o usuário origem ficar sem nenhum cargo transferido.",
   "baseMemberRoleId": "934635845690990632",
