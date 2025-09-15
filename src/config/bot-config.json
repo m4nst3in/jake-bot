@@ -261,6 +261,7 @@
     "eventsRanking": "1283495783328518144",
   "eventsPointsLog": "1415459463762153572",
     "journalismRanking": "1414589956856483952",
+    "punishmentLog": "1414540666171559966",
     "ranking": "1282445335620354131",
     "recruitLog": "000000000000001001",
     "recruitRanking": "1261861624998924301",
@@ -593,6 +594,11 @@
     "memberProtected": "934635845690990632",
     "leaderGeneral": "1411223951350435961",
     "migGlobal": "1346223411289919558"
+  },
+  "__comment_punishmentRoles": "Cargos específicos do sistema de punições.",
+  "punishmentRoles": {
+    "mutedVoice": "1280743640439722015",
+    "mutedChat": "1011456411017936938"
   }
   ,
   "__comment_progressionWaitingRoles": "Guild IDs -> cargo de 'aguardando verificação' (waiting role) nas áreas que usam esse estágio.",

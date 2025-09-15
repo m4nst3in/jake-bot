@@ -1,0 +1,309 @@
+{
+  "__comment": "Configuração do sistema de punições - tipos, motivos e durações",
+  "version": 1,
+  "punishmentTypes": {
+    "mute_voice": {
+      "name": "Mute Voz",
+      "description": "Silencia o usuário em canais de voz",
+      "roleId": "1280743640439722015",
+      "type": "role_add",
+      "logColor": "0xF39C12"
+    },
+    "mute_text": {
+      "name": "Mute Chat",
+      "description": "Impede o usuário de enviar mensagens",
+      "roleId": "1011456411017936938",
+      "type": "role_add",
+      "logColor": "0xE67E22"
+    },
+    "timeout": {
+      "name": "Castigo",
+      "description": "Aplica timeout no usuário",
+      "type": "timeout",
+      "logColor": "0xE74C3C"
+    },
+    "ban": {
+      "name": "Banimento",
+      "description": "Bane o usuário do servidor",
+      "type": "ban",
+      "logColor": "0x992D22"
+    }
+  },
+  "punishmentCategories": {
+    "minor": {
+      "name": "Punições #1",
+      "description": "Infrações menores",
+      "emoji": "⚠️",
+      "punishments": [
+        {
+          "id": "ruidos_estranhos",
+          "name": "Ruídos estranhos",
+          "duration": 5,
+          "durationType": "minutes",
+          "type": "mute_voice",
+          "reason": "Emitir ruídos estranhos ou perturbadores em canais de voz"
+        },
+        {
+          "id": "estourar_audio",
+          "name": "Estourar áudio ou microfone",
+          "duration": 10,
+          "durationType": "minutes",
+          "type": "mute_voice",
+          "reason": "Estourar áudio ou microfone causando desconforto aos demais usuários"
+        },
+        {
+          "id": "ofensa_membro",
+          "name": "Ofensa a membro",
+          "duration": 10,
+          "durationType": "minutes",
+          "type": "mute_text",
+          "reason": "Ofender ou desrespeitar outro membro da comunidade"
+        },
+        {
+          "id": "spam",
+          "name": "Spam",
+          "duration": 10,
+          "durationType": "minutes",
+          "type": "mute_text",
+          "reason": "Enviar mensagens repetitivas ou spam nos canais"
+        },
+        {
+          "id": "ofensa_staff",
+          "name": "Ofensa a staff/servidor",
+          "duration": 30,
+          "durationType": "minutes",
+          "type": "mute_text",
+          "reason": "Ofender membros da equipe ou o servidor"
+        }
+      ]
+    },
+    "moderate": {
+      "name": "Punições #2 - Motivos de Castigo",
+      "description": "Infrações moderadas que resultam em castigo",
+      "emoji": "🔨",
+      "note": "Todos que contenham \"intensidade\" ao lado, caso seja pesado e devidamente provado, acarre no banimento",
+      "punishments": [
+        {
+          "id": "flood_zaralho",
+          "name": "Flood/zaralho após persistência",
+          "duration": 1,
+          "durationType": "hours",
+          "type": "timeout",
+          "reason": "Continuar com flood ou comportamento inadequado após advertências"
+        },
+        {
+          "id": "saindo_entrando_call",
+          "name": "Saindo e entrando call na mesma call",
+          "duration": 1,
+          "durationType": "hours",
+          "type": "timeout",
+          "reason": "Entrar e sair repetidamente de canais de voz"
+        },
+        {
+          "id": "fugir_punicao",
+          "name": "Fugir de punição",
+          "duration": 1,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Tentar evitar ou fugir de punições aplicadas"
+        },
+        {
+          "id": "mostrar_drogas_armas",
+          "name": "Mostrar drogas/armas na call",
+          "duration": 1,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Exibir drogas, armas ou conteúdo inadequado em vídeo"
+        },
+        {
+          "id": "machismo_intensidade",
+          "name": "Machismo (intensidade)",
+          "duration": 3,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Comportamento machista de forma intensa e ofensiva",
+          "bannable": true
+        },
+        {
+          "id": "xenofobia_intensidade",
+          "name": "Xenofobia (intensidade)",
+          "duration": 3,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Comportamento xenofóbico de forma intensa e ofensiva",
+          "bannable": true
+        },
+        {
+          "id": "perseguicao_intensidade",
+          "name": "Perseguição (intensidade)",
+          "duration": 7,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Perseguir ou assediar outros usuários de forma intensa",
+          "bannable": true
+        },
+        {
+          "id": "piada_sensivel",
+          "name": "Piada com tema sensível/humor tóxico (intensidade)",
+          "duration": 1,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Fazer piadas com temas sensíveis ou humor tóxico de forma intensa",
+          "bannable": true
+        },
+        {
+          "id": "zaralhando_servidor",
+          "name": "Zaralhando o servidor",
+          "duration": 1,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Comportamento inadequado que prejudica o ambiente do servidor"
+        },
+        {
+          "id": "denuncia_fake",
+          "name": "Denúncia Fake",
+          "duration": 3,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Fazer denúncias falsas contra outros membros"
+        },
+        {
+          "id": "assedio_intensidade",
+          "name": "Assédio (intensidade e com provas concretas)",
+          "duration": 3,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Assediar outros usuários de forma comprovada e intensa",
+          "bannable": true
+        },
+        {
+          "id": "comercio_servidor",
+          "name": "Qualquer Comércio no servidor",
+          "duration": 3,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Realizar atividades comerciais não autorizadas no servidor"
+        },
+        {
+          "id": "pedir_banimento",
+          "name": "Pedir banimento",
+          "duration": 10,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Solicitar banimento próprio ou de outros membros"
+        },
+        {
+          "id": "piadas_cunho_homofobico",
+          "name": "Piadas de cunho homofóbicas, transfóbicas (intensidade)",
+          "duration": 15,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Fazer piadas homofóbicas ou transfóbicas de forma intensa",
+          "bannable": true
+        },
+        {
+          "id": "apologia_suicidio",
+          "name": "Apologia ao suicídio (intensidade)",
+          "duration": 15,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Fazer apologia ao suicídio de forma intensa",
+          "bannable": true
+        },
+        {
+          "id": "ameacas_intensidade",
+          "name": "Ameaças (intensidade)",
+          "duration": 5,
+          "durationType": "days",
+          "type": "timeout",
+          "reason": "Fazer ameaças de forma intensa contra outros usuários",
+          "bannable": true
+        }
+      ]
+    },
+    "severe": {
+      "name": "Punições #3 - Motivos de Ban",
+      "description": "Infrações graves que resultam em banimento",
+      "emoji": "🔨",
+      "punishments": [
+        {
+          "id": "explanacao_difamacao",
+          "name": "Explanação/Difamação",
+          "type": "ban",
+          "reason": "Expor ou difamar outros membros ou o servidor"
+        },
+        {
+          "id": "grab_scam",
+          "name": "Grab/Scam",
+          "type": "ban",
+          "reason": "Tentar roubar contas ou aplicar golpes em outros usuários"
+        },
+        {
+          "id": "conteudo_pornografico",
+          "name": "Conteúdo pornográfico/+18",
+          "type": "ban",
+          "reason": "Compartilhar conteúdo pornográfico ou inadequado para menores"
+        },
+        {
+          "id": "divulgacao_servidores",
+          "name": "Divulgação de servidores",
+          "type": "ban",
+          "reason": "Divulgar outros servidores Discord sem autorização"
+        },
+        {
+          "id": "gore_videos_estranhos",
+          "name": "Gore (envio de vídeos ou fotos estranhos)",
+          "type": "ban",
+          "reason": "Compartilhar conteúdo gore ou perturbador"
+        },
+        {
+          "id": "aliciamento_staffs",
+          "name": "Aliciamento de staffs",
+          "type": "ban",
+          "reason": "Tentar aliciar ou corromper membros da equipe"
+        },
+        {
+          "id": "homofobia_racismo",
+          "name": "Homofobia/Racismo",
+          "type": "ban",
+          "reason": "Demonstrar comportamento homofóbico ou racista"
+        },
+        {
+          "id": "pedofilia",
+          "name": "Pedofilia",
+          "type": "ban",
+          "reason": "Qualquer comportamento relacionado à pedofilia"
+        },
+        {
+          "id": "capacitismo",
+          "name": "Capacitismo",
+          "type": "ban",
+          "reason": "Discriminação contra pessoas com deficiência"
+        },
+        {
+          "id": "apologia_automutilacao",
+          "name": "Apologia a Automutilação",
+          "type": "ban",
+          "reason": "Fazer apologia ou incentivar automutilação"
+        },
+        {
+          "id": "apologia_estrupo",
+          "name": "Apologia ao Estupro",
+          "type": "ban",
+          "reason": "Fazer apologia ou incentivar estupro"
+        },
+        {
+          "id": "corrupcao_menor",
+          "name": "Corrupção de Menor",
+          "type": "ban",
+          "reason": "Tentar corromper ou influenciar negativamente menores de idade"
+        }
+      ]
+    }
+  },
+  "supportInfo": {
+    "message": "Caso alguém pratique alguns destes motivos, abra um ticket em",
+    "channel": "# 🧑‍💼 suporte",
+    "emoji": "🧑‍💼"
+  }
+}
