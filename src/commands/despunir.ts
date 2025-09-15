@@ -48,7 +48,7 @@ export default {
             // Verificar se está no servidor principal
             if (interaction.guildId !== config.mainGuildId) {
                 await interaction.reply({
-                    content: '❌ Este comando só pode ser usado no servidor principal.',
+                    content: '<a:nao:1293359397040427029> Este comando só pode ser usado no servidor principal.',
                     ephemeral: true
                 });
                 return;
@@ -63,7 +63,7 @@ export default {
 
             if (!target) {
                 await interaction.reply({
-                    content: '❌ Usuário não encontrado no servidor.',
+                    content: '<a:nao:1293359397040427029> Usuário não encontrado no servidor.',
                     ephemeral: true
                 });
                 return;
@@ -72,7 +72,7 @@ export default {
             // Verificar permissões
             if (!hasPermissionToPunish(executor, punishmentType === 'both' ? 'mute_voice' : punishmentType)) {
                 await interaction.reply({
-                    content: '❌ Você não tem permissão para remover este tipo de punição.',
+                    content: '<a:nao:1293359397040427029> Você não tem permissão para remover este tipo de punição.',
                     ephemeral: true
                 });
                 return;
@@ -124,13 +124,13 @@ export default {
             
             if (removedPunishments.length > 0) {
                 embed = new EmbedBuilder()
-                    .setTitle('✅ Punições Removidas')
+                    .setTitle('<:cdw_white_pomba:1137012314445463663> Punições Removidas')
                     .setDescription(`Punições removidas com sucesso de **${target.displayName}**.`)
                     .addFields(
-                        { name: '👤 Usuário', value: `<@${target.id}>`, inline: true },
-                        { name: '👮 Executor', value: `<@${executor.id}>`, inline: true },
-                        { name: '🔓 Punições Removidas', value: removedPunishments.join('\n'), inline: false },
-                        { name: '📝 Motivo', value: reason, inline: false }
+                        { name: '<a:setabranca:1417092970380791850> Usuário', value: `<@${target.id}>`, inline: true },
+                        { name: '<a:setabranca:1417092970380791850> Executor', value: `<@${executor.id}>`, inline: true },
+                        { name: '<a:setabranca:1417092970380791850> Punições Removidas', value: removedPunishments.join('\n'), inline: false },
+                        { name: '<a:setabranca:1417092970380791850> Motivo', value: reason, inline: false }
                     )
                     .setColor(0x2ECC71)
                     .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
@@ -145,11 +145,11 @@ export default {
 
             } else {
                 embed = new EmbedBuilder()
-                    .setTitle('ℹ️ Nenhuma Punição Encontrada')
+                    .setTitle('<:cdw_white_pomba:1137012314445463663> Nenhuma Punição Encontrada')
                     .setDescription(`**${target.displayName}** não possui as punições especificadas para remover.`)
                     .addFields(
-                        { name: '👤 Usuário', value: `<@${target.id}>`, inline: true },
-                        { name: '👮 Executor', value: `<@${executor.id}>`, inline: true }
+                        { name: '<a:setabranca:1417092970380791850> Usuário', value: `<@${target.id}>`, inline: true },
+                        { name: '<a:setabranca:1417092970380791850> Executor', value: `<@${executor.id}>`, inline: true }
                     )
                     .setColor(0x95A5A6)
                     .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
@@ -208,15 +208,15 @@ async function logPunishmentRemoval(
         }
 
         const embed = new EmbedBuilder()
-            .setTitle('🔓 Sistema de Punições • Punição Removida')
+            .setTitle('<:cdw_white_pomba:1137012314445463663> Sistema de Punições • Punição Removida')
             .setColor(0x2ECC71)
             .setDescription(`Punições foram removidas de um usuário.`)
             .addFields(
-                { name: '👤 Usuário', value: `<@${target.id}>\n\`${target.id}\``, inline: true },
-                { name: '👮 Executor', value: `<@${executor.id}>\n\`${executor.id}\``, inline: true },
-                { name: '🔓 Punições Removidas', value: removedPunishments.join('\n'), inline: false },
-                { name: '📝 Motivo', value: reason, inline: false },
-                { name: '🕐 Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
+                { name: '<a:setabranca:1417092970380791850> Usuário', value: `<@${target.id}>\n\`${target.id}\``, inline: true },
+                { name: '<a:setabranca:1417092970380791850> Executor', value: `<@${executor.id}>\n\`${executor.id}\``, inline: true },
+                { name: '<a:setabranca:1417092970380791850> Punições Removidas', value: removedPunishments.join('\n'), inline: false },
+                { name: '<a:setabranca:1417092970380791850> Motivo', value: reason, inline: false },
+                { name: '<a:setabranca:1417092970380791850> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
             )
             .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
             .setTimestamp();

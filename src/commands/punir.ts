@@ -165,7 +165,7 @@ export default {
             // Criar select menu com categorias
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('punishment_category')
-                .setPlaceholder('<a:mov_call10:1191155269258973214> Selecione uma categoria de punição...')
+                .setPlaceholder('Selecione uma categoria de punição...')
                 .addOptions(
                     Object.entries(punishmentConfig.punishmentCategories).map(([key, category]: [string, any]) => ({
                         label: category.name,

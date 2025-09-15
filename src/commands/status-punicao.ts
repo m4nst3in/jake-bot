@@ -33,7 +33,7 @@ export default {
             // Verificar se está no servidor principal
             if (interaction.guildId !== config.mainGuildId) {
                 await interaction.reply({
-                    content: '❌ Este comando só pode ser usado no servidor principal.',
+                    content: '<a:nao:1293359397040427029> Este comando só pode ser usado no servidor principal.',
                     ephemeral: true
                 });
                 return;
@@ -46,7 +46,7 @@ export default {
 
             if (!target) {
                 await interaction.reply({
-                    content: '❌ Usuário não encontrado no servidor.',
+                    content: '<a:nao:1293359397040427029> Usuário não encontrado no servidor.',
                     ephemeral: true
                 });
                 return;
@@ -55,7 +55,7 @@ export default {
             // Verificar permissões básicas
             if (!hasPermissionToPunish(executor, 'mute_voice')) {
                 await interaction.reply({
-                    content: '❌ Você não tem permissão para verificar status de punições.',
+                    content: '<a:nao:1293359397040427029> Você não tem permissão para verificar status de punições.',
                     ephemeral: true
                 });
                 return;
@@ -68,14 +68,14 @@ export default {
             // Verificar mute de voz
             const voiceRoleId = config.punishmentRoles?.mutedVoice;
             if (voiceRoleId && target.roles.cache.has(voiceRoleId)) {
-                activePunishments.push('🔇 Mute Voz');
+                activePunishments.push('<a:emoji_417:1282771719400067173> Mute Voz');
                 punishmentDetails.push('• **Mute Voz**: Ativo');
             }
 
             // Verificar mute de chat
             const textRoleId = config.punishmentRoles?.mutedChat;
             if (textRoleId && target.roles.cache.has(textRoleId)) {
-                activePunishments.push('💬 Mute Chat');
+                activePunishments.push('<a:emoji_417:1282771719400067173> Mute Chat');
                 punishmentDetails.push('• **Mute Chat**: Ativo');
             }
 
@@ -86,7 +86,7 @@ export default {
                     const remainingTime = Math.max(0, timeoutEnd.getTime() - Date.now());
                     if (remainingTime > 0) {
                         const remainingMinutes = Math.ceil(remainingTime / (1000 * 60));
-                        activePunishments.push('⏰ Castigo (Timeout)');
+                        activePunishments.push('<a:emoji_417:1282771719400067173> Castigo (Timeout)');
                         punishmentDetails.push(`• **Castigo**: Expira <t:${Math.floor(timeoutEnd.getTime() / 1000)}:R>`);
                     }
                 }
@@ -99,13 +99,13 @@ export default {
 
             // Criar embed de resposta
             const embed = new EmbedBuilder()
-                .setTitle('📊 Status de Punições')
+                .setTitle('<a:red_hypered_cdw:939928635836604457> Status de Punições')
                 .setDescription(`Informações de punições para **${target.displayName}**`)
                 .setThumbnail(targetUser.displayAvatarURL())
                 .addFields(
-                    { name: '👤 Usuário', value: `<@${target.id}>\n\`${target.id}\``, inline: true },
-                    { name: '🎖️ Patente', value: userRank.rankName, inline: true },
-                    { name: '📅 Entrou no Servidor', value: joinedAt ? `<t:${Math.floor(joinedAt.getTime() / 1000)}:D>` : 'Desconhecido', inline: true }
+                    { name: '<a:mov_call1:1252739847614103687> Usuário', value: `<@${target.id}>\n\`${target.id}\``, inline: true },
+                    { name: '<a:mov_call1:1252739847614103687> Patente', value: userRank.rankName, inline: true },
+                    { name: '<a:mov_call1:1252739847614103687> Entrou no Servidor', value: joinedAt ? `<t:${Math.floor(joinedAt.getTime() / 1000)}:D>` : 'Desconhecido', inline: true }
                 )
                 .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                 .setTimestamp();
@@ -113,20 +113,20 @@ export default {
             if (activePunishments.length > 0) {
                 embed.setColor(0xE74C3C);
                 embed.addFields(
-                    { name: '⚠️ Punições Ativas', value: punishmentDetails.join('\n'), inline: false },
-                    { name: '📊 Total de Punições', value: `${activePunishments.length} ativa(s)`, inline: true }
+                    { name: '<a:mov_call1:1252739847614103687> Punições Ativas', value: punishmentDetails.join('\n'), inline: false },
+                    { name: '<a:mov_call1:1252739847614103687> Total de Punições', value: `${activePunishments.length} ativa(s)`, inline: true }
                 );
             } else {
                 embed.setColor(0x2ECC71);
                 embed.addFields(
-                    { name: '✅ Status', value: 'Nenhuma punição ativa', inline: false }
+                    { name: '<a:mov_call1:1252739847614103687> Status', value: 'Nenhuma punição ativa', inline: false }
                 );
             }
 
             // Adicionar informações da conta
             embed.addFields(
-                { name: '🗓️ Conta Criada', value: `<t:${Math.floor(accountCreated.getTime() / 1000)}:D>`, inline: true },
-                { name: '🔍 Verificado por', value: `<@${executor.id}>`, inline: true }
+                { name: '<a:mov_call1:1252739847614103687> Conta Criada', value: `<t:${Math.floor(accountCreated.getTime() / 1000)}:D>`, inline: true },
+                { name: '<a:mov_call1:1252739847614103687> Verificado por', value: `<@${executor.id}>`, inline: true }
             );
 
             await interaction.reply({
