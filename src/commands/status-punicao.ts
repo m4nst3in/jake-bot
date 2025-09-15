@@ -11,7 +11,8 @@ import {
     loadPunishmentConfig, 
     hasPermissionToPunish, 
     getUserHighestRank,
-    formatDuration
+    formatDuration,
+    isStaffMember
 } from '../utils/punishment.ts';
 
 export default {
@@ -52,8 +53,8 @@ export default {
                 return;
             }
 
-            // Verificar permissões básicas
-            if (!hasPermissionToPunish(executor, 'mute_voice')) {
+            // Verificar se é membro da staff
+            if (!isStaffMember(executor)) {
                 await interaction.reply({
                     content: '<a:nao:1293359397040427029> Você não tem permissão para verificar status de punições.',
                     ephemeral: true

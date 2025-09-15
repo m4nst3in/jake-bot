@@ -369,6 +369,83 @@ export function isUserProtected(member: GuildMember): boolean {
     return false;
 }
 
+export function isStaffMember(member: GuildMember): boolean {
+    const config = loadConfig() as any;
+    
+    // Owners são staff
+    if (config.owners && config.owners.includes(member.id)) {
+        return true;
+    }
+    
+    // Full access são staff
+    const fullAccessRole = config.fullAccessRoleId;
+    if (fullAccessRole && member.roles.cache.has(fullAccessRole)) {
+        return true;
+    }
+    
+    // Liderança geral é staff
+    const leaderRole = config.protectionRoles?.leaderGeneral;
+    if (leaderRole && member.roles.cache.has(leaderRole)) {
+        return true;
+    }
+    
+    // Verificar se tem alguma patente (qualquer cargo de hierarquia)
+    const hierarchyOrder = config.hierarchyOrder || [];
+    const roles = config.roles || {};
+    
+    for (const [rankName, roleId] of Object.entries(roles)) {
+        if (member.roles.cache.has(roleId as string)) {
+            return true;
+        }
+    }
+    
+    // Verificar lideranças de área
+    const areaLeaderRoles = Object.values(config.protection?.areaLeaderRoles || {});
+    const hasAreaLeadership = areaLeaderRoles.some(roleId => member.roles.cache.has(roleId as string));
+    
+    if (hasAreaLeadership) {
+        return true;
+    }
+    
+    return false;
+}
+
+export function canRemovePunishment(executor: GuildMember, targetId: string, originalExecutorId?: string): { canRemove: boolean; reason?: string } {
+    const config = loadConfig() as any;
+    
+    // Owners sempre podem remover
+    if (config.owners && config.owners.includes(executor.id)) {
+        return { canRemove: true };
+    }
+    
+    // Full access sempre podem remover
+    const fullAccessRole = config.fullAccessRoleId;
+    if (fullAccessRole && executor.roles.cache.has(fullAccessRole)) {
+        return { canRemove: true };
+    }
+    
+    // Liderança geral sempre pode remover
+    const leaderRole = config.protectionRoles?.leaderGeneral;
+    if (leaderRole && executor.roles.cache.has(leaderRole)) {
+        return { canRemove: true };
+    }
+    
+    // Lideranças de área podem remover
+    const areaLeaderRoles = Object.values(config.protection?.areaLeaderRoles || {});
+    const hasAreaLeadership = areaLeaderRoles.some(roleId => executor.roles.cache.has(roleId as string));
+    
+    if (hasAreaLeadership) {
+        return { canRemove: true };
+    }
+    
+    // Se foi fornecido o executor original, verificar se é a mesma pessoa
+    if (originalExecutorId && executor.id === originalExecutorId) {
+        return { canRemove: true };
+    }
+    
+    return { canRemove: false, reason: 'Você só pode remover punições que você mesmo aplicou, ou precisa ser uma liderança/owner.' };
+}
+
 export async function createPunishmentEmbed(
     target: GuildMember,
     punishment: any,

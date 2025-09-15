@@ -10,7 +10,8 @@ import { logger } from '../utils/logger.ts';
 import { 
     loadPunishmentConfig, 
     hasPermissionToPunish, 
-    canPunishTarget
+    canPunishTarget,
+    canRemovePunishment
 } from '../utils/punishment.ts';
 
 export default {
@@ -69,10 +70,13 @@ export default {
                 return;
             }
 
-            // Verificar permissões
-            if (!hasPermissionToPunish(executor, punishmentType === 'both' ? 'mute_voice' : punishmentType)) {
+            // Verificar permissões específicas para remoção de punições
+            // TODO: Aqui precisaríamos buscar quem aplicou a punição originalmente
+            // Por enquanto, vamos usar a verificação geral
+            const permissionCheck = canRemovePunishment(executor, target.id);
+            if (!permissionCheck.canRemove) {
                 await interaction.reply({
-                    content: '<a:nao:1293359397040427029> Você não tem permissão para remover este tipo de punição.',
+                    content: `<a:nao:1293359397040427029> ${permissionCheck.reason}`,
                     ephemeral: true
                 });
                 return;

@@ -307,12 +307,12 @@ export default {
 
                     const confirmButton = new ButtonBuilder()
                         .setCustomId(`confirm_punishment_${punishmentId}`)
-                        .setLabel('<a:sim:1293359353180454933> Confirmar')
+                        .setLabel('Confirmar')
                         .setStyle(ButtonStyle.Danger);
 
                     const cancelButton = new ButtonBuilder()
                         .setCustomId('cancel_punishment')
-                        .setLabel('<a:nao:1293359397040427029> Cancelar')
+                        .setLabel('Cancelar')
                         .setStyle(ButtonStyle.Secondary);
 
                     const confirmRow = new ActionRowBuilder<ButtonBuilder>()
