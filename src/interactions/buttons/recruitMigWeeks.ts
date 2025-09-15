@@ -66,7 +66,7 @@ export default {
         .setTitle(`Recrutamento • ${titleMap[slot] || 'Migração'}`)
         .setColor(0x3498db)
         .setDescription('Selecione o cargo da hierarquia:')
-        .setFooter({ text: `Usuário: ${userId}` })
+        .setFooter({ text: `Usuário: ${userId}`, iconURL: interaction.guild?.iconURL() || undefined })
         .setTimestamp();
       return interaction.editReply({ embeds: [embed], components: rows });
     } catch (e) {

@@ -121,7 +121,7 @@ export default {
         const embed = new EmbedBuilder()
             .setTitle(`Perfil de ${target.username || target.tag || target.id}`)
             .setDescription(desc)
-            .setFooter({ text: `Total: ${profile.total} pts • Relatórios: ${totalReports} • Plantões: ${totalShifts} • ID: ${target.id}` });
+            .setFooter({ text: `Total: ${profile.total} pts • Relatórios: ${totalReports} • Plantões: ${totalShifts} • ID: ${target.id}`, iconURL: interaction.guild?.iconURL() || undefined });
         try {
             if (interaction.guildId) {
                 const areas = (cfg.areas || []);

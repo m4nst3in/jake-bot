@@ -153,7 +153,7 @@ export default async function messageCreate(message: Message) {
                             .setTitle('<a:z_estrelinha_cdw:935927437647314994> Supervisão de Plantão')
                             .setColor(0x8e44ad)
                             .setDescription(`Solicitação de supervisão registrada.\n\n<a:emoji_50:1330028935563575306> **Participantes**: ${usersText}\n<a:emoji_50:1330028935563575306> **Horário**: <t:${ts}:F>\n\n<@&${targetRole}> favor supervisionar.`)
-                            .setFooter({ text: `Msg ${message.id}` })
+                            .setFooter({ text: `Msg ${message.id}`, iconURL: message.guild?.iconURL() || undefined })
                             .setTimestamp();
                         const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`plantao_accept:${message.id}:${message.author.id}`).setLabel('Aceitar').setStyle(3), new ButtonBuilder().setCustomId(`plantao_reject:${message.id}:${message.author.id}`).setLabel('Recusar').setStyle(4));
                         const mentionRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? `<@&${RECRUIT_LEADERSHIP_ROLE}>` : `<@&${SUPERVISAO_ROLE}>`;

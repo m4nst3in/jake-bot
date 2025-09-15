@@ -214,7 +214,7 @@ export default {
           .setTitle('Recrutamento • Migração')
           .setColor(color)
           .setDescription('Selecione o tipo de migração:')
-          .setFooter({ text: `Usuário: ${userId}` })
+          .setFooter({ text: `Usuário: ${userId}`, iconURL: interaction.guild?.iconURL() || undefined })
           .setTimestamp();
         return interaction.editReply({ embeds: [embed], components: [row] });
       }

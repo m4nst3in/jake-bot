@@ -71,7 +71,7 @@ export default {
             .setTitle('<a:staff_cdw:934664526639562872> Ocorrência de Staff')
             .setDescription(lines.join('\n'))
             .setColor(color)
-            .setFooter({ text: 'Sistema de Ocorrências • Registro permanente' })
+            .setFooter({ text: 'Sistema de Ocorrências • Registro permanente', iconURL: interaction.guild?.iconURL() || undefined })
             .setTimestamp()
             .setImage(prova.url);
         const repo = new OccurrenceRepository();

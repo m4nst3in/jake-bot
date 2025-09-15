@@ -76,7 +76,7 @@ export default {
                 .setColor(0x3498DB)
                 .setDescription('Transferência concluída com sucesso.')
                 .addFields({ name: '<a:star3:1120757490011877558> Origem', value: `<@${origemId}> (\`${origemId}\`)`, inline: true }, { name: '<a:star3:1120757490011877558> Destino', value: `<@${destinoId}> (\`${destinoId}\`)`, inline: true }, { name: '<a:star3:1120757490011877558> Cargos Transferidos', value: added.length ? added.map(id => `<@&${id}>`).join(' ') : 'Nenhum (já presentes ou bloqueados)', inline: false }, { name: '<a:star3:1120757490011877558> Cargos Ignorados', value: excluded.length ? excluded.map(id => `<@&${id}>`).join(' ') : 'Nenhum', inline: false }, { name: '<a:star3:1120757490011877558> Removidos da Origem', value: removed.length ? removed.map(id => `<@&${id}>`).join(' ') : 'Nenhum', inline: false })
-                .setFooter({ text: `<:x_hype:1283509028995207241> Executado por ${interaction.user.tag}` })
+                .setFooter({ text: `<:x_hype:1283509028995207241> Executado por ${interaction.user.tag}`, iconURL: interaction.guild?.iconURL() || undefined })
                 .setTimestamp();
             if (logChannel && logChannel.isTextBased()) {
                 await logChannel.send({ embeds: [embed] }).catch(() => { });

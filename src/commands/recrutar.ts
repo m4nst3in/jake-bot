@@ -54,7 +54,7 @@ export default {
             `Selecione a equipe para recrutar **${target.tag}**.`,
             isGlobal ? '\n⚠️ O usuário está na **Blacklist GLOBAL**. Todas as equipes estão bloqueadas.' : `\nÁreas indisponíveis (blacklist por área): ${byArea.size ? [...byArea].join(', ') : 'Nenhuma'}`
         ].join('\n'))
-            .setFooter({ text: isGlobal ? 'Remova da blacklist global para liberar o recrutamento.' : 'Clique em apenas uma equipe' });
+            .setFooter({ text: isGlobal ? 'Remova da blacklist global para liberar o recrutamento.' : 'Clique em apenas uma equipe', iconURL: interaction.guild?.iconURL() || undefined });
         if (isGlobal) {
             embed.addFields({ name: 'Motivos (GLOBAL)', value: globalReasons });
         }

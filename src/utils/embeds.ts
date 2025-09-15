@@ -4,6 +4,7 @@ export interface BaseEmbedOptions {
     description?: string;
     color?: ColorResolvable;
     footer?: string;
+    iconURL?: string;
     fields?: {
         name: string;
         value: string;
@@ -22,6 +23,6 @@ export function baseEmbed(opts: BaseEmbedOptions) {
         e.addFields(opts.fields);
     e.setTimestamp();
     if (opts.footer)
-        e.setFooter({ text: opts.footer });
+        e.setFooter({ text: opts.footer, iconURL: opts.iconURL });
     return e;
 }

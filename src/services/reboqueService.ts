@@ -265,7 +265,7 @@ export class ReboqueService {
             .setColor(0xFF6B6B)
             .setDescription(`Backup dos dados de **${backupData.username}** na área **${area}**`)
             .addFields({ name: '<a:mov_call1:1252739847614103687> Usuário', value: `<@${backupData.userId}>\n\`${backupData.userId}\``, inline: true }, { name: '<a:mov_call1:1252739847614103687> Área', value: area, inline: true }, { name: '<a:mov_call1:1252739847614103687> Pontos na Área', value: areaPoints?.points?.toString() || '0', inline: true }, { name: '<a:mov_call1:1252739847614103687> Motivo do Reboque', value: backupData.reason }, { name: '<a:mov_call1:1252739847614103687> Executor', value: `<@${backupData.executor}>`, inline: true }, { name: '<a:mov_call1:1252739847614103687> Data/Hora', value: `<t:${Math.floor(new Date(backupData.reboqueDate).getTime() / 1000)}:F>`, inline: true })
-            .setFooter({ text: 'Backup automático gerado pelo sistema de reboque' })
+            .setFooter({ text: 'Backup automático gerado pelo sistema de reboque', iconURL: undefined })
             .setTimestamp();
     }
     private async removeFromDatabase(targetId: string): Promise<void> {
@@ -341,7 +341,7 @@ export class ReboqueService {
                 inline: false
             })
                 .setThumbnail(userInfo?.avatarURL || null)
-                .setFooter({ text: 'Sistema de Reboque - Jake CDW' })
+                .setFooter({ text: 'Sistema de Reboque - Jake CDW', iconURL: undefined })
                 .setTimestamp();
             await (channel as TextChannel).send({ embeds: [embed] });
             return true;

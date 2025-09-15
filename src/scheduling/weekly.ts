@@ -159,7 +159,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Suporte** (incluindo relatórios e plantões) foi resetada.')
                         .setColor(0xFFFFFF)
-                        .setFooter({ text: 'Novo ciclo iniciado' })
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
                         .setTimestamp();
                     try {
                         const rCh: any = await client.channels.fetch(rankingChannelId).catch(() => null);
@@ -206,7 +206,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Jornalismo** foi resetada.')
                         .setColor(0xFFB6ED)
-                        .setFooter({ text: 'Novo ciclo iniciado' })
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
                         .setTimestamp();
                     const journalismChannelId = (cfg as any).channels?.journalismRanking || journalismBackupChannelId;
                     const jRankCh: any = await client.channels.fetch(journalismChannelId).catch(() => null);
@@ -283,7 +283,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Eventos** foi resetada.')
                         .setColor(0x9B59BB)
-                        .setFooter({ text: 'Novo ciclo iniciado' })
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
                         .setTimestamp();
                     await evCh.send({ embeds: [embed] });
                     try {
@@ -325,7 +325,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setTitle('♻️ Reset Semanal de Pontos')
                         .setDescription('A pontuação da equipe de **Design** foi resetada.')
                         .setColor(0xE67E22)
-                        .setFooter({ text: 'Novo ciclo iniciado' })
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
                         .setTimestamp();
                     await dCh.send({ embeds: [embed] });
                     try {
@@ -392,7 +392,7 @@ export function scheduleWeeklyTasks(client: Client) {
                             .setTitle('♻️ Reset Semanal de Pontos')
                             .setDescription('A pontuação da equipe de **Recrutamento** foi resetada.')
                             .setColor(0x39ff14)
-                            .setFooter({ text: 'Novo ciclo iniciado' })
+                            .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
                             .setTimestamp();
                         await rRankCh.send({ embeds: [embed] });
                         try {
@@ -433,7 +433,7 @@ export function scheduleWeeklyTasks(client: Client) {
                     .setDescription('Encerramos a semana das bancas de **Suporte**. Agradecemos o empenho de todos! Preparem-se para o novo ciclo.')
                     .setColor(0xFFFFFF)
                     .setImage(banner)
-                    .setFooter({ text: 'Encerramento semanal • Suporte' })
+                    .setFooter({ text: 'Encerramento semanal • Suporte', iconURL: undefined })
                     .setTimestamp();
                 try {
                     const cfgAny: any = cfg;
@@ -469,7 +469,7 @@ export function scheduleWeeklyTasks(client: Client) {
                         .setDescription('Encerramos a semana das bancas de **Recrutamento**. Obrigado pelo esforço! Novo ciclo começa agora.')
                         .setColor(0x39ff14)
                         .setImage(banner)
-                        .setFooter({ text: 'Encerramento semanal • Recrutamento' })
+                        .setFooter({ text: 'Encerramento semanal • Recrutamento', iconURL: undefined })
                         .setTimestamp();
                     await ch.send({ embeds: [embed] }).catch(() => { });
                 }

@@ -224,7 +224,7 @@ export async function logPunishment(
                 { name: '⏱️ Duração', value: durationText, inline: true },
                 { name: '🕐 Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
             )
-            .setFooter({ text: 'Sistema de Punições - CDW' })
+            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: guild?.iconURL() || undefined })
             .setTimestamp();
 
         if (punishment.bannable) {
@@ -314,7 +314,7 @@ export async function createPunishmentEmbed(
             { name: '📝 Motivo', value: punishment.reason, inline: false }
         )
         .setColor(0xE74C3C)
-        .setFooter({ text: 'Esta ação não pode ser desfeita automaticamente' })
+        .setFooter({ text: 'Sistema de Punições - CDW', iconURL: target.guild?.iconURL() || undefined })
         .setTimestamp();
 
     if (punishment.bannable) {

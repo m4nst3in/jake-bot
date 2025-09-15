@@ -38,7 +38,7 @@ export default {
             `${dot} Gerencie pontos rapidamente nas áreas onde você tem liderança${isOwner(member) ? ' (owner: todas as áreas)' : (extraAreas.length ? ' (inclui permissões especiais)' : '')}.`,
             `${dot} Use os botões abaixo para adicionar ou remover; tudo é logado automaticamente.`
         ].join('\n\n'))
-            .setFooter({ text: 'Sistema de Pontos' });
+            .setFooter({ text: 'Sistema de Pontos', iconURL: interaction.guild?.iconURL() || undefined });
         const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder()
             .setCustomId('pts_action:add')
             .setLabel('Adicionar Pontos')

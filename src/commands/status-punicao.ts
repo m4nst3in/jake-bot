@@ -107,7 +107,7 @@ export default {
                     { name: '🎖️ Patente', value: userRank.rankName, inline: true },
                     { name: '📅 Entrou no Servidor', value: joinedAt ? `<t:${Math.floor(joinedAt.getTime() / 1000)}:D>` : 'Desconhecido', inline: true }
                 )
-                .setFooter({ text: 'Sistema de Punições - CDW' })
+                .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                 .setTimestamp();
 
             if (activePunishments.length > 0) {

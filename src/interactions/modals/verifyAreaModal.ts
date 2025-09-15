@@ -135,7 +135,7 @@ export default {
             .setColor(0x2ecc71)
             .setTitle('Verificação Concluída')
             .setDescription(`Área: **${assign.area}**\nStatus de progressão: **${up ? 'Eu Upo' : 'Não Upo'}**${mirroredRankName ? `\nPatente espelhada: **${mirroredRankName}**` : ''}`)
-            .setFooter({ text: 'Sistema de Verificação' })
+            .setFooter({ text: 'Sistema de Verificação', iconURL: interaction.guild?.iconURL() || undefined })
             .setTimestamp();
         await interaction.editReply({ embeds: [embed] });
     }

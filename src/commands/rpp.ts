@@ -56,7 +56,7 @@ export default {
         const embed = new EmbedBuilder()
             .setColor(0x101417)
             .setDescription(descParts.join('\n\n'))
-            .setFooter({ text: 'RPP • Central da Web' });
+            .setFooter({ text: 'RPP • Central da Web', iconURL: interaction.guild?.iconURL() || undefined });
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(listBtn, removedBtn, manageBtn);
         await interaction.editReply({ embeds: [embed], components: [row] });
     }

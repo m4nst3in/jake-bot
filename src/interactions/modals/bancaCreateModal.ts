@@ -124,7 +124,7 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             const embed = new EmbedBuilder()
                 .setColor(0xE67E22)
                 .setDescription(description)
-                .setFooter({ text: 'Liderança de Design - CDW' });
+                .setFooter({ text: 'Liderança de Design - CDW', iconURL: interaction.guild?.iconURL() || undefined });
             await textChannel.send({ embeds: [embed] });
             return;
         }
@@ -180,13 +180,13 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                 .setColor(0xFFB6ED)
                 .setDescription(texto)
                 .setImage('https://cdn.discordapp.com/attachments/1397985579320213504/1416253613633699870/Jo-banner_20250912_011943_0020.gif?ex=68c62c76&is=68c4daf6&hm=f815b96bff10ce61f3373dc87973d414b5749847cd7ef15a53d9ea5f8ba7fad9&')
-                .setFooter({ text: 'Liderança de Jornalismo - CDW KL' });
+                .setFooter({ text: 'Liderança de Jornalismo - CDW KL', iconURL: interaction.guild?.iconURL() || undefined });
             await textChannel.send({ embeds: [embed] });
             return;
         }
         await interaction.editReply(`Banca criada: <#${channel.id}>`);
         const textChannel = channel as TextChannel;
-        const embed = new EmbedBuilder().setTitle(`Banca: ${nome}`).setColor(0x5865F2).setDescription(`Canal criado para a banca **${nome}**`).addFields({ name: 'Staff', value: `<@${staffId}>`, inline: true }, { name: 'Criada por', value: `<@${interaction.user.id}>`, inline: true }).setFooter({ text: `ID: ${channel.id}` }).setTimestamp();
+        const embed = new EmbedBuilder().setTitle(`Banca: ${nome}`).setColor(0x5865F2).setDescription(`Canal criado para a banca **${nome}**`).addFields({ name: 'Staff', value: `<@${staffId}>`, inline: true }, { name: 'Criada por', value: `<@${interaction.user.id}>`, inline: true }).setFooter({ text: `ID: ${channel.id}`, iconURL: interaction.guild?.iconURL() || undefined }).setTimestamp();
         if (interaction.guild.id === config.banca?.supportGuildId) {
             embed.setColor(0xFFFFFF);
         }

@@ -159,7 +159,7 @@ export default {
                 .setTitle('<a:mov_call10:1191155269258973214> Punições - CDW')
                 .setDescription(`Selecione a categoria da punição para **${target.displayName}**`)
                 .setColor(0x3498DB)
-                .setFooter({ text: 'Sistema de Punições - CDW' })
+                .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                 .setTimestamp();
 
             // Criar select menu com categorias
@@ -208,7 +208,7 @@ export default {
                         .setTitle(`${category.emoji} ${category.name}`)
                         .setDescription(category.description)
                         .setColor(0xE67E22)
-                        .setFooter({ text: 'Sistema de Punições - CDW' })
+                        .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                         .setTimestamp();
 
                     if (category.note) {
@@ -302,7 +302,7 @@ export default {
                             { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }
                         )
                         .setColor(0xE74C3C)
-                        .setFooter({ text: 'Sistema de Punições - CDW' })
+                        .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                         .setTimestamp();
 
                     const confirmButton = new ButtonBuilder()
@@ -331,7 +331,7 @@ export default {
                             .setTitle('<a:mov_call1:1252739847614103687> Sistema de Punições')
                             .setDescription(`Selecione a categoria de punição para **${target.displayName}**`)
                             .setColor(0x3498DB)
-                            .setFooter({ text: 'Sistema de Punições - CDW' })
+                            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                             .setTimestamp();
 
                         const selectMenu = new StringSelectMenuBuilder()
@@ -387,7 +387,7 @@ export default {
                                     { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }
                                 )
                                 .setColor(0x2ECC71)
-                                .setFooter({ text: 'Sistema de Punições - CDW' })
+                                .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                                 .setTimestamp();
 
                             await i.editReply({
@@ -399,7 +399,7 @@ export default {
                                 .setTitle('<a:nao:1293359397040427029> Erro ao Aplicar Punição')
                                 .setDescription('Ocorreu um erro ao aplicar a punição. Verifique os logs para mais detalhes.')
                                 .setColor(0xE74C3C)
-                                .setFooter({ text: 'Sistema de Punições - CDW' })
+                                .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                                 .setTimestamp();
 
                             await i.editReply({
@@ -416,7 +416,7 @@ export default {
                             .setTitle('<a:nao:1293359397040427029> Punição Cancelada')
                             .setDescription('A aplicação da punição foi cancelada.')
                             .setColor(0x95A5A6)
-                            .setFooter({ text: 'Sistema de Punições - CDW' })
+                            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                             .setTimestamp();
 
                         await i.update({

@@ -246,7 +246,7 @@ export function registerProtectionListener(client: any) {
                                     .setColor(0x3498DB)
                                     .setDescription(`Um cargo monitorado foi adicionado e registrado.`)
                                     .addFields({ name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isMonitored }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Apenas registrado (sem bloqueio)' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
-                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW', iconURL: newMember.guild?.iconURL() || undefined })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch((err: any) => { logger.warn({ err }, 'Proteção: falha enviar log cargo monitorado'); });
                             }
@@ -274,7 +274,7 @@ export function registerProtectionListener(client: any) {
                                     .setColor(isVip ? 0x9B59B6 : 0x3498DB)
                                     .setDescription('Um cargo monitorado (VIP ou Permissão) foi adicionado e apenas registrado.')
                                     .addFields({ name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Executor', value: executorIdPassive ? `<@${executorIdPassive}>\n\`${executorIdPassive}\`` : 'Desconhecido' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Tipo', value: isVip ? 'VIP' : 'Permissão' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Ação', value: 'Não fiz nada, apenas registrei' }, { name: '<a:cdwdsg_animatedarroworange:1305962425631379518> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
-                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW', iconURL: newMember.guild?.iconURL() || undefined })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch(() => { });
                             }
@@ -318,7 +318,7 @@ export function registerProtectionListener(client: any) {
                                         .setColor(0xE74C3C)
                                         .setDescription('Um cargo comprável foi aplicado de forma não autorizada e removido imediatamente.')
                                         .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' }, { name: 'Cargo Bloqueado', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: 'Ação', value: 'Cargo removido automaticamente' }, { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
-                                        .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                        .setFooter({ text: 'Sistema de Proteção de Cargos - CDW', iconURL: newMember.guild?.iconURL() || undefined })
                                         .setTimestamp();
                                     const { alertRole, alertUsers } = getProtectionConfig();
                                     const mentionContent = `${alertRole ? `<@&${alertRole}>` : ''} ${alertUsers.map(id => `<@${id}>`).join(' ')}`.trim();
@@ -336,7 +336,7 @@ export function registerProtectionListener(client: any) {
                                     .setColor(0x2ECC71)
                                     .setDescription('Cargo comprável aplicado por agente autorizado (owner/bot).')
                                     .addFields({ name: 'Usuário', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: 'Executor', value: `<@${executorId}>\n\`${executorId}\`` }, { name: 'Cargo', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: 'Ação', value: 'Apenas registrado' }, { name: 'Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
-                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW', iconURL: newMember.guild?.iconURL() || undefined })
                                     .setTimestamp();
                                 ch.send({ embeds: [embed] }).catch(() => { });
                             }
@@ -508,7 +508,7 @@ export function registerProtectionListener(client: any) {
                                     .setColor(0xE74C3C)
                                     .setDescription(`Um cargo protegido foi aplicado de forma não autorizada e removido imediatamente.`)
                                     .addFields({ name: '<a:vSETAverdeclaro:1386504186396676141> Usuário Afetado', value: `<@${newMember.id}>\n\`${newMember.id}\`` }, { name: '<a:vSETAverdeclaro:1386504186396676141> Executor', value: executorId ? `<@${executorId}>\n\`${executorId}\`` : 'Desconhecido' }, { name: '<a:vSETAverdeclaro:1386504186396676141> Cargo Bloqueado', value: `<@&${role.id}>\n\`${role.id}\`` }, { name: '<a:vSETAverdeclaro:1386504186396676141> Identificação', value: `Nome interno: **${blockInfo.name}**` }, { name: '<a:vSETAverdeclaro:1386504186396676141> Ação', value: 'Cargo removido automaticamente' }, { name: '<a:vSETAverdeclaro:1386504186396676141> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>` })
-                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW' })
+                                    .setFooter({ text: 'Sistema de Proteção de Cargos - CDW', iconURL: newMember.guild?.iconURL() || undefined })
                                     .setTimestamp();
                                 const execMember = executorId ? await newMember.guild.members.fetch(executorId).catch(() => null) : null;
                                 if (execMember?.user?.avatarURL())

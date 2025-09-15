@@ -30,7 +30,7 @@ export default {
             .setDescription(`Gerencie ou liste as blacklists de **${target.tag}**.`)
             .addFields({ name: '<:emoji_44:1313615518573265077> Usuário', value: `<@${target.id}>`, inline: true }, { name: '<a:crown_white:1312241140615090216> ID', value: target.id, inline: true })
             .setColor(0xe74c3c)
-            .setFooter({ text: 'Escolha uma opção abaixo' });
+            .setFooter({ text: 'Escolha uma opção abaixo', iconURL: interaction.guild?.iconURL() || undefined });
         if (target.avatarURL())
             embed.setThumbnail(target.avatarURL()!);
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`bl_manage:${target.id}`).setLabel('Gerenciar').setStyle(1).setEmoji('<:mov_call19:1195026598454362152>'), new ButtonBuilder().setCustomId(`bl_list:${target.id}`).setLabel('Listar').setStyle(2).setEmoji('<:mov_call20:1193710198615977985>'));

@@ -67,7 +67,7 @@ function buildRppEmbed(guild: Guild) {
         .setColor(color)
         .setDescription(lines.join('\n\n'))
         .setImage(image)
-        .setFooter({ text: 'RPP • Central da Web' });
+        .setFooter({ text: 'RPP • Central da Web', iconURL: guild?.iconURL() || undefined });
 }
 export default {
     data: new SlashCommandBuilder()
@@ -127,7 +127,7 @@ export default {
                 .setColor(0x111111)
                 .setDescription('Clique no botão abaixo para fazer uma solicitação de arte.\nPreencha as informações necessárias para sua arte.')
                 .setImage('https://i.imgur.com/U9lCIK7.gif')
-                .setFooter({ text: 'Sistema de Pedidos de Design' });
+                .setFooter({ text: 'Sistema de Pedidos de Design', iconURL: interaction.guild?.iconURL() || undefined });
             if (interaction.guildId === JOURNALISM_GUILD_ID)
                 embed.setColor(0xFFB6ED);
             enforceSupportColor(embed, interaction.guildId || undefined);
@@ -166,7 +166,7 @@ export default {
                     .setDescription(desc)
                     .setThumbnail(MIG_HEADER)
                     .setImage(MIG_BANNER)
-                    .setFooter({ text: 'CDW - MIGRAÇÃO, todos os direitos reservados.' });
+                    .setFooter({ text: 'CDW - MIGRAÇÃO, todos os direitos reservados.', iconURL: interaction.guild?.iconURL() || undefined });
             }
             else if (interaction.guildId === EVENTOS_GUILD_ID) {
                 const ev = {
@@ -179,7 +179,7 @@ export default {
                     .setTitle(`${ev.title} RECEPÇÃO - EVENTOS ${ev.title}`)
                     .setDescription(`${ev.bullet} **Seja muito bem-vindo(a) ao servidor da Equipe de Eventos - Cdw!**\n\n• Clique no botão abaixo para iniciar a verificação e informar se você UPA ou NÃO UPA pela área.`)
                     .addFields({ name: `${ev.recruiters} RECRUTADORES`, value: '*Escreva `rec`, envie e marque a liderança quando solicitado.*' })
-                    .setFooter({ text: 'Sistema de Verificação • Eventos' });
+                    .setFooter({ text: 'Sistema de Verificação • Eventos', iconURL: interaction.guild?.iconURL() || undefined });
                 if (banner)
                     embed.setImage(banner);
             }
@@ -192,7 +192,7 @@ export default {
                     .setTitle('<a:z_estrelinha_cdw:935927437647314994> Verificação de Acesso')
                     .setColor(0x2ecc71)
                     .setDescription(desc)
-                    .setFooter({ text: 'Sistema de Verificação • Central da Web' });
+                    .setFooter({ text: 'Sistema de Verificação • Central da Web', iconURL: interaction.guild?.iconURL() || undefined });
                 if (banner)
                     embed.setImage(banner);
                 if (interaction.guildId === '1183909149784952902') {

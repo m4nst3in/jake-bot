@@ -133,7 +133,7 @@ export default {
                         { name: '📝 Motivo', value: reason, inline: false }
                     )
                     .setColor(0x2ECC71)
-                    .setFooter({ text: 'Sistema de Punições - CDW' })
+                    .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                     .setTimestamp();
 
                 if (failedRemovals.length > 0) {
@@ -152,7 +152,7 @@ export default {
                         { name: '👮 Executor', value: `<@${executor.id}>`, inline: true }
                     )
                     .setColor(0x95A5A6)
-                    .setFooter({ text: 'Sistema de Punições - CDW' })
+                    .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                     .setTimestamp();
 
                 if (failedRemovals.length > 0) {
@@ -218,7 +218,7 @@ async function logPunishmentRemoval(
                 { name: '📝 Motivo', value: reason, inline: false },
                 { name: '🕐 Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true }
             )
-            .setFooter({ text: 'Sistema de Punições - CDW' })
+            .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
             .setTimestamp();
 
         await logChannel.send({ embeds: [embed] });

@@ -85,7 +85,7 @@ export default {
                 '• Migração — seleciona cargo da hierarquia conforme o tempo',
                 '• Equipe — aplica apenas o cargo da equipe + Staff'
             ].join('\n'))
-            .setFooter({ text: `ID do usuário: ${userId}` })
+            .setFooter({ text: `ID do usuário: ${userId}`, iconURL: interaction.guild?.iconURL() || undefined })
             .setTimestamp();
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder().setCustomId(`recruit_mode:inic:${team}:${userId}`).setLabel('Iniciante').setStyle(3),

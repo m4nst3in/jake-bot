@@ -177,7 +177,7 @@ export default {
                     .setTitle('<a:z_proibido_cdw:951509668159692871> Blacklist • Adicionada')
                     .setDescription(`Novo registro de blacklist aplicado.`)
                     .addFields({ name: '<:branco_membros:1303749626062573610> Usuário', value: `<@${targetId}>\n\`${targetId}\``, inline: true }, { name: '<:white_peace:988012499133681674> Staff', value: `<@${interaction.user.id}>`, inline: true }, { name: '<:x_hype:1283509028995207241> Área', value: `**${areaRaw}**`, inline: false }, { name: '<a:emoji_417:1282771719400067173> Motivo', value: motivo!.slice(0, 1000) }, { name: '<a:zyellow_aviso_sz_cdw:934691135073439845> Blacklists ativas', value: `${ativos.length}`, inline: true })
-                    .setFooter({ text: 'Gerenciado via painel de blacklist' })
+                    .setFooter({ text: 'Gerenciado via painel de blacklist', iconURL: interaction.guild?.iconURL() || undefined })
                     .setTimestamp();
                 if (userObj?.avatarURL())
                     embed.setThumbnail(userObj.avatarURL()!);
@@ -194,7 +194,7 @@ export default {
                     .setTitle('<a:z_proibido_cdw:951509668159692871> Blacklist • Removida')
                     .setDescription('Registro de blacklist removido com sucesso.')
                     .addFields({ name: '<:branco_membros:1303749626062573610> Usuário', value: `<@${targetId}>\n\`${targetId}\``, inline: true }, { name: '<a:z_estrelinha_cdw:935927437647314994> Staff', value: `<@${interaction.user.id}>`, inline: true }, { name: '<:x_hype:1283509028995207241> Área', value: `**${areaRaw}**`, inline: false }, { name: '<a:zyellow_aviso_sz_cdw:934691135073439845> Blacklists restantes', value: `${ativos.length}`, inline: true })
-                    .setFooter({ text: 'Gerenciado via painel de blacklist' })
+                    .setFooter({ text: 'Gerenciado via painel de blacklist', iconURL: interaction.guild?.iconURL() || undefined })
                     .setTimestamp();
                 if (userObj?.avatarURL())
                     embed.setThumbnail(userObj.avatarURL()!);

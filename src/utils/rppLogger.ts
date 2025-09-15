@@ -250,7 +250,7 @@ export async function sendRppLog(guild: Guild | null | undefined, type: string, 
                     if (restored.length)
                         description += `\n\n${dot} **Cargos Restaurados**\n${restored.map((r: string) => `<@&${r}>`).join(' ')}`;
                 }
-                const embed = new EmbedBuilder().setTitle(meta.title).setDescription(description).setColor(meta.color).setFooter({ text: 'Log (principal)' });
+                const embed = new EmbedBuilder().setTitle(meta.title).setDescription(description).setColor(meta.color).setFooter({ text: 'Log (principal)', iconURL: mainGuild?.iconURL() || undefined });
                 try {
                     const member = await mainGuild.members.fetch(payload.userId).catch(() => null);
                     if (member?.user?.avatarURL())
