@@ -101,6 +101,14 @@ export function canPunishTarget(executor: GuildMember, target: GuildMember): { c
         return { canPunish: false, reason: 'Você não pode punir um owner.' };
     }
 
+    // Verificar se o alvo é membro da staff
+    if (isStaffMember(target)) {
+        // Apenas owners podem punir membros da staff
+        if (!config.owners || !config.owners.includes(executor.id)) {
+            return { canPunish: false, reason: 'Apenas owners podem punir membros da staff.' };
+        }
+    }
+
     // Verificar hierarquia
     const hierarchyOrder = config.hierarchyOrder || [];
     const roles = config.roles || {};
