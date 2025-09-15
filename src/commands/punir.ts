@@ -156,8 +156,8 @@ export default {
 
             // Criar embed inicial com categorias
             const embed = new EmbedBuilder()
-                .setTitle('🔨 Sistema de Punições')
-                .setDescription(`Selecione a categoria de punição para **${target.displayName}**`)
+                .setTitle('<a:mov_call10:1191155269258973214> Punições - CDW')
+                .setDescription(`Selecione a categoria da punição para **${target.displayName}**`)
                 .setColor(0x3498DB)
                 .setFooter({ text: 'Sistema de Punições - CDW' })
                 .setTimestamp();
@@ -165,7 +165,7 @@ export default {
             // Criar select menu com categorias
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('punishment_category')
-                .setPlaceholder('Selecione uma categoria de punição...')
+                .setPlaceholder('<a:mov_call10:1191155269258973214> Selecione uma categoria de punição...')
                 .addOptions(
                     Object.entries(punishmentConfig.punishmentCategories).map(([key, category]: [string, any]) => ({
                         label: category.name,
@@ -193,7 +193,7 @@ export default {
             collector.on('collect', async (i: any) => {
                 if (i.user.id !== executor.id) {
                     await i.reply({
-                        content: '❌ Apenas quem executou o comando pode interagir.',
+                        content: '<a:nao:1293359397040427029> Apenas quem executou o comando pode interagir.',
                         ephemeral: true
                     });
                     return;
@@ -265,7 +265,7 @@ export default {
 
                     if (!punishment) {
                         await i.reply({
-                            content: '❌ Punição não encontrada.',
+                            content: '<a:nao:1293359397040427029> Punição não encontrada.',
                             ephemeral: true
                         });
                         return;
@@ -274,7 +274,7 @@ export default {
                     // Verificar permissões
                     if (!hasPermissionToPunish(executor, punishment.type)) {
                         await i.reply({
-                            content: '❌ Você não tem permissão para aplicar este tipo de punição.',
+                            content: '<a:nao:1293359397040427029> Você não tem permissão para aplicar este tipo de punição.',
                             ephemeral: true
                         });
                         return;
@@ -293,26 +293,26 @@ export default {
                     }
 
                     const confirmEmbed = new EmbedBuilder()
-                        .setTitle('⚠️ Confirmação de Punição')
+                        .setTitle('<a:mov_call10:1191155269258973214> Confirmação de Punição')
                         .setDescription(`Tem certeza que deseja aplicar esta punição?`)
                         .addFields(
-                            { name: '👤 Usuário', value: `<@${target.id}>`, inline: true },
-                            { name: '⚖️ Punição', value: punishmentType.name, inline: true },
-                            { name: '⏱️ Duração', value: durationText, inline: true },
-                            { name: '📝 Motivo', value: punishment.reason, inline: false }
+                            { name: '<a:mov_call1:1252739847614103687> Usuário', value: `<@${target.id}>`, inline: true },
+                            { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentType.name, inline: true },
+                            { name: '<a:mov_call1:1252739847614103687> Duração', value: durationText, inline: true },
+                            { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }
                         )
                         .setColor(0xE74C3C)
-                        .setFooter({ text: 'Esta ação não pode ser desfeita automaticamente' })
+                        .setFooter({ text: 'Sistema de Punições - CDW' })
                         .setTimestamp();
 
                     const confirmButton = new ButtonBuilder()
                         .setCustomId(`confirm_punishment_${punishmentId}`)
-                        .setLabel('✅ Confirmar')
+                        .setLabel('<a:sim:1293359353180454933> Confirmar')
                         .setStyle(ButtonStyle.Danger);
 
                     const cancelButton = new ButtonBuilder()
                         .setCustomId('cancel_punishment')
-                        .setLabel('❌ Cancelar')
+                        .setLabel('<a:nao:1293359397040427029> Cancelar')
                         .setStyle(ButtonStyle.Secondary);
 
                     const confirmRow = new ActionRowBuilder<ButtonBuilder>()
@@ -328,7 +328,7 @@ export default {
                     if (i.customId === 'back_to_categories') {
                         // Voltar para as categorias
                         const embed = new EmbedBuilder()
-                            .setTitle('🔨 Sistema de Punições')
+                            .setTitle('<a:mov_call1:1252739847614103687> Sistema de Punições')
                             .setDescription(`Selecione a categoria de punição para **${target.displayName}**`)
                             .setColor(0x3498DB)
                             .setFooter({ text: 'Sistema de Punições - CDW' })
@@ -367,7 +367,7 @@ export default {
 
                         if (!punishment) {
                             await i.reply({
-                                content: '❌ Punição não encontrada.',
+                                content: '<a:nao:1293359397040427029> Punição não encontrada.',
                                 ephemeral: true
                             });
                             return;
@@ -380,11 +380,11 @@ export default {
 
                         if (success) {
                             const successEmbed = new EmbedBuilder()
-                                .setTitle('✅ Punição Aplicada')
+                                .setTitle('<a:sim:1293359353180454933> Punição Aplicada')
                                 .setDescription(`A punição foi aplicada com sucesso em **${target.displayName}**.`)
                                 .addFields(
-                                    { name: '⚖️ Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
-                                    { name: '📝 Motivo', value: punishment.reason, inline: false }
+                                    { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
+                                    { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }
                                 )
                                 .setColor(0x2ECC71)
                                 .setFooter({ text: 'Sistema de Punições - CDW' })
@@ -396,7 +396,7 @@ export default {
                             });
                         } else {
                             const errorEmbed = new EmbedBuilder()
-                                .setTitle('❌ Erro ao Aplicar Punição')
+                                .setTitle('<a:nao:1293359397040427029> Erro ao Aplicar Punição')
                                 .setDescription('Ocorreu um erro ao aplicar a punição. Verifique os logs para mais detalhes.')
                                 .setColor(0xE74C3C)
                                 .setFooter({ text: 'Sistema de Punições - CDW' })
@@ -413,7 +413,7 @@ export default {
 
                     if (i.customId === 'cancel_punishment') {
                         const cancelEmbed = new EmbedBuilder()
-                            .setTitle('❌ Punição Cancelada')
+                            .setTitle('<a:nao:1293359397040427029> Punição Cancelada')
                             .setDescription('A aplicação da punição foi cancelada.')
                             .setColor(0x95A5A6)
                             .setFooter({ text: 'Sistema de Punições - CDW' })
@@ -440,12 +440,12 @@ export default {
             
             if (interaction.replied || interaction.deferred) {
                 await interaction.followUp({
-                    content: `❌ ${errorMessage}`,
+                    content: `<a:nao:1293359397040427029> ${errorMessage}`,
                     ephemeral: true
                 });
             } else {
                 await interaction.reply({
-                    content: `❌ ${errorMessage}`,
+                    content: `<a:nao:1293359397040427029> ${errorMessage}`,
                     ephemeral: true
                 });
             }
