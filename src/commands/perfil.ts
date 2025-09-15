@@ -5,7 +5,7 @@ import { loadConfig } from '../config/index.ts';
 import { BlacklistRepository } from '../repositories/blacklistRepository.ts';
 import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
 import { RPPRepository } from '../repositories/rppRepository.ts';
-import { getMemberLeaderAreas, hasCrossGuildLeadership } from '../utils/permissions.ts';
+import { getMemberLeaderAreas, hasCrossGuildLeadership, isOwner } from '../utils/permissions.ts';
 import { StaffReportService } from '../services/staffReportService.ts';
 export default {
     data: new SlashCommandBuilder()
@@ -14,6 +14,17 @@ export default {
         .addUserOption(o => o.setName('user').setDescription('Usuário alvo').setRequired(false)),
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
+        // Permission gate: only owners and leadership can access /perfil
+        const reqMember = interaction.member as GuildMember | null;
+        const owner = isOwner(reqMember);
+        let isLeader = getMemberLeaderAreas(reqMember).length > 0;
+        if (!isLeader && reqMember) {
+            try { isLeader = await hasCrossGuildLeadership(interaction.client, reqMember.id); } catch {}
+        }
+        if (!owner && !isLeader) {
+            await interaction.editReply('Sem permissão para usar este comando. Tá louco?');
+            return;
+        }
         const target = interaction.options.getUser('user') || interaction.user;
         const svc = new PointsService();
         const repo = new PointRepository();
