@@ -429,8 +429,43 @@ export default {
                             if (proofMessage && proofMessage.size > 0) {
                                 const proof = proofMessage.first();
                                 
+                                // Salvar prova no canal específico
+                                let savedProofUrl = proof?.attachments.first()?.url;
+                                try {
+                                    const proofGuildId = '1405418716258111580';
+                                    const proofChannelId = '1413999392939180032';
+                                    
+                                    const proofGuild = interaction.client.guilds.cache.get(proofGuildId);
+                                    if (proofGuild) {
+                                        const proofChannel = proofGuild.channels.cache.get(proofChannelId);
+                                        if (proofChannel?.isTextBased()) {
+                                            const proofEmbed = new EmbedBuilder()
+                                                .setTitle('📋 Prova de Punição')
+                                                .setDescription(`**Executor:** <@${executor.id}> (\`${executor.id}\`)\n**Alvo:** <@${target.id}> (\`${target.id}\`)\n**Punição:** ${punishmentConfig.punishmentTypes[punishment.type].name}\n**Motivo:** ${punishment.reason}`)
+                                                .setColor(0xE74C3C)
+                                                .setTimestamp()
+                                                .setFooter({ text: 'Sistema de Punições - CDW' });
+                                            
+                                            if (proof?.attachments.first()) {
+                                                proofEmbed.setImage(proof.attachments.first()!.url);
+                                            }
+                                            
+                                            const savedMessage = await proofChannel.send({ embeds: [proofEmbed] });
+                                            savedProofUrl = savedMessage.url;
+                                            
+                                            logger.info({ 
+                                                executorId: executor.id, 
+                                                targetId: target.id, 
+                                                savedMessageId: savedMessage.id 
+                                            }, 'Prova salva no canal de backup');
+                                        }
+                                    }
+                                } catch (error) {
+                                    logger.error({ error }, 'Erro ao salvar prova no canal de backup');
+                                }
+                                
                                 // Aplicar punição com prova
-                                const success = await applyPunishment(target, punishment, executor, interaction, proof?.attachments.first()?.url);
+                                const success = await applyPunishment(target, punishment, executor, interaction, savedProofUrl);
 
                                 if (success) {
                                     const successEmbed = new EmbedBuilder()
@@ -439,7 +474,7 @@ export default {
                                         .addFields(
                                             { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
                                             { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false },
-                                            { name: '<a:mov_call1:1252739847614103687> Prova', value: `[Anexo enviado](${proof?.attachments.first()?.url})`, inline: false }
+                                            { name: '<a:mov_call1:1252739847614103687> Prova', value: `[Anexo enviado](${savedProofUrl})`, inline: false }
                                         )
                                         .setColor(0x2ECC71)
                                         .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })

@@ -92,7 +92,8 @@
   "purchasableRoles": {
     "Presidencial": "1136850373383045121",
     "Owner": "1134927238391935027",
-    "Global Owner": "1136857095950581800"
+    "Global Owner": "1136857095950581800",
+    "Primeira Dama": "1137332200413597716"
   },
 
   "__comment_staffRankMirrors": "Espelhos de ranks: guildId(area) -> cargos equivalentes por nome de rank global.",

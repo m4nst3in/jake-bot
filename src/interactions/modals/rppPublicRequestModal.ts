@@ -52,11 +52,32 @@ export default {
             else {
                 const rppGuildIds: string[] = Object.keys(cfg.rpp?.guilds || {});
                 const prog: any = cfg.progressionRoles || {};
+                const mainAreaRoleMap: Record<string, string> = cfg.mainAreaRoleMap || {};
                 const candidates: {
                     guildId: string;
                     hasUpa: boolean;
+                    hasLeadership: boolean;
+                    hasMainArea: boolean;
                     memberObj: GuildMember;
+                    priority: number;
                 }[] = [];
+                
+                // Verificar cargos principais no servidor principal para determinar área
+                const mainGuild = await interaction.client.guilds.fetch(mainGuildId).catch(() => null);
+                let userMainArea: string | null = null;
+                if (mainGuild) {
+                    const mainMember = await mainGuild.members.fetch(userId).catch(() => null);
+                    if (mainMember) {
+                        // Verificar cargos de área principal
+                        for (const [roleId, areaName] of Object.entries(mainAreaRoleMap)) {
+                            if (mainMember.roles.cache.has(roleId)) {
+                                userMainArea = areaName;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
                 for (const gid of rppGuildIds) {
                     if (gid === mainGuildId)
                         continue;
@@ -66,13 +87,39 @@ export default {
                     const m = await g.members.fetch(userId).catch(() => null) as GuildMember | null;
                     if (!m)
                         continue;
+                    
                     const pr = prog[gid];
                     const upaRoles: string[] = pr?.upa || [];
                     const hasUpa = upaRoles.some(r => m.roles.cache.has(r));
-                    candidates.push({ guildId: gid, hasUpa, memberObj: m });
+                    
+                    // Verificar se tem liderança neste servidor
+                    const areaConfig = (cfg.areas || []).find((area: any) => area.guildId === gid);
+                    const hasLeadership = areaConfig?.roleIds?.lead ? m.roles.cache.has(areaConfig.roleIds.lead) : false;
+                    
+                    // Verificar se este servidor corresponde à área principal do usuário
+                    const hasMainArea = userMainArea ? areaConfig?.name === userMainArea : false;
+                    
+                    // Calcular prioridade: área principal > liderança > upa > ordem
+                    let priority = 0;
+                    if (hasMainArea) priority += 1000;
+                    if (hasLeadership) priority += 100;
+                    if (hasUpa) priority += 10;
+                    
+                    candidates.push({ 
+                        guildId: gid, 
+                        hasUpa, 
+                        hasLeadership, 
+                        hasMainArea, 
+                        memberObj: m, 
+                        priority 
+                    });
                 }
+                
                 if (candidates.length) {
-                    const preferred = candidates.find(c => c.hasUpa) || candidates[0];
+                    // Ordenar por prioridade (maior primeiro)
+                    candidates.sort((a, b) => b.priority - a.priority);
+                    const preferred = candidates[0];
+                    
                     const areaGuild = await interaction.client.guilds.fetch(preferred.guildId).catch(() => null);
                     if (areaGuild) {
                         await sendRppLog(areaGuild, 'solicitado', { id: created.id, userId, reason: motivo, returnDate: `${dias} dia(s)`, createdAt: created.requested_at });
