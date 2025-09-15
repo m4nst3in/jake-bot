@@ -33,7 +33,7 @@
     "minor": {
       "name": "Punições #1",
       "description": "Infrações menores",
-      "emoji": "<a:e_hype:1118315806435053608>",
+      "emoji": "<a:y_hypeCDW:1417257571684712468>",
       "punishments": [
         {
           "id": "ruidos_estranhos",
@@ -80,7 +80,7 @@
     "moderate": {
       "name": "Punições #2 - Motivos de Castigo",
       "description": "Infrações moderadas que resultam em castigo",
-      "emoji": "<a:c_hyperTKF:1033232394708336721>",
+      "emoji": "<a:green_hypecuty_cdw:1415591722200731688>",
       "note": "Todos que contenham \"intensidade\" ao lado, caso seja pesado e devidamente provado, acarre no banimento",
       "punishments": [
         {
@@ -224,7 +224,7 @@
     "severe": {
       "name": "Punições #3 - Motivos de Ban",
       "description": "Infrações graves que resultam em banimento",
-      "emoji": "<a:land_hype2:1283509580525211741>",
+      "emoji": "<a:red_hypered_cdw:939928635836604457>",
       "punishments": [
         {
           "id": "explanacao_difamacao",
