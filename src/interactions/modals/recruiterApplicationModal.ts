@@ -57,7 +57,7 @@ export default {
                     
                     for (const rankName of hierarchyOrder.reverse()) {
                         const roleId = roles[rankName];
-                        if (roleId && mainMember.roles.cache.has(roleId)) {
+                        if (roleId && mainMember.roles.cache.has(String(roleId))) {
                             hierarchyRole = rankName;
                             break;
                         }
@@ -67,7 +67,7 @@ export default {
                     const mainAreaRoleMap = cfg.mainAreaRoleMap || {};
                     for (const [roleId, areaName] of Object.entries(mainAreaRoleMap)) {
                         if (mainMember.roles.cache.has(roleId)) {
-                            currentAreas.push(areaName);
+                            currentAreas.push(String(areaName));
                         }
                     }
                 }
@@ -78,7 +78,7 @@ export default {
                 .setTitle('<a:green_hypecuty_cdw:1415591722200731688> Nova Candidatura - Recrutador')
                 .setDescription('**Uma nova candidatura para a equipe de Recrutamento foi recebida!**')
                 .setColor(0x00FF94)
-                .setThumbnail(candidate.displayAvatarURL({ dynamic: true }))
+                .setThumbnail(candidate.displayAvatarURL())
                 .addFields(
                     {
                         name: '<a:setabranca:1417092970380791850> **Informações do Candidato**',

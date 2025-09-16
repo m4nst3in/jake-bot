@@ -1,6 +1,7 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Guild } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Guild, GuildMember } from 'discord.js';
 import { baseEmbed } from '../utils/embeds.ts';
 import { loadConfig, reloadConfig } from '../config/index.ts';
+import { isOwner } from '../utils/permissions.ts';
 const SUPPORTED = ['rpp', 'banca', 'pedido', 'verificar', 'recrutador'];
 function enforceSupportColor(embed: EmbedBuilder, guildId?: string) {
     try {
@@ -73,13 +74,48 @@ export default {
     data: new SlashCommandBuilder()
         .setName('embed')
         .setDescription('Publica embeds pré-formatadas em um canal')
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
+        .setDefaultMemberPermissions(null)
         .addStringOption(o => o.setName('tipo').setDescription('Tipo de embed').setRequired(true).addChoices({ name: 'RPP', value: 'rpp' }, { name: 'Banca', value: 'banca' }, { name: 'Pedido', value: 'pedido' }, { name: 'Verificar', value: 'verificar' }, { name: 'Recrutador', value: 'recrutador' }))
         .addChannelOption(o => o.setName('canal').setDescription('Canal de destino').setRequired(true)),
     async execute(interaction: ChatInputCommandInteraction) {
         const tipo = interaction.options.getString('tipo', true);
         const channel = interaction.options.getChannel('canal', true);
         const JOURNALISM_GUILD_ID = '1224414082866745405';
+        
+        // Verificar permissões
+        const cfg: any = loadConfig();
+        const member = interaction.member as GuildMember | null;
+        const mainGuildId = cfg.mainGuildId;
+        
+        // Verificar se tem permissão para usar o comando
+        let hasPermission = false;
+        
+        if (interaction.guildId === mainGuildId) {
+            // Servidor principal: apenas owners
+            hasPermission = isOwner(member);
+        } else {
+            // Servidores de área: owners, lideranças ou administradores
+            if (isOwner(member)) {
+                hasPermission = true;
+            } else if (member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                hasPermission = true;
+            } else {
+                // Verificar se é liderança da área
+                const areaConfig = (cfg.areas || []).find((area: any) => area.guildId === interaction.guildId);
+                if (areaConfig?.roleIds?.lead && member?.roles.cache.has(areaConfig.roleIds.lead)) {
+                    hasPermission = true;
+                }
+            }
+        }
+        
+        if (!hasPermission) {
+            await interaction.reply({ 
+                content: '❌ Você não tem permissão para usar este comando.', 
+                ephemeral: true 
+            });
+            return;
+        }
+        
         if (!SUPPORTED.includes(tipo)) {
             await interaction.reply({ content: 'Tipo não suportado.', ephemeral: true });
             return;
@@ -214,7 +250,7 @@ export default {
             const embed = new EmbedBuilder()
                 .setAuthor({ name: 'Liderança de Recrutamento', iconURL: 'https://cdn.discordapp.com/emojis/1136861844540227624.png' })
                 .setTitle('<a:green_hypecuty_cdw:1415591722200731688> **Seja um(a) recrutador(a)** <a:green_hypecuty_cdw:1415591722200731688>')
-                .setDescription(`<a:setabranca:1417092970380791850> Interessados com o cargo mínimo de **3º Sargento** <a:setabranca:1417092970380791850>, que desejam fazer parte da equipe de Recrutamento e entrar na fila de espera, por favor, enviem uma mensagem no privado para um dos responsáveis pela área, listados abaixo:\n\n<a:green_hypecuty_cdw:1415591722200731688> **Responsáveis pela Área de Recrutamento** <a:green_hypecuty_cdw:1415591722200731688>\n\n<a:setabranca:1417092970380791850> **Líder:** <@418824536570593280>\n<a:setabranca:1417092970380791850> **Sub Líder:** <@1399812823281963109>\n<a:setabranca:1417092970380791850> **Supervisores:** <@1012074820189552641>, <@1243905572546285610>\n\nEm caso de dúvidas, contate a liderança. | Recrutamento CDW`)
+                .setDescription(`<a:setabranca:1417092970380791850> Interessados com o cargo mínimo de **<@&1136850316667654204>** <a:setabranca:1417092970380791850>, que desejam fazer parte da equipe de Recrutamento e entrar na fila de espera, por favor, enviem uma mensagem no privado para um dos responsáveis pela área, listados abaixo:\n\n<a:green_hypecuty_cdw:1415591722200731688> **Responsáveis pela Área de Recrutamento** <a:green_hypecuty_cdw:1415591722200731688>\n\n<a:setabranca:1417092970380791850> **Líder:** <@418824536570593280>\n<a:setabranca:1417092970380791850> **Sub Líder:** <@1399812823281963109>\n<a:setabranca:1417092970380791850> **Supervisores:** <@1012074820189552641>, <@1243905572546285610>\n\nEm caso de dúvidas, contate a liderança. | Recrutamento CDW`)
                 .setColor(0x00FF94)
                 .setImage('https://cdn.discordapp.com/attachments/1228467833487233064/1415494687325683873/image.png?ex=68ca0128&is=68c8afa8&hm=2d1ebef1d25b430d73073f0d6894105c2bbf51a1b53ce508a10a87664521738b&')
                 .setTimestamp();
