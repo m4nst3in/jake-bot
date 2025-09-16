@@ -59,6 +59,30 @@ export default {
         catch { }
         leaderAreas = [...new Set(leaderAreas)].sort((a, b) => a.localeCompare(b));
         const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
+        
+        // Verificar situação disciplinar (advertências) no servidor principal
+        let warningBadges = '';
+        try {
+            const mainGuild = interaction.client.guilds.cache.get(cfg.mainGuildId);
+            if (mainGuild) {
+                const mainMember = await mainGuild.members.fetch(target.id).catch(() => null);
+                if (mainMember) {
+                    const warningRoles = cfg.warningRoles || {};
+                    const userWarnings: string[] = [];
+                    
+                    for (const [warningName, roleId] of Object.entries(warningRoles)) {
+                        if (mainMember.roles.cache.has(String(roleId))) {
+                            const warningDisplay = warningName.replace('advertencia', 'Advertência ');
+                            userWarnings.push(warningDisplay);
+                        }
+                    }
+                    
+                    if (userWarnings.length > 0) {
+                        warningBadges = userWarnings.join(', ');
+                    }
+                }
+            }
+        } catch { }
         try {
             const cfgAreas: any[] = cfg.areas || [];
             const client = interaction.client;
@@ -101,6 +125,8 @@ export default {
             headerBadges.push(`👑 Liderança: ${leaderAreas.join(', ')}`);
         if (blacklistBadges)
             headerBadges.push(`⛔ Blacklist: ${blacklistBadges}`);
+        if (warningBadges)
+            headerBadges.push(`⚠️ Situação Disciplinar: ${warningBadges}`);
         if (rppActive)
             headerBadges.push('🧪 RPP Ativo');
         if (occCount)
@@ -133,7 +159,6 @@ export default {
                         'DESIGN': 0xE67E22,
                         'JORNALISMO': 0xFFB6ED,
                         'MOVCALL': 0x8B0000,
-                        'RECRUTAMENTO': 0x39ff14
                     };
                     if (colorMap[name])
                         embed.setColor(colorMap[name]);

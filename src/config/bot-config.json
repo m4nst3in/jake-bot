@@ -350,7 +350,8 @@
   "journalismBanca": {
     "guildId": "1224414082866745405",
     "categoryId": "1224414084980805756",
-    "prefix": "💕・"
+    "prefix": "💕・",
+    "bannerUrl": "https://media.discordapp.net/attachments/1397985579320213504/1416253742138785984/Jo-banner_20250912_043741_0001.gif?ex=68ca2114&is=68c8cf94&hm=9ac280c51f2b93d8eb023fa0e66bd4f7a0f8eaf3c37295ac8d76df5bc63ae504&"
   },
 
   "__comment_recruitBanca": "Banca de recrutamento: pontos por mensagem, canais de log e controle.",
@@ -604,6 +605,12 @@
   "punishmentRoles": {
     "mutedVoice": "1280743640439722015",
     "mutedChat": "1011456411017936938"
+  },
+  "__comment_warningRoles": "Cargos de advertência para exibição no perfil.",
+  "warningRoles": {
+    "advertencia1": "934635845460303889",
+    "advertencia2": "934635845460303890", 
+    "advertencia3": "940288315658223646"
   }
   ,
   "__comment_progressionWaitingRoles": "Guild IDs -> cargo de 'aguardando verificação' (waiting role) nas áreas que usam esse estágio.",
