@@ -9,6 +9,7 @@ export class MongoAdapter {
         await this.client.connect();
         this.db = this.client.db();
         logger.info('Ei mongol, conectei no mongodb, pdc?');
+        logger.info('Fica esperto viu, to no mongozão');
         await this.ensureIndexes();
     }
     private async ensureIndexes() {
