@@ -179,9 +179,21 @@ export default {
 
             // Filtrar categorias baseado em permissões
             const availableCategories = Object.entries(punishmentConfig.punishmentCategories).filter(([key, category]: [string, any]) => {
-                // Categoria 'severe' (banimentos) apenas para owners
+                // Categoria 'severe' (banimentos) apenas para cargos específicos de permissão e owners
                 if (key === 'severe') {
-                    return isOwner(executor);
+                    // Verificar se é owner
+                    if (isOwner(executor)) return true;
+                    
+                    // Verificar se tem um dos cargos específicos de permissão
+                    const permissionRoles = [
+                        '1136699869290041404', // 2 estrelas
+                        '1104523865377488918', // OP
+                        '1080746284434071582', // GM
+                        '1156383581099274250', // Admin
+                        '1271086030984052788'  // 🍃
+                    ];
+                    
+                    return permissionRoles.some(roleId => executor.roles.cache.has(roleId));
                 }
                 return true;
             });
