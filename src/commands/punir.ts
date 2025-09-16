@@ -17,6 +17,7 @@ import {
 } from 'discord.js';
 import { loadConfig } from '../config/index.ts';
 import { logger } from '../utils/logger.ts';
+import { isOwner } from '../utils/permissions.ts';
 import { 
     loadPunishmentConfig, 
     hasPermissionToPunish, 
@@ -176,12 +177,21 @@ export default {
                 .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                 .setTimestamp();
 
+            // Filtrar categorias baseado em permissões
+            const availableCategories = Object.entries(punishmentConfig.punishmentCategories).filter(([key, category]: [string, any]) => {
+                // Categoria 'severe' (banimentos) apenas para owners
+                if (key === 'severe') {
+                    return isOwner(executor);
+                }
+                return true;
+            });
+
             // Criar select menu com categorias
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('punishment_category')
                 .setPlaceholder('Selecione uma categoria de punição...')
                 .addOptions(
-                    Object.entries(punishmentConfig.punishmentCategories).map(([key, category]: [string, any]) => ({
+                    availableCategories.map(([key, category]: [string, any]) => ({
                         label: category.name,
                         description: category.description,
                         value: key,
