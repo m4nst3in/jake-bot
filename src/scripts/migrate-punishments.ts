@@ -8,7 +8,7 @@ async function migratePunishments() {
         logger.info('Iniciando migração da tabela de punições...');
         
         // Initialize database connection
-        await DatabaseManager.initialize();
+        await DatabaseManager.init();
         
         if (DatabaseManager.current === 'sqlite') {
             logger.info('Executando migração SQLite...');

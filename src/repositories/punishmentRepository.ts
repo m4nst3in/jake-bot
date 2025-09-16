@@ -227,7 +227,7 @@ export class PunishmentRepository extends BaseRepo {
                     WHERE ${whereClause}
                     ORDER BY appliedAt DESC
                     LIMIT ? OFFSET ?
-                `, [...params, limit, offset]) as any[];
+                `, [...params, limit, offset]) as unknown as any[];
 
                 return {
                     punishments: punishments.map(this.mapSqliteRecord),
