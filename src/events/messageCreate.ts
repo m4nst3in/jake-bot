@@ -142,7 +142,6 @@ export default async function messageCreate(message: Message) {
                         const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = await import('discord.js');
                         const ts = Math.floor(message.createdTimestamp / 1000);
                         const targetRole = message.channelId === RECRUIT_PLANTAO_CHANNEL && RECRUIT_LEADERSHIP_ROLE ? RECRUIT_LEADERSHIP_ROLE : SUPERVISAO_ROLE;
-                        // Participants: always author first; include at most one other (last non-author mention)
                         const rawMatches = Array.from((message.content || '').matchAll(/<@!?([0-9]{6,})>/g));
                         const rawIds = rawMatches.map((m) => (m as RegExpMatchArray)[1]);
                         const nonAuthorIds = Array.from(new Set(rawIds)).filter(id => id !== message.author.id);

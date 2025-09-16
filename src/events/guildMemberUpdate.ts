@@ -26,7 +26,10 @@ function isFullAccess(member: any): boolean {
         const cfg: any = loadConfig();
         const rid: string | undefined = cfg.fullAccessRoleId;
         return !!(rid && member?.roles?.cache?.has(rid));
-    } catch { return false; }
+    }
+    catch {
+        return false;
+    }
 }
 export function registerProtectionListener(client: any) {
     client.on(Events.GuildMemberUpdate, async (oldMember: GuildMember | any, newMember: GuildMember) => {
@@ -284,21 +287,25 @@ export function registerProtectionListener(client: any) {
                     }
                     continue;
                 }
-                // Purchasable roles: only bots and owners are allowed to assign
                 if (isPurch) {
                     let executorId = roleExecutorMap[role.id] ?? null;
-                    if (!executorId) executorId = await resolveExecutorForRole(role.id);
+                    if (!executorId)
+                        executorId = await resolveExecutorForRole(role.id);
                     const cfg: any = loadConfig();
                     const mainGuildId = cfg.mainGuildId;
                     let allowed = false;
                     if (executorId) {
-                        if (isOwner(executorId)) allowed = true;
+                        if (isOwner(executorId))
+                            allowed = true;
                         else {
                             const execMember = await newMember.guild.members.fetch(executorId).catch(() => null);
                             const botId = cfg.botId;
-                            if (botId && executorId === botId) allowed = true;
-                            else if (execMember && isFullAccess(execMember)) allowed = true;
-                            else if (execMember && Array.isArray(getProtectionConfig().botRoles) && getProtectionConfig().botRoles.some((id: string) => execMember.roles.cache.has(id))) allowed = true;
+                            if (botId && executorId === botId)
+                                allowed = true;
+                            else if (execMember && isFullAccess(execMember))
+                                allowed = true;
+                            else if (execMember && Array.isArray(getProtectionConfig().botRoles) && getProtectionConfig().botRoles.some((id: string) => execMember.roles.cache.has(id)))
+                                allowed = true;
                         }
                     }
                     if (!executorId) {
@@ -328,7 +335,8 @@ export function registerProtectionListener(client: any) {
                             }
                             catch { }
                         }
-                    } else if (newMember.guild.id === mainGuildId) {
+                    }
+                    else if (newMember.guild.id === mainGuildId) {
                         try {
                             const ch: any = await newMember.guild.channels.fetch(logChannelId).catch(() => null);
                             if (ch && ch.isTextBased()) {
@@ -372,24 +380,22 @@ export function registerProtectionListener(client: any) {
                                 allowed = true;
                             }
                             else if (leaderUsers.includes(executorId)) {
-                                // Leader users override: follow hierarchy rules
                                 if (isGlobalHierarchy) {
                                     if (role.id === leaderGeneralRoleId) {
-                                        // Never allow setting Leader General via this override
                                         allowed = false;
-                                    } else {
+                                    }
+                                    else {
                                         const roleName = globalRoleNameById[role.id];
                                         if (roleName) {
                                             const subCmdIndex = hierarchyOrder.indexOf('Sub Comandante');
                                             const targetIdx = hierarchyOrder.indexOf(roleName);
                                             if (targetIdx !== -1) {
                                                 if (targetIdx < subCmdIndex) {
-                                                    // Below Sub Comandante: any leadership OK
                                                     if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                                         allowed = true;
                                                     }
-                                                } else {
-                                                    // Sub Comandante or above: only area leaders
+                                                }
+                                                else {
                                                     if (Array.from(areaLeaderRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                                         allowed = true;
                                                     }
@@ -397,7 +403,8 @@ export function registerProtectionListener(client: any) {
                                             }
                                         }
                                     }
-                                } else {
+                                }
+                                else {
                                     allowed = true;
                                 }
                             }
@@ -427,7 +434,6 @@ export function registerProtectionListener(client: any) {
                                     }
                                 }
                             }
-                            // Allow any area leadership to set the staff role
                             if (!allowed && role.id === staffRoleId) {
                                 if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                     allowed = true;
@@ -440,12 +446,11 @@ export function registerProtectionListener(client: any) {
                                     const targetIdx = hierarchyOrder.indexOf(roleName);
                                     if (targetIdx !== -1) {
                                         if (targetIdx < subCmdIndex) {
-                                            // Below Sub Comandante: any leadership can set
                                             if (Array.from(leadershipRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                                 allowed = true;
                                             }
-                                        } else {
-                                            // Sub Comandante or above: only area leaders
+                                        }
+                                        else {
                                             if (Array.from(areaLeaderRoleIds).some(rid => execMember.roles.cache.has(rid))) {
                                                 allowed = true;
                                             }

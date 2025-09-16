@@ -25,7 +25,6 @@ export default {
             return;
         }
         const hasTimeout = interaction.memberPermissions?.has(PermissionsBitField.Flags.ModerateMembers);
-        // Allow owners, general leadership, and any area leadership to manage
         const canManage = owner || isLeaderGeneral || isAnyAreaLeader;
         const { total: activeTotal } = await service.listActivePaged(1, 1);
         let removedTotal: number | undefined;

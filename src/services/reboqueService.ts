@@ -147,13 +147,16 @@ export class ReboqueService {
     private async removeStaffRoles(targetId: string, cfg: any): Promise<number> {
         let totalRolesRemoved = 0;
         try {
-            // Build a robust set of guilds to scan: configured ones + all guilds the bot is in
             const guildIdSet: Set<string> = new Set();
-            if (cfg.mainGuildId) guildIdSet.add(cfg.mainGuildId);
+            if (cfg.mainGuildId)
+                guildIdSet.add(cfg.mainGuildId);
             if (cfg.areas && Array.isArray(cfg.areas)) {
-                for (const area of cfg.areas) if (area?.guildId) guildIdSet.add(area.guildId);
+                for (const area of cfg.areas)
+                    if (area?.guildId)
+                        guildIdSet.add(area.guildId);
             }
-            for (const g of this.client.guilds.cache.values()) guildIdSet.add(g.id);
+            for (const g of this.client.guilds.cache.values())
+                guildIdSet.add(g.id);
             for (const guildId of guildIdSet) {
                 if (!guildId)
                     continue;
@@ -186,65 +189,68 @@ export class ReboqueService {
     }
     private getStaffRolesToRemove(member: GuildMember, cfg: any, guildId: string): string[] {
         const rolesToRemove: Set<string> = new Set();
-        // Always remove global hierarchy roles if present
         if (cfg.roles) {
             for (const roleId of Object.values(cfg.roles)) {
-                if (roleId && member.roles.cache.has(roleId as string)) rolesToRemove.add(roleId as string);
+                if (roleId && member.roles.cache.has(roleId as string))
+                    rolesToRemove.add(roleId as string);
             }
         }
-        // Area leadership mappings (main guild) and general leadership
         if (cfg.protection?.areaLeaderRoles) {
             for (const roleId of Object.values(cfg.protection.areaLeaderRoles)) {
-                if (roleId && member.roles.cache.has(roleId as string)) rolesToRemove.add(roleId as string);
+                if (roleId && member.roles.cache.has(roleId as string))
+                    rolesToRemove.add(roleId as string);
             }
         }
         if (cfg.protectionRoles?.leaderGeneral && member.roles.cache.has(cfg.protectionRoles.leaderGeneral)) {
             rolesToRemove.add(cfg.protectionRoles.leaderGeneral);
         }
-        // Primary guild team/leadership roles (e.g., recrutamento, suporte, mov call)
         if (cfg.primaryGuildTeamRoles) {
             for (const roleId of Object.values(cfg.primaryGuildTeamRoles)) {
-                if (roleId && member.roles.cache.has(roleId as string)) rolesToRemove.add(roleId as string);
+                if (roleId && member.roles.cache.has(roleId as string))
+                    rolesToRemove.add(roleId as string);
             }
         }
         if (cfg.primaryGuildLeadershipRoles) {
             for (const roleId of Object.values(cfg.primaryGuildLeadershipRoles)) {
-                if (roleId && member.roles.cache.has(roleId as string)) rolesToRemove.add(roleId as string);
+                if (roleId && member.roles.cache.has(roleId as string))
+                    rolesToRemove.add(roleId as string);
             }
         }
-        // Permission roles (global bot permissions)
         if (Array.isArray(cfg.permissionRoles)) {
             for (const roleId of cfg.permissionRoles) {
-                if (roleId && member.roles.cache.has(roleId)) rolesToRemove.add(roleId);
+                if (roleId && member.roles.cache.has(roleId))
+                    rolesToRemove.add(roleId);
             }
         }
-        // Command-specific allowed roles
         const permCfg = cfg.permissions || {};
         const collectRoleArray = (arr?: string[]) => (Array.isArray(arr) ? arr : []);
         for (const rid of collectRoleArray(permCfg.recruit?.allowedRoles)) {
-            if (rid && member.roles.cache.has(rid)) rolesToRemove.add(rid);
+            if (rid && member.roles.cache.has(rid))
+                rolesToRemove.add(rid);
         }
         for (const rid of collectRoleArray(permCfg.transfer?.allowedRoles)) {
-            if (rid && member.roles.cache.has(rid)) rolesToRemove.add(rid);
+            if (rid && member.roles.cache.has(rid))
+                rolesToRemove.add(rid);
         }
-        // points.extraManagers: flatten values
         const extraManagers: Record<string, string[] | undefined> = (permCfg.points?.extraManagers) || {};
         for (const arr of Object.values(extraManagers)) {
             for (const rid of collectRoleArray(arr)) {
-                if (rid && member.roles.cache.has(rid)) rolesToRemove.add(rid);
+                if (rid && member.roles.cache.has(rid))
+                    rolesToRemove.add(rid);
             }
         }
-        // VIP roles (optional)
         if (cfg.vipRoles) {
             for (const roleId of Object.values(cfg.vipRoles)) {
-                if (roleId && member.roles.cache.has(roleId as string)) rolesToRemove.add(roleId as string);
+                if (roleId && member.roles.cache.has(roleId as string))
+                    rolesToRemove.add(roleId as string);
             }
         }
-        // Area-local roles (per area guild)
         const area = cfg.areas?.find((a: any) => a.guildId === guildId);
         if (area && area.roleIds) {
-            if (area.roleIds.lead && member.roles.cache.has(area.roleIds.lead)) rolesToRemove.add(area.roleIds.lead);
-            if (area.roleIds.member && member.roles.cache.has(area.roleIds.member)) rolesToRemove.add(area.roleIds.member);
+            if (area.roleIds.lead && member.roles.cache.has(area.roleIds.lead))
+                rolesToRemove.add(area.roleIds.lead);
+            if (area.roleIds.member && member.roles.cache.has(area.roleIds.member))
+                rolesToRemove.add(area.roleIds.member);
         }
         return [...rolesToRemove];
     }

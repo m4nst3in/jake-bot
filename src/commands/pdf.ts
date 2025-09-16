@@ -16,7 +16,7 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         const area = interaction.options.getString('area', true);
         const member = interaction.member as GuildMember | null;
-    if (!(await canUsePdfForArea(member, area)))
+        if (!(await canUsePdfForArea(member, area)))
             return interaction.reply({ content: 'Sem permissão para gerar PDF desta área.', ephemeral: true });
         if (!isValidArea(area))
             return interaction.reply({ content: 'Área inválida.', ephemeral: true });

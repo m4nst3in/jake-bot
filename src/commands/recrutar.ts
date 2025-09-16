@@ -25,12 +25,12 @@ export default {
         const member = interaction.member as GuildMember | null;
         const cfg: any = loadConfig();
         const allowedRoleIds: string[] = cfg?.permissions?.recruit?.allowedRoles || [];
-    const owners: string[] = Array.isArray(cfg.owners) ? cfg.owners : [];
-    const isOwner = member ? owners.includes(member.id) : false;
-    const hasAllowedRole = !!member?.roles?.cache?.some(r => allowedRoleIds.includes(r.id));
-    const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
-    const hasFull = !!(fullAccessRoleId && member?.roles?.cache?.has(fullAccessRoleId));
-    if (!isOwner && !hasAllowedRole && !hasFull) {
+        const owners: string[] = Array.isArray(cfg.owners) ? cfg.owners : [];
+        const isOwner = member ? owners.includes(member.id) : false;
+        const hasAllowedRole = !!member?.roles?.cache?.some(r => allowedRoleIds.includes(r.id));
+        const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
+        const hasFull = !!(fullAccessRoleId && member?.roles?.cache?.has(fullAccessRoleId));
+        if (!isOwner && !hasAllowedRole && !hasFull) {
             await interaction.editReply('Sem permissão para usar este comando.');
             return;
         }

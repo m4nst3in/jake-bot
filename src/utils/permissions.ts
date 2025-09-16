@@ -6,7 +6,8 @@ function getOwners() {
     return Array.isArray(cfg.owners) ? cfg.owners : [];
 }
 function hasFullAccessRole(member: GuildMember | null | undefined) {
-    if (!member) return false;
+    if (!member)
+        return false;
     const cfg: any = loadConfig();
     const rid: string | undefined = cfg.fullAccessRoleId;
     return !!(rid && member.roles?.cache?.has(rid));
@@ -14,7 +15,8 @@ function hasFullAccessRole(member: GuildMember | null | undefined) {
 export function isOwner(member: GuildMember | null | undefined) {
     if (!member)
         return false;
-    if (getOwners().includes(member.id)) return true;
+    if (getOwners().includes(member.id))
+        return true;
     return hasFullAccessRole(member);
 }
 export function isAdminFromMember(member: GuildMember | null | undefined) {
@@ -119,10 +121,8 @@ export async function canUsePdfForArea(member: GuildMember | null | undefined, a
     const guildId = area?.guildId;
     if (!leadRole || !guildId)
         return false;
-    // Local guild check first
     if (member.roles.cache.has(leadRole))
         return true;
-    // Cross-guild: check the area guild
     try {
         const guild = member.client.guilds.cache.get(guildId) || await member.client.guilds.fetch(guildId);
         const areaMember = await guild.members.fetch(member.id).catch(() => null);
@@ -130,11 +130,9 @@ export async function canUsePdfForArea(member: GuildMember | null | undefined, a
             return true;
     }
     catch { }
-    // Global leadership on main guild can also generate PDFs for the area
     try {
         const cfg: any = loadConfig();
         const mainGuildId: string | undefined = cfg.mainGuildId;
-        // Prefer explicit mapping from area guildId -> global leadership role
         const areaLeaderRoles: Record<string, string> = (cfg.protection?.areaLeaderRoles) || {};
         const globalLeaderRoleId: string | undefined = areaLeaderRoles[guildId!];
         if (mainGuildId && globalLeaderRoleId) {

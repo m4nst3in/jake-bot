@@ -1,0 +1,18 @@
+// Migration: Add punishments collection for punishment history tracking
+// Created: 2025-01-16
+
+db.punishments.createIndex({ "executorId": 1 });
+db.punishments.createIndex({ "userId": 1 });
+db.punishments.createIndex({ "guildId": 1 });
+db.punishments.createIndex({ "active": 1 });
+db.punishments.createIndex({ "appliedAt": 1 });
+db.punishments.createIndex({ "punishmentType": 1 });
+
+// Compound indexes for common queries
+db.punishments.createIndex({ "executorId": 1, "guildId": 1 });
+db.punishments.createIndex({ "userId": 1, "guildId": 1 });
+db.punishments.createIndex({ "executorId": 1, "active": 1 });
+db.punishments.createIndex({ "userId": 1, "active": 1 });
+db.punishments.createIndex({ "appliedAt": 1, "active": 1 });
+
+print("Punishments collection indexes created successfully!");

@@ -179,11 +179,9 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
                 .setColor(0xFFB6ED)
                 .setDescription(partes.join('\n\n'))
                 .setFooter({ text: 'Liderança de Jornalismo - CDW', iconURL: interaction.guild?.iconURL() || undefined });
-            
             if ((journalismBancaCfg as any).bannerUrl) {
                 embed.setImage((journalismBancaCfg as any).bannerUrl);
             }
-            
             await textChannel.send({ content: `<@${staffId}>`, embeds: [embed] });
             return;
         }

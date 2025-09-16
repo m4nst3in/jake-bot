@@ -50,7 +50,7 @@ export function scheduleRankingUpdater(client: Client) {
                     const primary = cfg.emojis?.recruitPrimary || '★';
                     const arrow = cfg.emojis?.recruitArrow || '→';
                     const dOrig = (embed as any).data?.description || (embed as any).description || '';
-                        const pointsPerMsg = (cfg as any).recruitBanca?.pointsPerMessage || 20;
+                    const pointsPerMsg = (cfg as any).recruitBanca?.pointsPerMessage || 20;
                     const augmented = dOrig.split('\n').map((line: string) => {
                         if (!line.trim())
                             return line;

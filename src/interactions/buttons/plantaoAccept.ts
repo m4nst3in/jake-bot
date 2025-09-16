@@ -15,20 +15,18 @@ export default {
         const messageId = parts[1];
         const userId = parts[2];
         const staffId = interaction.user.id;
-    let plantaoUserIds: string[] = [];
+        let plantaoUserIds: string[] = [];
         try {
             const channel: any = PLANTAO_CHANNEL ? await interaction.client.channels.fetch(PLANTAO_CHANNEL).catch(() => null) : null;
             if (channel && channel.isTextBased()) {
                 const original = await channel.messages.fetch(messageId).catch(() => null);
                 if (original) {
-            // Parse mentions robustly from message content to avoid collection quirks
                     const rawMatches = Array.from((original.content || '').matchAll(/<@!?([0-9]{6,})>/g));
                     const rawIds = rawMatches.map((m) => (m as RegExpMatchArray)[1]);
-            const uniqueIds = Array.from(new Set(rawIds));
-            // Always prioritize the author; include at most one other (the last mentioned) non-author
-            const nonAuthorIds = uniqueIds.filter(id => id !== userId);
-            const lastNonAuthor = nonAuthorIds.length > 0 ? nonAuthorIds[nonAuthorIds.length - 1] : undefined;
-            plantaoUserIds = [userId, ...(lastNonAuthor ? [lastNonAuthor] : [])];
+                    const uniqueIds = Array.from(new Set(rawIds));
+                    const nonAuthorIds = uniqueIds.filter(id => id !== userId);
+                    const lastNonAuthor = nonAuthorIds.length > 0 ? nonAuthorIds[nonAuthorIds.length - 1] : undefined;
+                    plantaoUserIds = [userId, ...(lastNonAuthor ? [lastNonAuthor] : [])];
                     await original.delete().catch(() => { });
                 }
             }

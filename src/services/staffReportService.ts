@@ -103,7 +103,6 @@ export class StaffReportService {
             statusBadges.push(`📂 ${totalOccs} ocorrência(s)`);
         if (activeRpp)
             statusBadges.push('🧪 RPP Ativo');
-        // Detect primary progression area (where the user 'upa') by checking progressionRoles per area guild
         let upaArea: string | null = null;
         try {
             const prog: any = (cfg as any).progressionRoles || {};
@@ -112,9 +111,11 @@ export class StaffReportService {
                 for (const a of (cfg.areas || [])) {
                     const gId = a.guildId;
                     const upaRoles: string[] = prog[gId]?.upa || [];
-                    if (!gId || !upaRoles?.length) continue;
+                    if (!gId || !upaRoles?.length)
+                        continue;
                     const guildObj = discordClient.guilds.cache.get(gId) || await discordClient.guilds.fetch(gId).catch(() => null);
-                    if (!guildObj) continue;
+                    if (!guildObj)
+                        continue;
                     const memberObj = await guildObj.members.fetch(userId).catch(() => null);
                     if (memberObj && upaRoles.some((rid: string) => memberObj.roles.cache.has(rid))) {
                         upaArea = a.name;
@@ -122,7 +123,8 @@ export class StaffReportService {
                     }
                 }
             }
-        } catch {}
+        }
+        catch { }
         const sections = [
             '**<a:Cronwnss:1355323942705041600> Áreas de Atuação**',
             areaLines.join('\n')

@@ -81,41 +81,34 @@ export default {
         const tipo = interaction.options.getString('tipo', true);
         const channel = interaction.options.getChannel('canal', true);
         const JOURNALISM_GUILD_ID = '1224414082866745405';
-        
-        // Verificar permissões
         const cfg: any = loadConfig();
         const member = interaction.member as GuildMember | null;
         const mainGuildId = cfg.mainGuildId;
-        
-        // Verificar se tem permissão para usar o comando
         let hasPermission = false;
-        
         if (interaction.guildId === mainGuildId) {
-            // Servidor principal: apenas owners
             hasPermission = isOwner(member);
-        } else {
-            // Servidores de área: owners, lideranças ou administradores
+        }
+        else {
             if (isOwner(member)) {
                 hasPermission = true;
-            } else if (member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
+            }
+            else if (member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 hasPermission = true;
-            } else {
-                // Verificar se é liderança da área
+            }
+            else {
                 const areaConfig = (cfg.areas || []).find((area: any) => area.guildId === interaction.guildId);
                 if (areaConfig?.roleIds?.lead && member?.roles.cache.has(areaConfig.roleIds.lead)) {
                     hasPermission = true;
                 }
             }
         }
-        
         if (!hasPermission) {
-            await interaction.reply({ 
-                content: '❌ Você não tem permissão para usar este comando.', 
-                ephemeral: true 
+            await interaction.reply({
+                content: '❌ Você não tem permissão para usar este comando.',
+                ephemeral: true
             });
             return;
         }
-        
         if (!SUPPORTED.includes(tipo)) {
             await interaction.reply({ content: 'Tipo não suportado.', ephemeral: true });
             return;
@@ -254,16 +247,12 @@ export default {
                 .setColor(0x00FF94)
                 .setImage('https://cdn.discordapp.com/attachments/1228467833487233064/1415494687325683873/image.png?ex=68ca0128&is=68c8afa8&hm=2d1ebef1d25b430d73073f0d6894105c2bbf51a1b53ce508a10a87664521738b&')
                 .setTimestamp();
-
             const row = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('recruiter_application')
-                        .setLabel('Seja Recrutador')
-                        .setStyle(1)
-                        .setEmoji('<a:green_hypecuty_cdw:1415591722200731688>')
-                );
-
+                .addComponents(new ButtonBuilder()
+                .setCustomId('recruiter_application')
+                .setLabel('Seja Recrutador')
+                .setStyle(1)
+                .setEmoji('<a:green_hypecuty_cdw:1415591722200731688>'));
             await (channel as any).send({ embeds: [embed], components: [row] });
             await interaction.editReply('Embed de recrutador publicada.');
             return;

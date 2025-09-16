@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder, GuildMember, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 import { PointsService } from '../services/pointsService.ts';
 import { PointRepository } from '../repositories/pointRepository.ts';
 import { loadConfig } from '../config/index.ts';
@@ -7,6 +7,7 @@ import { OccurrenceRepository } from '../repositories/occurrenceRepository.ts';
 import { RPPRepository } from '../repositories/rppRepository.ts';
 import { getMemberLeaderAreas, hasCrossGuildLeadership, isOwner } from '../utils/permissions.ts';
 import { StaffReportService } from '../services/staffReportService.ts';
+import { PunishmentHistoryService } from '../services/punishmentHistoryService.ts';
 export default {
     data: new SlashCommandBuilder()
         .setName('perfil')
@@ -14,12 +15,14 @@ export default {
         .addUserOption(o => o.setName('user').setDescription('Usuário alvo').setRequired(false)),
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply({ ephemeral: true });
-        // Permission gate: only owners and leadership can access /perfil
         const reqMember = interaction.member as GuildMember | null;
         const owner = isOwner(reqMember);
         let isLeader = getMemberLeaderAreas(reqMember).length > 0;
         if (!isLeader && reqMember) {
-            try { isLeader = await hasCrossGuildLeadership(interaction.client, reqMember.id); } catch {}
+            try {
+                isLeader = await hasCrossGuildLeadership(interaction.client, reqMember.id);
+            }
+            catch { }
         }
         if (!owner && !isLeader) {
             await interaction.editReply('Sem permissão para usar este comando. Tá louco?');
@@ -59,8 +62,6 @@ export default {
         catch { }
         leaderAreas = [...new Set(leaderAreas)].sort((a, b) => a.localeCompare(b));
         const blacklistBadges = activeBlacklist.length ? activeBlacklist.map((b: any) => b.area_or_global || 'GLOBAL').join(', ') : '';
-        
-        // Verificar situação disciplinar (advertências) no servidor principal
         let warningBadges = '';
         try {
             const mainGuild = interaction.client.guilds.cache.get(cfg.mainGuildId);
@@ -69,20 +70,19 @@ export default {
                 if (mainMember) {
                     const warningRoles = cfg.warningRoles || {};
                     const userWarnings: string[] = [];
-                    
                     for (const [warningName, roleId] of Object.entries(warningRoles)) {
                         if (mainMember.roles.cache.has(String(roleId))) {
                             const warningDisplay = warningName.replace('advertencia', 'Advertência ');
                             userWarnings.push(warningDisplay);
                         }
                     }
-                    
                     if (userWarnings.length > 0) {
                         warningBadges = userWarnings.join(', ');
                     }
                 }
             }
-        } catch { }
+        }
+        catch { }
         try {
             const cfgAreas: any[] = cfg.areas || [];
             const client = interaction.client;
@@ -172,17 +172,63 @@ export default {
             embed.setColor(0x5865F2);
         }
         const isStaff = profile.total > 0 || leaderAreas.length > 0 || withPos.some(a => a.reports > 0 || a.shifts > 0);
+        
+        // Create punishment history button for staff members
+        const punishmentHistoryService = new PunishmentHistoryService();
+        let punishmentStats;
+        try {
+            punishmentStats = await punishmentHistoryService.getExecutorStatistics(target.id, interaction.guildId || undefined);
+        } catch (error) {
+            // If there's an error getting stats, continue without them
+            punishmentStats = { totalPunishments: 0, activePunishments: 0, recentPunishments: 0, punishmentsByType: {} };
+        }
+
         if (isStaff) {
             const staffReportService = new StaffReportService();
             const summaryEmbed = await staffReportService.generateSummaryEmbed(target.id, target);
             const navigationButtons = staffReportService.generateNavigationButtons(target.id, 'summary');
-            await interaction.editReply({
-                embeds: [summaryEmbed],
-                components: [navigationButtons]
-            });
+            
+            // Add punishment history button if user has applied punishments
+            if (punishmentStats.totalPunishments > 0) {
+                const punishmentHistoryButton = new ButtonBuilder()
+                    .setCustomId(`punishment_history_summary:${target.id}`)
+                    .setLabel(`📋 Histórico de Punições (${punishmentStats.totalPunishments})`)
+                    .setStyle(ButtonStyle.Secondary);
+
+                // Create a new row for the punishment history button
+                const punishmentRow = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(punishmentHistoryButton);
+
+                await interaction.editReply({
+                    embeds: [summaryEmbed],
+                    components: [navigationButtons, punishmentRow]
+                });
+            } else {
+                await interaction.editReply({
+                    embeds: [summaryEmbed],
+                    components: [navigationButtons]
+                });
+            }
         }
         else {
-            await interaction.editReply({ embeds: [embed] });
+            // For non-staff members, just show the basic embed
+            // But if they have punishment history (in case they were staff before), show the button
+            if (punishmentStats.totalPunishments > 0) {
+                const punishmentHistoryButton = new ButtonBuilder()
+                    .setCustomId(`punishment_history_summary:${target.id}`)
+                    .setLabel(`📋 Histórico de Punições (${punishmentStats.totalPunishments})`)
+                    .setStyle(ButtonStyle.Secondary);
+
+                const punishmentRow = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(punishmentHistoryButton);
+
+                await interaction.editReply({ 
+                    embeds: [embed],
+                    components: [punishmentRow]
+                });
+            } else {
+                await interaction.editReply({ embeds: [embed] });
+            }
         }
     }
 };
