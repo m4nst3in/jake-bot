@@ -272,12 +272,19 @@ export async function logPunishment(
     additionalInfo?: string
 ): Promise<void> {
     try {
-        const config = loadConfig();
-        const logChannelId = config.channels?.punishmentLog;
+        // Determinar o canal de log baseado no tipo de punição
+        let logChannelId: string;
         
-        if (!logChannelId) {
-            logger.warn('Canal de log de punições não configurado');
-            return;
+        // Mapear tipos de punição para canais específicos
+        if (punishmentType.type === 'timeout' || punishmentType.name.toLowerCase().includes('mute')) {
+            // Mute -> Canal 1283418387082645627
+            logChannelId = '1283418387082645627';
+        } else if (punishmentType.type === 'ban' || punishmentType.name.toLowerCase().includes('ban')) {
+            // Ban -> Canal 1298736953944182784
+            logChannelId = '1298736953944182784';
+        } else {
+            // Castigo (role_add e outros) -> Canal 1199374501771751564
+            logChannelId = '1199374501771751564';
         }
 
         const logChannel = await guild.channels.fetch(logChannelId);
@@ -325,7 +332,8 @@ export async function logPunishment(
             targetId: target.id, 
             executorId: executor.id, 
             punishmentType: punishmentType.name,
-            reason: punishment.reason 
+            reason: punishment.reason,
+            logChannelId: logChannelId
         }, 'Punição logada com sucesso');
         
     } catch (error) {
