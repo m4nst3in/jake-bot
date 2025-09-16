@@ -167,14 +167,15 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             const journalismBancaCfg = config.journalismBanca || {};
             const partes = [
                 '<:p_letter_b:1361713669959848127> <:p_letter_a:1361713698967654491> <:p_letter_n:1361715135646924831> <:p_letter_c:1361715223026995425> <:p_letter_a:1361713698967654491> <:p_21:1361715342568587366> <:p_letter_c:1361715223026995425> <:p_letter_d:1361715405256790317> <:p_letter_w:1361715458809528482>',
-                `• *Olá, <@${staffId}>! Bem-vindo(a) à equipe de Jornalismo. Este é o seu espaço para enviar as matérias antes da publicação no servidor principal.*`,
-                '**G U I A :**',
-                '• # 📝 • planilha-post Confira e escolha seus horários de postagem semanal;',
-                '• # 🏆 • ranking Aqui você acompanha seus pontos diários;',
-                '• # ❓ • pedidos Precisa de arte para sua pauta? Solicite aqui.',
+                `- *Olá, <@${staffId}>! Seja muito bem vindo(a) à equipe de Jornalismo! Este é o espaço para enviar suas matérias antes de irem ao servidor principal.*`,
                 '',
-                '• Lembre-se: aceitamos a postagem do seu material se ele for enviado neste canal com no máximo 1h de antecedência da postagem oficial.',
-                `⭐ Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}> ⭐ . Em caso de dúvidas, chame alguém com esse cargo no privado.`
+                '<:p_dot02:1312933729525694494><:p_letter_g:1361716479015391292><:p_letter_u:1361716250916683836><:p_letter_i:1361716331581280397><:p_letter_a:1361713698967654491><:p_dot02:1312933729525694494>',
+                '> - <#1275118710532870245> Aqui estão os horários de postagem semanal, escolha os que estiver melhor para você;',
+                '> - <#1312598673980657737> Seus pontos diários aparecerão neste chat;',
+                '> - <#1312606486475837441> Caso queira uma arte específica para seu material, solicite neste canal.',
+                '',
+                '<:p_dot02:1312933729525694494> Lembre-se: Aceitaremos a postagem de seu material caso ele for postado neste canal com no máximo 1h de antecedência da postagem oficial.',
+                `<:6rosa_stars:1361717290621472788> **Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}> . Qualquer dúvida pode chamar alguém que tiver este cargo no privado.**`
             ];
             const embed = new EmbedBuilder()
                 .setColor(0xFFB6ED)
