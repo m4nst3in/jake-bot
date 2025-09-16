@@ -165,22 +165,27 @@ export default { id: 'banca_create_modal', async execute(interaction: ModalSubmi
             const textChannel = channel as TextChannel;
             const CORRETORES_ROLE = '1318739533759643648';
             const journalismBancaCfg = config.journalismBanca || {};
-            const texto = [
+            const partes = [
                 '<:p_letter_b:1361713669959848127> <:p_letter_a:1361713698967654491> <:p_letter_n:1361715135646924831> <:p_letter_c:1361715223026995425> <:p_letter_a:1361713698967654491> <:p_21:1361715342568587366> <:p_letter_c:1361715223026995425> <:p_letter_d:1361715405256790317> <:p_letter_w:1361715458809528482>',
-                `- *Olá, <@${staffId}>! Bem-vindo(a) à equipe de Jornalismo. Este é o seu espaço para enviar as matérias antes da publicação no servidor principal.*`,
+                `• *Olá, <@${staffId}>! Bem-vindo(a) à equipe de Jornalismo. Este é o seu espaço para enviar as matérias antes da publicação no servidor principal.*`,
+                '**G U I A :**',
+                '• # 📝 • planilha-post Confira e escolha seus horários de postagem semanal;',
+                '• # 🏆 • ranking Aqui você acompanha seus pontos diários;',
+                '• # ❓ • pedidos Precisa de arte para sua pauta? Solicite aqui.',
                 '',
-            ].join('\n');
+                '• Lembre-se: aceitamos a postagem do seu material se ele for enviado neste canal com no máximo 1h de antecedência da postagem oficial.',
+                `⭐ Ao finalizar uma matéria, marque <@&${CORRETORES_ROLE}> ⭐ . Em caso de dúvidas, chame alguém com esse cargo no privado.`
+            ];
             const embed = new EmbedBuilder()
-                .setTitle(`Banca: ${nome}`)
                 .setColor(0xFFB6ED)
-                .setDescription(texto)
-                .setFooter({ text: 'Liderança de Jornalismo - CDW KL', iconURL: interaction.guild?.iconURL() || undefined });
+                .setDescription(partes.join('\n\n'))
+                .setFooter({ text: 'Liderança de Jornalismo - CDW', iconURL: interaction.guild?.iconURL() || undefined });
             
             if ((journalismBancaCfg as any).bannerUrl) {
                 embed.setImage((journalismBancaCfg as any).bannerUrl);
             }
             
-            await textChannel.send({ embeds: [embed] });
+            await textChannel.send({ content: `<@${staffId}>`, embeds: [embed] });
             return;
         }
         await interaction.editReply(`Banca criada: <#${channel.id}>`);
