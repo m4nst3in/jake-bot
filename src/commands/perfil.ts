@@ -183,16 +183,20 @@ export default {
             punishmentStats = { totalPunishments: 0, activePunishments: 0, recentPunishments: 0, punishmentsByType: {} };
         }
 
+        // For testing: always show button for staff members (remove this later)
+        const isStaffMember = isStaff || owner || isLeader;
+        const shouldShowButton = punishmentStats.totalPunishments > 0 || isStaffMember;
+
         if (isStaff) {
             const staffReportService = new StaffReportService();
             const summaryEmbed = await staffReportService.generateSummaryEmbed(target.id, target);
             const navigationButtons = staffReportService.generateNavigationButtons(target.id, 'summary');
             
-            // Add punishment history button if user has applied punishments
-            if (punishmentStats.totalPunishments > 0) {
+            // Add punishment history button if user has applied punishments or is staff
+            if (shouldShowButton) {
                 const punishmentHistoryButton = new ButtonBuilder()
                     .setCustomId(`punishment_history_summary:${target.id}`)
-                    .setLabel(`📋 Histórico de Punições (${punishmentStats.totalPunishments})`)
+                    .setLabel(`📋 Histórico de Punições${punishmentStats.totalPunishments > 0 ? ` (${punishmentStats.totalPunishments})` : ''}`)
                     .setStyle(ButtonStyle.Secondary);
 
                 // Create a new row for the punishment history button
@@ -213,10 +217,10 @@ export default {
         else {
             // For non-staff members, just show the basic embed
             // But if they have punishment history (in case they were staff before), show the button
-            if (punishmentStats.totalPunishments > 0) {
+            if (shouldShowButton) {
                 const punishmentHistoryButton = new ButtonBuilder()
                     .setCustomId(`punishment_history_summary:${target.id}`)
-                    .setLabel(`📋 Histórico de Punições (${punishmentStats.totalPunishments})`)
+                    .setLabel(`📋 Histórico de Punições${punishmentStats.totalPunishments > 0 ? ` (${punishmentStats.totalPunishments})` : ''}`)
                     .setStyle(ButtonStyle.Secondary);
 
                 const punishmentRow = new ActionRowBuilder<ButtonBuilder>()
