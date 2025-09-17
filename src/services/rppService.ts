@@ -87,6 +87,9 @@ export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
     const staffGlobalRole = cfg.roles?.staff;
     const recoveryRole = cfg.rppRoles?.recovery || '1136856157835763783';
     const permissionRoles = cfg.permissionRoles || ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404'];
+    const monitorRole = '1137028161750716426'; // Cargo de Monitor
+    const leadershipRoles = Object.values(cfg.protection?.areaLeaderRoles || {}).map((v: any) => String(v));
+    const generalLeaderRole = cfg.protectionRoles?.leaderGeneral || '1411223951350435961';
     const MAIN_AREA_ROLES: string[] = cfg.rppRoles?.mainAreaRoles || [
         '1136861840421425284', '1170196352114901052', '1136861814328668230', '1136868804677357608', '1136861844540227624', '1247967720427884587'
     ];
@@ -103,6 +106,16 @@ export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
     for (const rid of permissionRoles)
         if (member.roles.cache.has(rid))
             toRemove.push(rid);
+    // Remover cargo de Monitor
+    if (member.roles.cache.has(monitorRole))
+        toRemove.push(monitorRole);
+    // Remover cargos de liderança
+    for (const rid of leadershipRoles)
+        if (member.roles.cache.has(rid))
+            toRemove.push(rid);
+    // Remover cargo de Líder Geral
+    if (member.roles.cache.has(generalLeaderRole))
+        toRemove.push(generalLeaderRole);
     const unique = [...new Set(toRemove)];
     inMemorySnapshots[userId] = { userId, roles: unique, storedAt: new Date().toISOString() };
     try {
@@ -140,8 +153,6 @@ export async function applyRppExitRoleRestore(client: Client, userId: string) {
     const snapshot = inMemorySnapshots[userId] || await repo.get(userId);
     if (snapshot) {
         for (const rid of snapshot.roles) {
-            if ((cfg.permissionRoles || ['1156383581099274250', '1080746284434071582', '1104523865377488918', '1136699869290041404']).includes(rid))
-                continue;
             try {
                 if (!member.roles.cache.has(rid))
                     await member.roles.add(rid, 'RPP encerrado: restaurando cargos');
