@@ -297,6 +297,18 @@
           "name": "Corrupção de Menor",
           "type": "ban",
           "reason": "Tentar corromper ou influenciar negativamente menores de idade"
+        },
+        {
+          "id": "extremismo",
+          "name": "Extremismo",
+          "type": "ban",
+          "reason": "Promover ou defender ideologias extremistas"
+        },
+        {
+          "id": "nazismo",
+          "name": "Nazismo",
+          "type": "ban",
+          "reason": "Promover, defender ou fazer apologia ao nazismo"
         }
       ]
     }
