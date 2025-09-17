@@ -346,16 +346,16 @@ export default {
                                     if (proofGuild) {
                                         const proofChannel = proofGuild.channels.cache.get(proofChannelId);
                                         if (proofChannel?.isTextBased()) {
-                                            const proofEmbed = new EmbedBuilder()
-                                                .setTitle('📋 Prova de Punição')
-                                                .setDescription(`**Executor:** <@${executor.id}> (\`${executor.id}\`)\n**Alvo:** <@${target.id}> (\`${target.id}\`)\n**Punição:** ${punishmentConfig.punishmentTypes[punishment.type].name}\n**Motivo:** ${punishment.reason}`)
-                                                .setColor(0xE74C3C)
-                                                .setTimestamp()
-                                                .setFooter({ text: 'Sistema de Punições - CDW' });
-                                            if (proof?.attachments.first()) {
-                                                proofEmbed.setImage(proof.attachments.first()!.url);
-                                            }
-                                            const savedMessage = await proofChannel.send({ embeds: [proofEmbed] });
+                                            const content = [
+                                                `📋 Prova de Punição`,
+                                                `Executor: <@${executor.id}> (\`${executor.id}\`)`,
+                                                `Alvo: <@${target.id}> (\`${target.id}\`)`,
+                                                `Punição: ${punishmentConfig.punishmentTypes[punishment.type].name}`,
+                                                `Motivo: ${punishment.reason}`
+                                            ].join('\n');
+                                            const firstAttachment = proof?.attachments.first();
+                                            const files = firstAttachment ? [firstAttachment.url] : [];
+                                            const savedMessage = await proofChannel.send({ content, files });
                                             savedProofUrl = savedMessage.url;
                                             logger.info({
                                                 executorId: executor.id,
@@ -367,6 +367,13 @@ export default {
                                 }
                                 catch (error) {
                                     logger.error({ error }, 'Erro ao salvar prova no canal de backup');
+                                }
+                                // Delete the user's proof message immediately after capturing/saving it
+                                try {
+                                    await proof?.delete();
+                                }
+                                catch (error) {
+                                    logger.warn({ error }, 'Não foi possível deletar mensagem da prova imediatamente');
                                 }
                                 const success = await applyPunishment(target, punishment, executor, interaction, savedProofUrl);
                                 if (success) {
@@ -381,12 +388,6 @@ export default {
                                         embeds: [successEmbed],
                                         components: []
                                     });
-                                    try {
-                                        await proof?.delete();
-                                    }
-                                    catch (error) {
-                                        logger.warn({ error }, 'Não foi possível deletar mensagem da prova');
-                                    }
                                 }
                                 else {
                                     const errorEmbed = new EmbedBuilder()
