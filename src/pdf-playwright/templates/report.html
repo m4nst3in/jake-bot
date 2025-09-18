@@ -113,13 +113,13 @@
             </div>
             <div class="cards-grid">
                 {{#each participants}}
-                <div class="participant-card {{#if (lte @index 2)}}top-performer{{/if}}">
+                <div class="participant-card">
                     {{#if @first}}
                     <div class="ribbon">Staff Sensação</div>
                     {{/if}}
                     
                     <div class="card-header">
-                        <div class="position-badge {{#if (lte @index 2)}}medal-{{add @index 1}}{{/if}}">
+                        <div class="position-badge">
                             {{add @index 1}}
                         </div>
                         <div class="avatar-container">
