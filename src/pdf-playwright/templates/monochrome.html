@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    {{styles}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- COVER -->
+    <section class="cover page-break">
+      <div class="title">
+        <div class="brand">Relatório Corporativo</div>
+        <div class="divider"></div>
+        <div class="subtitle small muted">{{areaName}} • {{date}} • v{{version}}</div>
+      </div>
+    </section>
+
+    <!-- TABLE OF CONTENTS -->
+    <section class="section card pad">
+      <div class="h2">Sumário</div>
+      <div class="hr"></div>
+      <div class="toc">
+        <div class="row"><div>1. Introdução</div><div class="small muted">p. 2</div></div>
+        <div class="row"><div>2. Metodologia</div><div class="small muted">p. 3</div></div>
+        <div class="row"><div>3. Resumo Executivo</div><div class="small muted">p. 4</div></div>
+        <div class="row"><div>4. Top 10</div><div class="small muted">p. 5</div></div>
+        <div class="row"><div>5. Análise Detalhada</div><div class="small muted">p. 6+</div></div>
+        <div class="row"><div>6. Conclusão</div><div class="small muted">p. Fim</div></div>
+      </div>
+    </section>
+
+    <!-- INTRODUCTION -->
+    <section class="section card pad">
+      <div class="h2">1. Introdução</div>
+      <div class="hr"></div>
+      <p class="muted">Este documento apresenta um panorama profissional das atividades e resultados da equipe {{areaName}} no período atual. O objetivo é consolidar informações, destacar desempenhos e fornecer insumos de tomada de decisão com base em dados claros e organizados.</p>
+      <p>Com um enfoque minimalista e em preto e branco, priorizamos legibilidade, contraste e hierarquia visual — características inspiradas na identidade da Vercel. Este relatório está estruturado para facilitar a leitura do início ao fim.</p>
+    </section>
+
+    <!-- METHODOLOGY -->
+    <section class="section card pad">
+      <div class="h2">2. Metodologia</div>
+      <div class="hr"></div>
+      <p>Os resultados aqui apresentados são coletados de nossas bases de dados internas. As métricas principais incluem:</p>
+      <ul>
+        <li><strong>Pontos</strong>: soma ponderada das atividades realizadas.</li>
+        {{#if isSupport}}
+        <li><strong>Relatórios</strong> e <strong>Plantões</strong> (metas específicas para Suporte).</li>
+        {{else}}
+        <li><strong>Participação</strong>: comparativo percentual em relação ao líder.</li>
+        {{/if}}
+      </ul>
+      <p class="small muted">Observação: metas e limiares de cargo são interpretados conforme a configuração vigente.</p>
+    </section>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <section class="section card pad">
+      <div class="h2">3. Resumo Executivo</div>
+      <div class="hr"></div>
+      <div class="stats">
+        <div class="stat">
+          <div class="value">{{totalParticipants}}</div>
+          <div class="label">Participantes</div>
+        </div>
+        <div class="stat">
+          <div class="value">{{totalPoints}}</div>
+          <div class="label">Total de Pontos</div>
+        </div>
+        <div class="stat">
+          <div class="value">{{avgPoints}}</div>
+          <div class="label">Média</div>
+        </div>
+        <div class="stat">
+          <div class="value">{{medianPoints}}</div>
+          <div class="label">Mediana</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOP 10 TABLE -->
+    <section class="section card pad">
+      <div class="h2">4. Top 10 Participantes</div>
+      <div class="hr"></div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Usuário</th>
+            <th>Pontos</th>
+            <th>% Total</th>
+            {{#if isSupport}}
+            <th>Relatórios</th>
+            <th>Plantões</th>
+            {{else}}
+            <th>Participação</th>
+            {{/if}}
+          </tr>
+        </thead>
+        <tbody>
+          {{#each topParticipants}}
+          <tr>
+            <td>{{add @index 1}}</td>
+            <td>{{username}}</td>
+            <td>{{points}}</td>
+            <td>{{percentage}}%</td>
+            {{#if isSupport}}
+            <td>{{reports}}</td>
+            <td>{{shifts}}</td>
+            {{else}}
+            <td>{{participation}}</td>
+            {{/if}}
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    <!-- DETAILED ANALYSIS -->
+    <section class="section">
+      <div class="card pad">
+        <div class="h2">5. Análise Detalhada</div>
+        <div class="hr"></div>
+        <div class="grid2">
+          {{#each participants}}
+          <div class="card person">
+            <div class="head">
+              <div class="avatar">{{initials}}</div>
+              <div>
+                <div class="h3">{{username}}</div>
+                <div class="meta">ID: {{userId}}</div>
+              </div>
+              <div class="badge" style="margin-left:auto;">{{#if metGoals}}Meta Cumprida{{else}}Meta Não Cumprida{{/if}}</div>
+            </div>
+            <div class="hr"></div>
+            <div class="score">
+              <div>◆</div>
+              <div class="pts">{{points}} pontos</div>
+              {{#if rank}}
+              <div class="tag" style="margin-left: 6px;">{{rank}}</div>
+              {{/if}}
+            </div>
+            <div class="hr"></div>
+            <div class="list">
+              {{#if isSupport}}
+                <div class="item"><div class="ic">{{pointsIcon}}</div><div>Meta Pontos: {{pointsGoal}} {{#unless pointsGoalMet}}(faltam {{pointsNeeded}}){{/unless}}</div></div>
+                {{#if reportsGoal}}
+                  <div class="item"><div class="ic">{{reportsIcon}}</div><div>Relatórios: {{reports}}/{{reportsGoal}} {{#unless reportsGoalMet}}(faltam {{reportsNeeded}}){{/unless}}</div></div>
+                {{/if}}
+                <div class="item"><div class="ic">{{shiftsIcon}}</div><div>Plantões: {{shifts}}/{{shiftsGoal}} {{#unless shiftsGoalMet}}(faltam {{shiftsNeeded}}){{/unless}}</div></div>
+              {{/if}}
+              {{#if isNonSupport}}
+                {{#if goal}}
+                  <div class="item"><div class="ic">{{goalIcon}}</div><div>Meta: {{goal}} {{#unless goalMet}}(faltam {{goalNeeded}}){{/unless}}</div></div>
+                {{/if}}
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section class="section card pad">
+      <div class="h2">6. Conclusão</div>
+      <div class="hr"></div>
+      <p>Os resultados apresentados evidenciam o desempenho atual da equipe. Recomenda-se a continuidade do acompanhamento semanal, reforçando metas específicas por cargo e mantendo a transparência de critérios.</p>
+      <p class="muted small">Documento gerado automaticamente. Layout minimalista em preto e branco, inspirado na Vercel.</p>
+    </section>
+
+    <div class="footer">
+      <div>Relatório • {{areaName}}</div>
+      <div>Página {{pageNumber}}</div>
+    </div>
+  </div>
+</body>
+</html>

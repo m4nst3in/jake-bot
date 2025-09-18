@@ -477,6 +477,7 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
             metGoals,
             isSupport,
             isNonSupport: !isSupport,
+            participation: !isSupport ? `${partPct.toFixed(0)}% do líder` : undefined,
             ...goalData
         });
     }
@@ -723,8 +724,9 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         } catch {}
 
         // Load templates
-        const templatePath = path.resolve('src/pdf-playwright/templates/report.html');
-        const stylePath = path.resolve('src/pdf-playwright/styles/vercel-theme.css');
+        // Use the new monochrome template and stylesheet by default
+        const templatePath = path.resolve('src/pdf-playwright/templates/monochrome.html');
+        const stylePath = path.resolve('src/pdf-playwright/styles/monochrome.css');
         
         if (!existsSync(templatePath) || !existsSync(stylePath)) {
             throw new Error('Template ou arquivo de estilo não encontrado');
