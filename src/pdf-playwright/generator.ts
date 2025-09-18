@@ -687,7 +687,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
 
         // Process participants
         const participants = await processParticipants(client, rows, area, totalPoints, maxPoints);
-        const topParticipants = participants.slice(0, 10);
+        const topParticipants = participants; // show all participants in the table
 
         // Add mock data if no participants for testing
         if (participants.length === 0) {

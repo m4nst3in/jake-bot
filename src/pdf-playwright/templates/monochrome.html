@@ -16,27 +16,12 @@
     <!-- COVER -->
     <section class="cover page-break">
       <div class="title">
-        <div class="brand">Relatório Corporativo</div>
+        <div class="brand">Relatório — {{areaName}}</div>
         <div class="divider"></div>
         <div class="subtitle small muted">{{areaName}} • {{date}} • v{{version}}</div>
       </div>
     </section>
 
-    <!-- METHODOLOGY (concise) -->
-    <section class="section card pad">
-      <div class="h2">Metodologia</div>
-      <div class="hr"></div>
-      <p>Os resultados aqui apresentados são coletados de nossas bases de dados internas. As métricas principais incluem:</p>
-      <ul>
-        <li><strong>Pontos</strong>: soma ponderada das atividades realizadas.</li>
-        {{#if isSupport}}
-        <li><strong>Relatórios</strong> e <strong>Plantões</strong> (metas específicas para Suporte).</li>
-        {{else}}
-        <li><strong>Participação</strong>: comparativo percentual em relação ao líder.</li>
-        {{/if}}
-      </ul>
-      <p class="small muted">Observação: metas e limiares de cargo são interpretados conforme a configuração vigente.</p>
-    </section>
 
     <!-- WEEKLY SUMMARY (full page) -->
     <section class="section card pad full">
@@ -60,52 +45,25 @@
           <div class="label">Mediana</div>
         </div>
       </div>
-
       <div class="hr"></div>
-      <div class="grid2">
-        <div class="card pad">
-          <div class="h3">Destaques</div>
-          <div class="hr"></div>
-          <ul class="small">
-            {{#each topParticipants}}
-              {{#if @first}}
-                <li><strong>Top 1:</strong> {{username}} — {{points}} pts ({{percentage}}% do total)</li>
-              {{/if}}
-            {{/each}}
-            <li>Total de participantes ranqueados: {{totalParticipants}}</li>
-            <li>Pontuação máxima individual: {{maxPoints}}</li>
-          </ul>
-        </div>
-        <div class="card pad">
-          <div class="h3">Notas Operacionais</div>
-          <div class="hr"></div>
-          <p class="small muted">Semana com foco em estabilidade e consistência. Recomenda-se manter o ritmo e reforçar a comunicação de metas aos membros com baixa atividade.</p>
-          <p class="small">Metas e critérios permanecem inalterados durante o período considerado.</p>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-      <div class="grid2">
-        <div class="card pad">
-          <div class="h3">Distribuição</div>
-          <div class="hr"></div>
-          <p class="small muted">A distribuição de pontos segue concentração nos 10 primeiros colocados, sugerindo espaço para programas de incentivo aos demais membros.</p>
-        </div>
-        <div class="card pad">
-          <div class="h3">Próximos Passos</div>
-          <div class="hr"></div>
-          <ul class="small">
-            <li>Reforçar alinhamento de metas individuais.</li>
-            <li>Promover feedbacks objetivos e semanais.</li>
-            <li>Identificar membros com potencial de crescimento.</li>
-          </ul>
-        </div>
+      <div class="card pad">
+        <div class="h3">Destaques</div>
+        <div class="hr"></div>
+        <ul class="small">
+          {{#each topParticipants}}
+            {{#if @first}}
+              <li><strong>Top 1:</strong> {{username}} — {{points}} pts ({{percentage}}% do total)</li>
+            {{/if}}
+          {{/each}}
+          <li>Total de participantes ranqueados: {{totalParticipants}}</li>
+          <li>Pontuação máxima individual: {{maxPoints}}</li>
+        </ul>
       </div>
     </section>
 
-    <!-- TOP 10 TABLE -->
+    <!-- ALL PARTICIPANTS TABLE -->
     <section class="section card pad">
-      <div class="h2">Top 10 Participantes</div>
+      <div class="h2">Todos os Participantes</div>
       <div class="hr"></div>
       <table class="table">
         <thead>
