@@ -117,3 +117,14 @@ body {
 .page-break { page-break-after: always; break-after: page; }
 
 @media print { .container { padding: 15mm; } .card { break-inside: avoid; } }
+
+/* Full page section approximation for 'Resumo da Semana' */
+.full {
+  min-height: calc(297mm - 2 * 18mm - 16mm); /* page height - top/bottom container padding - footer approx */
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto 1fr;
+  gap: 16px;
+}
+.full .stats { margin-top: 0; }
+.full .grid2 { align-items: start; }
+.full .card.pad { height: 100%; }
