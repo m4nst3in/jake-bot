@@ -4,6 +4,40 @@ import { loadConfig } from '../config/index.ts';
 import { DatabaseManager } from '../db/manager.ts';
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
+
+// Constants for better maintainability
+const PDF_CONFIG = {
+    MARGIN: 40,
+    COLORS: {
+        PRIMARY_TEXT: '#111111',
+        SECONDARY_TEXT: '#555555',
+        MUTED_TEXT: '#888888',
+        SUCCESS: '#1abc9c',
+        ERROR: '#e74c3c',
+        WARNING: '#f39c12'
+    },
+    FONTS: {
+        TITLE: 26,
+        SUBTITLE: 18,
+        SECTION_HEADER: 16,
+        CARD_TITLE: 14,
+        BODY: 11,
+        SMALL: 9,
+        TINY: 8
+    },
+    SPACING: {
+        SECTION: 1.2,
+        CARD: 0.6,
+        LINE: 0.4
+    },
+    CARD: {
+        HEIGHT: 120,
+        HEIGHT_SUPORTE: 120,
+        MARGIN: 20,
+        RADIUS: 10,
+        MAX_PER_PAGE: 4
+    }
+};
 interface MemberRow {
     user_id: string;
     points: number;
@@ -108,17 +142,70 @@ async function fetchAreaRows(client: Client, area: string): Promise<MemberRow[]>
     catch { }
     return rows.sort(sort);
 }
-function areaAccent(area: string) {
-    const a = area.toLowerCase();
-    if (a === 'suporte')
-        return { primary: '#5865F2', secondary: '#E3E7FF' };
-    if (a === 'design')
-        return { primary: '#e67e22', secondary: '#ffe4cc' };
-    if (a === 'movcall')
-        return { primary: '#1abc9c', secondary: '#d8f7f1' };
-    if (a === 'recrutamento')
-        return { primary: '#9b59b6', secondary: '#f2e5f9' };
-    return { primary: '#2c3e50', secondary: '#ecf0f1' };
+interface AreaTheme {
+    primary: string;
+    secondary: string;
+    accent: string;
+    name: string;
+    icon: string;
+}
+
+/**
+ * Get area-specific color scheme with improved contrast and accessibility
+ */
+function getAreaTheme(area: string): AreaTheme {
+    const themes: Record<string, AreaTheme> = {
+        suporte: { 
+            primary: '#5865F2', 
+            secondary: '#E3E7FF', 
+            accent: '#4752C4',
+            name: 'Suporte',
+            icon: '🛠️'
+        },
+        design: { 
+            primary: '#e67e22', 
+            secondary: '#ffe4cc', 
+            accent: '#d35400',
+            name: 'Design',
+            icon: '🎨'
+        },
+        movcall: { 
+            primary: '#1abc9c', 
+            secondary: '#d8f7f1', 
+            accent: '#16a085',
+            name: 'MovCall',
+            icon: '📞'
+        },
+        recrutamento: { 
+            primary: '#9b59b6', 
+            secondary: '#f2e5f9', 
+            accent: '#8e44ad',
+            name: 'Recrutamento',
+            icon: '👥'
+        },
+        eventos: {
+            primary: '#f39c12',
+            secondary: '#fef5e7',
+            accent: '#e67e22',
+            name: 'Eventos',
+            icon: '🎉'
+        },
+        jornalismo: {
+            primary: '#34495e',
+            secondary: '#ecf0f1',
+            accent: '#2c3e50',
+            name: 'Jornalismo',
+            icon: '📰'
+        }
+    };
+    
+    return themes[area.toLowerCase()] || {
+        primary: '#2c3e50', 
+        secondary: '#ecf0f1', 
+        accent: '#34495e',
+        name: area,
+        icon: '📊'
+    };
 }
 async function fetchImageBuffer(url: string): Promise<Buffer | null> {
     try {
@@ -132,24 +219,61 @@ async function fetchImageBuffer(url: string): Promise<Buffer | null> {
         return null;
     }
 }
-function ensureSpace(doc: any, needed: number, pageNum: number) {
+function ensureSpace(doc: any, needed: number, pageNum: number, theme: AreaTheme) {
     if (doc.y + needed > doc.page.height - doc.page.margins.bottom) {
-        addFooter(doc, pageNum);
+        addFooter(doc, pageNum, theme);
         doc.addPage();
         return pageNum + 1;
     }
     return pageNum;
 }
-function addFooter(doc: any, pageNum: number) {
-    doc.fontSize(8).fillColor('#888');
+/**
+ * Add a styled footer with page number and branding
+ */
+function addFooter(doc: any, pageNum: number, theme: AreaTheme) {
     const footerY = doc.page.height - doc.page.margins.bottom + 10;
-    doc.text(`Página ${pageNum}`, doc.page.margins.left, footerY, { width: doc.page.width - doc.page.margins.left * 2, align: 'center' });
+    const contentWidth = doc.page.width - doc.page.margins.left * 2;
+    
+    // Subtle line above footer
+    doc.save()
+       .rect(doc.page.margins.left, footerY - 5, contentWidth, 1)
+       .fill('#e0e0e0')
+       .restore();
+    
+    // Page number with styling
+    doc.fontSize(PDF_CONFIG.FONTS.TINY)
+       .fillColor(PDF_CONFIG.COLORS.MUTED_TEXT)
+       .text(
+           `Página ${pageNum} • Gerado pelo Sistema de Relatórios`,
+           doc.page.margins.left,
+           footerY,
+           { width: contentWidth, align: 'center' }
+       );
 }
-function addHeader(doc: any, area: string, primary: string, fonts: Fonts) {
-    doc.font(fonts.bold).fontSize(14).fillColor(primary).text(`${area} · Continuação`, { align: 'center' });
-    doc.moveDown(0.25);
-    doc.save().rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left * 2, 2).fill(primary).restore();
-    doc.moveDown(0.5);
+/**
+ * Add a styled header for continuation pages
+ */
+function addHeader(doc: any, theme: AreaTheme, fonts: Fonts) {
+    const contentWidth = doc.page.width - doc.page.margins.left * 2;
+    
+    // Area name with icon
+    doc.font(fonts.bold)
+       .fontSize(PDF_CONFIG.FONTS.SECTION_HEADER)
+       .fillColor(theme.primary)
+       .text(`${theme.icon} ${theme.name} · Continuação`, {
+           align: 'center',
+           width: contentWidth
+       });
+    
+    doc.moveDown(PDF_CONFIG.SPACING.LINE);
+    
+    // Decorative line with gradient effect
+    doc.save()
+       .rect(doc.page.margins.left, doc.y, contentWidth, 3)
+       .fill(theme.primary)
+       .restore();
+    
+    doc.moveDown(PDF_CONFIG.SPACING.CARD);
 }
 function median(values: number[]): number {
     if (!values.length)
@@ -238,8 +362,16 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         });
     }
     catch { }
-    const { primary, secondary } = areaAccent(area);
-    const doc = new PDFDocument({ margin: 40, info: { Title: `Relatório de Pontos - ${area}`, Author: 'Sistema' } });
+    const theme = getAreaTheme(area);
+    const doc = new PDFDocument({ 
+        margin: PDF_CONFIG.MARGIN, 
+        info: { 
+            Title: `Relatório de Pontos - ${theme.name}`, 
+            Author: 'Sistema de Relatórios',
+            Subject: `Análise de desempenho da equipe ${theme.name}`,
+            Keywords: 'relatório, pontos, equipe, desempenho'
+        } 
+    });
     const out: Buffer[] = [];
     let pageNumber = 1;
     doc.on('data', (d: any) => out.push(d));
@@ -251,17 +383,64 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     }
     catch { }
     const contentWidth = doc.page.width - doc.page.margins.left * 2;
-    doc.font(fonts.bold).fontSize(26).fillColor(primary).text(`Relatório de Pontos`, doc.page.margins.left, doc.y, { align: 'center', width: contentWidth });
-    doc.moveDown(0.2);
-    doc.font(fonts.medium).fontSize(18).fillColor('#222').text(area, doc.page.margins.left, doc.y, { align: 'center', width: contentWidth });
-    doc.moveDown(0.5);
-    doc.font(fonts.regular).fontSize(10).fillColor('#555').text(`Gerado em ${new Date().toLocaleString('pt-BR')}  |  Versão do Bot ${version}`, doc.page.margins.left, doc.y, { align: 'center', width: contentWidth });
+    // Enhanced title section with better typography
+    doc.font(fonts.bold)
+       .fontSize(PDF_CONFIG.FONTS.TITLE)
+       .fillColor(theme.primary)
+       .text(`${theme.icon} Relatório de Pontos`, doc.page.margins.left, doc.y, { 
+           align: 'center', 
+           width: contentWidth 
+       });
+    
+    doc.moveDown(0.3);
+    
+    doc.font(fonts.medium)
+       .fontSize(PDF_CONFIG.FONTS.SUBTITLE)
+       .fillColor(PDF_CONFIG.COLORS.PRIMARY_TEXT)
+       .text(theme.name, doc.page.margins.left, doc.y, { 
+           align: 'center', 
+           width: contentWidth 
+       });
+    
+    doc.moveDown(0.6);
+    
+    // Metadata section with better formatting
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('pt-BR');
+    
+    doc.font(fonts.regular)
+       .fontSize(PDF_CONFIG.FONTS.SMALL)
+       .fillColor(PDF_CONFIG.COLORS.SECONDARY_TEXT)
+       .text(
+           `Gerado em ${dateStr} às ${timeStr}  •  Versão ${version}`,
+           doc.page.margins.left,
+           doc.y,
+           { align: 'center', width: contentWidth }
+       );
+    
     doc.moveDown(0.8);
-    doc.save().rect(doc.page.margins.left, doc.y, doc.page.width - doc.page.margins.left * 2, 5).fill(primary).restore();
-    doc.moveDown(1.2);
+    
+    // Enhanced decorative line with gradient effect
+    doc.save()
+       .rect(doc.page.margins.left, doc.y, contentWidth, 4)
+       .fill(theme.primary)
+       .restore();
+    
+    doc.save()
+       .rect(doc.page.margins.left, doc.y + 4, contentWidth, 1)
+       .fill(theme.accent)
+       .restore();
+    
+    doc.moveDown(PDF_CONFIG.SPACING.SECTION);
     if (!rows.length) {
         doc.font(fonts.regular).fontSize(14).fillColor('#777').text('Nenhum participante ainda.');
-        addFooter(doc, pageNumber);
+        addFooter(doc, pageNumber, theme);
         doc.end();
         return await new Promise(res => doc.on('end', () => res(Buffer.concat(out))));
     }
@@ -272,7 +451,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const areaKey = area.toLowerCase();
     const suporte = areaKey === 'suporte';
     doc.x = doc.page.margins.left;
-    doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Resumo', { width: contentWidth, align: 'left' });
+    doc.font(fonts.bold).fontSize(PDF_CONFIG.FONTS.SECTION_HEADER).fillColor(theme.primary).text('📊 Resumo Executivo', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
     doc.moveDown(0.4);
     doc.fontSize(11).fillColor('#222');
     const summaryData = [
@@ -292,7 +471,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     doc.y = startYSummary + summaryData.length * 16 + 10;
     const topN = rows.slice(0, 10);
     doc.x = doc.page.margins.left;
-    doc.font(fonts.bold).fontSize(16).fillColor(primary).text('Top 10', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
+    doc.font(fonts.bold).fontSize(PDF_CONFIG.FONTS.SECTION_HEADER).fillColor(theme.primary).text('🏆 Top 10 Participantes', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
     doc.moveDown(0.4);
     const headerFontSize = 9;
     const tableX = doc.page.margins.left;
@@ -301,7 +480,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const tableStartY = doc.y;
     doc.save();
     const tableWidth = colWidths.reduce((a, b) => a + b, 0);
-    doc.roundedRect(tableX, tableStartY, tableWidth, 22, 6).fill(secondary);
+    doc.roundedRect(tableX, tableStartY, tableWidth, 22, 6).fill(theme.secondary);
     doc.fillColor('#111').font(fonts.medium).fontSize(headerFontSize);
     let cursorX = tableX + 8;
     let headerY = tableStartY + 7;
@@ -314,7 +493,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     let rowY = tableStartY + 22;
     for (let i = 0; i < topN.length; i++) {
         const r = topN[i];
-        pageNumber = ensureSpace(doc, 30, pageNumber);
+        pageNumber = ensureSpace(doc, 30, pageNumber, theme);
         const pctTotal = totalPoints ? (r.points / totalPoints * 100) : 0;
         const partPct = (r.points / maxPoints) * 100;
         const user = await client.users.fetch(r.user_id).catch(() => null);
@@ -356,13 +535,13 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     const requiredForThree = titleBlock + (cardHeightRef + perCardExtra) * minCardsHere;
     const remainingSpace = doc.page.height - doc.page.margins.bottom - doc.y;
     if (remainingSpace < requiredForThree) {
-        addFooter(doc, pageNumber);
+        addFooter(doc, pageNumber, theme);
         doc.addPage();
         pageNumber++;
     }
     doc.moveDown(0.4);
     doc.x = doc.page.margins.left;
-    doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
+    doc.font(fonts.bold).fontSize(PDF_CONFIG.FONTS.SUBTITLE).fillColor(theme.primary).text('📋 Análise Detalhada', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
     doc.moveDown(0.6);
     let position = 0;
     const medalColors = ['#D4AF37', '#C0C0C0', '#CD7F32'];
@@ -401,21 +580,21 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         if (cardsOnCurrentPage === 0) {
             const spaceForTwo = spaceNeeded + cardWithMargin;
             if (currentSpace < spaceForTwo) {
-                addFooter(doc, pageNumber);
+                addFooter(doc, pageNumber, theme);
                 doc.addPage();
                 pageNumber++;
-                addHeader(doc, area, primary, fonts);
+                addHeader(doc, theme, fonts);
                 doc.x = doc.page.margins.left;
-                doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
+                doc.font(fonts.bold).fontSize(PDF_CONFIG.FONTS.SUBTITLE).fillColor(theme.primary).text('📋 Análise Detalhada', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
                 doc.moveDown(0.6);
             }
         }
         if (cardsOnCurrentPage >= maxCardsPerPage || currentSpace < spaceNeeded) {
-            addFooter(doc, pageNumber);
+            addFooter(doc, pageNumber, theme);
             doc.addPage();
             pageNumber++;
             cardsOnCurrentPage = 0;
-            addHeader(doc, area, primary, fonts);
+            addHeader(doc, theme, fonts);
             doc.x = doc.page.margins.left;
             doc.font(fonts.bold).fontSize(18).fillColor(primary).text('Detalhamento', doc.page.margins.left, doc.y, { width: contentWidth, align: 'left' });
             doc.moveDown(0.6);
@@ -424,7 +603,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         position = idx;
         const startY = doc.y;
         doc.save();
-        const cardColor = idx % 2 === 0 ? '#FFFFFF' : secondary;
+        const cardColor = idx % 2 === 0 ? '#FFFFFF' : theme.secondary;
         doc.roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left * 2, cardHeight, 10).fill(cardColor);
         if (idx <= 3) {
             doc.lineWidth(2).roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left * 2, cardHeight, 10).stroke(medalColors[idx - 1]);
@@ -444,7 +623,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         const badgeX = doc.page.margins.left + 12;
         const badgeY = startY + 12;
         doc.save();
-        const circleColor = idx <= 3 ? medalColors[idx - 1] : primary;
+        const circleColor = idx <= 3 ? medalColors[idx - 1] : theme.primary;
         doc.circle(badgeX + 18, badgeY + 18, 18).fill(circleColor);
         doc.fillColor('#fff').font(fonts.bold).fontSize(15).text(String(idx), badgeX + 6, badgeY + 8, { width: 24, align: 'center' });
         doc.restore();
@@ -492,7 +671,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             doc.restore();
         }
         catch { }
-        doc.font(fonts.medium).fontSize(11).fillColor(primary).text(`Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
+        doc.font(fonts.medium).fontSize(PDF_CONFIG.FONTS.BODY).fillColor(theme.primary).text(`💎 Pontos: ${formatNumber(r.points)}${rankLabel}`, infoX, cursorY, { continued: false });
         cursorY += 16;
         const pctTotal = totalPoints ? (r.points / totalPoints * 100) : 0;
         doc.font(fonts.regular).fontSize(8).fillColor('#333').text(`Participação no total: ${pctTotal.toFixed(2)}%`, infoX, cursorY);
