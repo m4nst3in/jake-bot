@@ -49,6 +49,9 @@ interface ParticipantData {
     initials: string;
     rank?: string;
     rankColor?: string;
+    rankTextColor?: string;
+    rankBorderColor?: string;
+    rankBg?: string;
     metGoals: boolean;
     pointsGoal?: number;
     pointsGoalMet?: boolean;
@@ -466,6 +469,19 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
         }
 
         const rankColor = await getRankColor(client, row.user_id, row.rankName);
+        // Compute safe rank chip styles for light colors (e.g., white)
+        let hex = (rankColor || '#6b7280').replace('#', '');
+        if (hex.length === 3) {
+            hex = hex.split('').map(ch => ch + ch).join('');
+        }
+        const rCh = parseInt(hex.substring(0, 2), 16) || 0;
+        const gCh = parseInt(hex.substring(2, 4), 16) || 0;
+        const bCh = parseInt(hex.substring(4, 6), 16) || 0;
+        const luminance = (0.2126 * rCh + 0.7152 * gCh + 0.0722 * bCh) / 255;
+        const tooLight = luminance > 0.9; // near white
+        const rankTextColor = tooLight ? '#111111' : rankColor;
+        const rankBorderColor = tooLight ? '#111111' : rankColor;
+        const rankBg = tooLight ? '#f5f5f5' : 'transparent';
         const isTop1 = i === 0;
         const badgeText = isTop1 ? 'Staff Sensação' : (metGoals ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA');
 
@@ -481,6 +497,9 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
             initials: getInitials(username),
             rank: row.rankName,
             rankColor,
+            rankTextColor,
+            rankBorderColor,
+            rankBg,
             metGoals,
             isSupport,
             isNonSupport: !isSupport,
