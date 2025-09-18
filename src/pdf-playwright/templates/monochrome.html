@@ -117,14 +117,14 @@
                 <div class="h3">{{username}}</div>
                 <div class="meta">ID: {{userId}}</div>
               </div>
-              <div class="badge" style="margin-left:auto;">{{#if metGoals}}Meta Cumprida{{else}}Meta Não Cumprida{{/if}}</div>
+              <div class="badge" style="margin-left:auto;">{{badgeText}}</div>
             </div>
             <div class="hr"></div>
             <div class="score">
               <div>◆</div>
               <div class="pts">{{points}} pontos</div>
               {{#if rank}}
-              <div class="tag" style="margin-left: 6px;">{{rank}}</div>
+              <div class="tag" style="margin-left: 6px; color: {{rankColor}}; border-color: {{rankColor}};">{{rank}}</div>
               {{/if}}
             </div>
             <div class="hr"></div>

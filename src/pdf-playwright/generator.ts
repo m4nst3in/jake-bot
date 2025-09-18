@@ -48,6 +48,7 @@ interface ParticipantData {
     avatar?: string;
     initials: string;
     rank?: string;
+    rankColor?: string;
     metGoals: boolean;
     pointsGoal?: number;
     pointsGoalMet?: boolean;
@@ -61,6 +62,8 @@ interface ParticipantData {
     goal?: number;
     goalMet?: boolean;
     goalNeeded?: number;
+    isTop1?: boolean;
+    badgeText?: string;
 }
 
 interface TemplateData {
@@ -462,6 +465,10 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
             };
         }
 
+        const rankColor = await getRankColor(client, row.user_id, row.rankName);
+        const isTop1 = i === 0;
+        const badgeText = isTop1 ? 'Staff Sensação' : (metGoals ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA');
+
         participants.push({
             username,
             userId: row.user_id,
@@ -473,11 +480,13 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
             avatar: avatar || undefined,
             initials: getInitials(username),
             rank: row.rankName,
-            rankColor: await getRankColor(client, row.user_id, row.rankName),
+            rankColor,
             metGoals,
             isSupport,
             isNonSupport: !isSupport,
             participation: !isSupport ? `${partPct.toFixed(0)}% do líder` : undefined,
+            isTop1,
+            badgeText,
             ...goalData
         });
     }
