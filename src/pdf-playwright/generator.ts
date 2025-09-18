@@ -544,7 +544,12 @@ function renderLoops(template: string, data: TemplateData): string {
             // Replace participant properties
             Object.entries(participant).forEach(([key, value]) => {
                 const regex = new RegExp(`{{${key}}}`, 'g');
-                itemBlock = itemBlock.replace(regex, String(value || ''));
+                // Special handling for points to ensure 0 is displayed
+                if (key === 'points') {
+                    itemBlock = itemBlock.replace(regex, String(value ?? 0));
+                } else {
+                    itemBlock = itemBlock.replace(regex, String(value || ''));
+                }
             });
 
             // Clean up any remaining conditionals
@@ -599,7 +604,12 @@ function renderLoops(template: string, data: TemplateData): string {
             // Replace participant properties
             Object.entries(participant).forEach(([key, value]) => {
                 const regex = new RegExp(`{{${key}}}`, 'g');
-                itemBlock = itemBlock.replace(regex, String(value || ''));
+                // Special handling for points to ensure 0 is displayed
+                if (key === 'points') {
+                    itemBlock = itemBlock.replace(regex, String(value ?? 0));
+                } else {
+                    itemBlock = itemBlock.replace(regex, String(value || ''));
+                }
             });
 
             // Clean up any remaining conditionals
