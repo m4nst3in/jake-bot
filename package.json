@@ -28,7 +28,7 @@
     "ioredis": "^5.7.0",
     "mongodb": "^6.19.0",
   "node-cron": "^4.2.1",
-    "pdfkit": "^0.17.2",
+    "playwright": "^1.40.0",
     "pino": "^9.9.4",
     "pino-pretty": "^11.3.0",
     "sqlite3": "^5.1.7",

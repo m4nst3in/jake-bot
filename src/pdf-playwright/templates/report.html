@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        {{styles}}
+    </style>
+</head>
+<body class="theme-{{theme}}">
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-icon">{{icon}}</div>
+                <div class="header-text">
+                    <h1 class="header-title">Relatório de Pontos</h1>
+                    <h2 class="header-subtitle">{{areaName}}</h2>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Gerado em</span>
+                    <span class="meta-value">{{date}}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Versão</span>
+                    <span class="meta-value">{{version}}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Executive Summary -->
+        <section class="section">
+            <div class="section-header">
+                <h3 class="section-title">📊 Resumo Executivo</h3>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{totalParticipants}}</div>
+                    <div class="stat-label">Participantes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{totalPoints}}</div>
+                    <div class="stat-label">Total de Pontos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{avgPoints}}</div>
+                    <div class="stat-label">Média</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{medianPoints}}</div>
+                    <div class="stat-label">Mediana</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{maxPoints}}</div>
+                    <div class="stat-label">Maior Pontuação</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Top 10 Table -->
+        <section class="section">
+            <div class="section-header">
+                <h3 class="section-title">🏆 Top 10 Participantes</h3>
+            </div>
+            <div class="table-container">
+                <table class="top-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Usuário</th>
+                            <th>Pontos</th>
+                            <th>% Total</th>
+                            {{#if isSupport}}
+                            <th>Relatórios</th>
+                            <th>Plantões</th>
+                            {{else}}
+                            <th>Participação</th>
+                            {{/if}}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each topParticipants}}
+                        <tr class="{{#if @first}}rank-1{{else}}{{#if (eq @index 1)}}rank-2{{else}}{{#if (eq @index 2)}}rank-3{{/if}}{{/if}}{{/if}}">
+                            <td class="position">
+                                <span class="medal-or-number">{{medalOrNumber}}</span>
+                            </td>
+                            <td class="username">{{username}}</td>
+                            <td class="points">{{points}}</td>
+                            <td class="percentage">{{percentage}}%</td>
+                            {{#if isSupport}}
+                            <td class="reports">{{reports}}</td>
+                            <td class="shifts">{{shifts}}</td>
+                            {{else}}
+                            <td class="participation">{{participation}}</td>
+                            {{/if}}
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Detailed Analysis -->
+        <section class="section">
+            <div class="section-header">
+                <h3 class="section-title">📋 Análise Detalhada</h3>
+            </div>
+            <div class="cards-grid">
+                {{#each participants}}
+                <div class="participant-card {{#if (lte @index 2)}}top-performer{{/if}}">
+                    {{#if @first}}
+                    <div class="ribbon">Staff Sensação</div>
+                    {{/if}}
+                    
+                    <div class="card-header">
+                        <div class="position-badge {{#if (lte @index 2)}}medal-{{add @index 1}}{{/if}}">
+                            {{add @index 1}}
+                        </div>
+                        <div class="avatar-container">
+                            {{#if avatar}}
+                            <img src="{{avatar}}" alt="Avatar" class="avatar">
+                            {{else}}
+                            <div class="avatar-placeholder">{{initials}}</div>
+                            {{/if}}
+                        </div>
+                        <div class="user-info">
+                            <h3>{{username}}</h3>
+                            <p class="user-id">ID: {{userId}}</p>
+                        </div>
+                        <div class="status-badge {{#if metGoals}}success{{else}}warning{{/if}}">
+                            {{#if metGoals}}META CUMPRIDA{{else}}META NÃO CUMPRIDA{{/if}}
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <div class="points-section">
+                            <div class="points-main">
+                                <span class="points-icon">💎</span>
+                                <span class="points-value">{{points}} pontos</span>
+                                <span class="rank-badge" style="color: {{rankColor}};">{{rank}}</span>
+                            </div>
+                        </div>
+
+                        <div class="goals-section">
+                            {{#if isSupport}}
+                            <div class="goal-item">
+                                <span class="goal-icon {{#if pointsGoalMet}}success{{else}}error{{/if}}">{{pointsIcon}}</span>
+                                <span class="goal-text">{{pointsText}}</span>
+                            </div>
+                            {{#if reportsGoal}}
+                            <div class="goal-item">
+                                <span class="goal-icon {{#if reportsGoalMet}}success{{else}}error{{/if}}">{{reportsIcon}}</span>
+                                <span class="goal-text">{{reportsText}}</span>
+                            </div>
+                            {{/if}}
+                            <div class="goal-item">
+                                <span class="goal-icon {{#if shiftsGoalMet}}success{{else}}error{{/if}}">{{shiftsIcon}}</span>
+                                <span class="goal-text">{{shiftsText}}</span>
+                            </div>
+                            {{/if}}
+                            {{#if isNonSupport}}
+                            {{#if goal}}
+                            <div class="goal-item">
+                                <span class="goal-icon {{#if goalMet}}success{{else}}error{{/if}}">{{goalIcon}}</span>
+                                <span class="goal-text">{{goalText}}</span>
+                            </div>
+                            {{/if}}
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-text">
+                    Sistema de Relatórios • Gerado automaticamente
+                </div>
+                <div class="footer-page">
+                    Página {{pageNumber}}
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
