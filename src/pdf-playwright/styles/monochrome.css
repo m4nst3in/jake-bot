@@ -105,6 +105,7 @@ body {
 .badge { font-size: 10px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--gray-300); color: var(--gray-700); }
 .tag { font-size: 10px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--black); color: var(--black); background: transparent; }
 .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--gray-200); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+.avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid var(--gray-300); }
 .person .meta { color: var(--gray-600); font-size: 12px; }
 .person .score { display: flex; gap: 8px; align-items: center; }
 .person .score .pts { font-weight: 800; }

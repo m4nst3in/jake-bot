@@ -150,7 +150,11 @@
           {{#each participants}}
           <div class="card person">
             <div class="head">
+              {{#if avatar}}
+              <img src="{{avatar}}" alt="Avatar" class="avatar-img" />
+              {{else}}
               <div class="avatar">{{initials}}</div>
+              {{/if}}
               <div>
                 <div class="h3">{{username}}</div>
                 <div class="meta">ID: {{userId}}</div>
