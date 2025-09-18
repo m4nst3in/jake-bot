@@ -281,18 +281,6 @@ body {
   color: var(--color-gray-700);
 }
 
-/* Rank-specific styles */
-.rank-1 {
-  background: linear-gradient(90deg, #ffd700 0%, #fff 10%);
-}
-
-.rank-2 {
-  background: linear-gradient(90deg, #c0c0c0 0%, #fff 10%);
-}
-
-.rank-3 {
-  background: linear-gradient(90deg, #cd7f32 0%, #fff 10%);
-}
 
 /* Cards Grid */
 .cards-grid {
@@ -368,20 +356,6 @@ body {
   margin-right: 12px;
 }
 
-.position-badge.medal-1 {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: var(--color-black);
-}
-
-.position-badge.medal-2 {
-  background: linear-gradient(135deg, #c0c0c0, #e5e5e5);
-  color: var(--color-black);
-}
-
-.position-badge.medal-3 {
-  background: linear-gradient(135deg, #cd7f32, #d4a574);
-  color: var(--color-white);
-}
 
 .avatar-container {
   width: 64px;
