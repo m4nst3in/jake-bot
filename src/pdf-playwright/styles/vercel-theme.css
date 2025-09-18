@@ -553,6 +553,17 @@ body {
   .participant-card {
     break-inside: avoid;
     page-break-inside: avoid;
+    height: 400px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    border-width: 1px !important;
+  }
+  
+  .cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+    align-items: start !important;
   }
   
   .section {
