@@ -203,16 +203,12 @@ export async function sendPunishmentDM(target: GuildMember, punishment: any, pun
 }
 export async function logPunishment(target: GuildMember, punishment: any, executor: GuildMember, guild: Guild, punishmentType: any, additionalInfo?: string): Promise<void> {
     try {
-        // Save to database first
         let expiresAt: Date | undefined;
         if (punishment.duration && punishment.durationType) {
             expiresAt = new Date(calculateExpirationTime(punishment.duration, punishment.durationType));
         }
-
-        // Import the service dynamically to avoid circular dependencies
         const { PunishmentHistoryService } = await import('../services/punishmentHistoryService.ts');
         const historyService = new PunishmentHistoryService();
-        
         const punishmentId = await historyService.logPunishment({
             userId: target.id,
             executorId: executor.id,
@@ -222,18 +218,15 @@ export async function logPunishment(target: GuildMember, punishment: any, execut
             duration: punishment.duration,
             durationType: punishment.durationType,
             guildId: guild.id,
-            proofUrl: additionalInfo, // additionalInfo is often the proof URL
+            proofUrl: additionalInfo,
             expiresAt
         });
-
         logger.info({
             punishmentId,
             targetId: target.id,
             executorId: executor.id,
             punishmentType: punishmentType.name
         }, 'Punição salva no banco de dados');
-
-        // Continue with Discord logging
         let logChannelId: string;
         if (punishmentType.type === 'timeout' || punishmentType.name.toLowerCase().includes('mute')) {
             logChannelId = '1283418387082645627';
@@ -244,19 +237,16 @@ export async function logPunishment(target: GuildMember, punishment: any, execut
         else {
             logChannelId = '1199374501771751564';
         }
-        
         const logChannel = await guild.channels.fetch(logChannelId);
         if (!logChannel?.isTextBased()) {
             logger.warn({ logChannelId }, 'Canal de log de punições não é um canal de texto');
             return;
         }
-        
         const color = parseInt(punishmentType.logColor.replace('0x', ''), 16);
         let durationText = 'Permanente';
         if (punishment.duration && punishment.durationType) {
             durationText = formatDuration(punishment.duration, punishment.durationType);
         }
-        
         const embed = new EmbedBuilder()
             .setTitle('<a:red_hypered_cdw:939928635836604457> CDW • Punição Aplicada')
             .setColor(color)
@@ -264,28 +254,20 @@ export async function logPunishment(target: GuildMember, punishment: any, execut
             .addFields({ name: '<a:mov_call1:1252739847614103687> Usuário Punido', value: `<@${target.id}>\n\`${target.id}\``, inline: true }, { name: '<a:mov_call1:1252739847614103687> Executor', value: `<@${executor.id}>\n\`${executor.id}\``, inline: true }, { name: '<a:mov_call1:1252739847614103687> Tipo de Punição', value: punishmentType.name, inline: true }, { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }, { name: '<a:mov_call1:1252739847614103687> Duração', value: durationText, inline: true }, { name: '<a:mov_call1:1252739847614103687> Horário', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: true })
             .setFooter({ text: 'Sistema de Punições - CDW', iconURL: guild?.iconURL() || undefined })
             .setTimestamp();
-            
         if (punishment.bannable) {
             embed.addFields({ name: '<:z_mod_PIG_CDW:939925699551199272> Observação', value: 'Esta infração pode resultar em banimento se for de alta intensidade', inline: false });
         }
-        
         if (additionalInfo) {
             const url = String(additionalInfo).trim();
-            // Accept Discord CDN/image URLs that may contain query strings after the extension
             const isImage = /\.(png|jpe?g|gif|webp)(\?.*)?$/i.test(url);
-            // Mostra o link da prova e, se for imagem, exibe-a diretamente no embed
             embed.addFields({ name: '<a:setabranca:1417092970380791850> Prova', value: url, inline: false });
             if (isImage) {
                 embed.setImage(url);
             }
         }
-        
-        // Add punishment ID to embed for reference
         embed.addFields({ name: '<:z_mod_PIG_CDW:939925699551199272> ID da Punição', value: `\`${punishmentId}\``, inline: true });
-        
         await logChannel.send({ embeds: [embed] });
         await sendPunishmentDM(target, punishment, punishmentType, durationText);
-        
         logger.info({
             punishmentId,
             targetId: target.id,

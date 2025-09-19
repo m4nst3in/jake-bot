@@ -86,12 +86,9 @@ export default {
                     const pr = prog[gid];
                     const upaRoles: string[] = pr?.upa || [];
                     const hasUpa = upaRoles.some(r => m.roles.cache.has(r));
-                    
-                    // Apenas enviar no servidor onde o staff tem o cargo "Eu upo!" (ID: 1190515971069321236)
                     if (!hasUpa) {
                         continue;
                     }
-                    
                     const areaConfig = (cfg.areas || []).find((area: any) => area.guildId === gid);
                     const hasLeadership = areaConfig?.roleIds?.lead ? m.roles.cache.has(areaConfig.roleIds.lead) : false;
                     const hasMainArea = userMainArea ? areaConfig?.name === userMainArea : false;

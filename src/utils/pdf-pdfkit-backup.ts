@@ -4,8 +4,6 @@ import { loadConfig } from '../config/index.ts';
 import { DatabaseManager } from '../db/manager.ts';
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
-
-// Constants for better maintainability
 const PDF_CONFIG = {
     MARGIN: 40,
     COLORS: {
@@ -149,36 +147,32 @@ interface AreaTheme {
     name: string;
     icon: string;
 }
-
-/**
- * Get area-specific color scheme with improved contrast and accessibility
- */
 function getAreaTheme(area: string): AreaTheme {
     const themes: Record<string, AreaTheme> = {
-        suporte: { 
-            primary: '#5865F2', 
-            secondary: '#E3E7FF', 
+        suporte: {
+            primary: '#5865F2',
+            secondary: '#E3E7FF',
             accent: '#4752C4',
             name: 'Suporte',
             icon: '🛠️'
         },
-        design: { 
-            primary: '#e67e22', 
-            secondary: '#ffe4cc', 
+        design: {
+            primary: '#e67e22',
+            secondary: '#ffe4cc',
             accent: '#d35400',
             name: 'Design',
             icon: '🎨'
         },
-        movcall: { 
-            primary: '#1abc9c', 
-            secondary: '#d8f7f1', 
+        movcall: {
+            primary: '#1abc9c',
+            secondary: '#d8f7f1',
             accent: '#16a085',
             name: 'MovCall',
             icon: '📞'
         },
-        recrutamento: { 
-            primary: '#9b59b6', 
-            secondary: '#f2e5f9', 
+        recrutamento: {
+            primary: '#9b59b6',
+            secondary: '#f2e5f9',
             accent: '#8e44ad',
             name: 'Recrutamento',
             icon: '👥'
@@ -198,10 +192,9 @@ function getAreaTheme(area: string): AreaTheme {
             icon: '📰'
         }
     };
-    
     return themes[area.toLowerCase()] || {
-        primary: '#2c3e50', 
-        secondary: '#ecf0f1', 
+        primary: '#2c3e50',
+        secondary: '#ecf0f1',
         accent: '#34495e',
         name: area,
         icon: '📊'
@@ -227,52 +220,31 @@ function ensureSpace(doc: any, needed: number, pageNum: number, theme: AreaTheme
     }
     return pageNum;
 }
-/**
- * Add a styled footer with page number and branding
- */
 function addFooter(doc: any, pageNum: number, theme: AreaTheme) {
     const footerY = doc.page.height - doc.page.margins.bottom + 10;
     const contentWidth = doc.page.width - doc.page.margins.left * 2;
-    
-    // Subtle line above footer
     doc.save()
-       .rect(doc.page.margins.left, footerY - 5, contentWidth, 1)
-       .fill('#e0e0e0')
-       .restore();
-    
-    // Page number with styling
+        .rect(doc.page.margins.left, footerY - 5, contentWidth, 1)
+        .fill('#e0e0e0')
+        .restore();
     doc.fontSize(PDF_CONFIG.FONTS.TINY)
-       .fillColor(PDF_CONFIG.COLORS.MUTED_TEXT)
-       .text(
-           `Página ${pageNum} • Gerado pelo Sistema de Relatórios`,
-           doc.page.margins.left,
-           footerY,
-           { width: contentWidth, align: 'center' }
-       );
+        .fillColor(PDF_CONFIG.COLORS.MUTED_TEXT)
+        .text(`Página ${pageNum} • Gerado pelo Sistema de Relatórios`, doc.page.margins.left, footerY, { width: contentWidth, align: 'center' });
 }
-/**
- * Add a styled header for continuation pages
- */
 function addHeader(doc: any, theme: AreaTheme, fonts: Fonts) {
     const contentWidth = doc.page.width - doc.page.margins.left * 2;
-    
-    // Area name with icon
     doc.font(fonts.bold)
-       .fontSize(PDF_CONFIG.FONTS.SECTION_HEADER)
-       .fillColor(theme.primary)
-       .text(`${theme.icon} ${theme.name} · Continuação`, {
-           align: 'center',
-           width: contentWidth
-       });
-    
+        .fontSize(PDF_CONFIG.FONTS.SECTION_HEADER)
+        .fillColor(theme.primary)
+        .text(`${theme.icon} ${theme.name} · Continuação`, {
+        align: 'center',
+        width: contentWidth
+    });
     doc.moveDown(PDF_CONFIG.SPACING.LINE);
-    
-    // Decorative line with gradient effect
     doc.save()
-       .rect(doc.page.margins.left, doc.y, contentWidth, 3)
-       .fill(theme.primary)
-       .restore();
-    
+        .rect(doc.page.margins.left, doc.y, contentWidth, 3)
+        .fill(theme.primary)
+        .restore();
     doc.moveDown(PDF_CONFIG.SPACING.CARD);
 }
 function median(values: number[]): number {
@@ -363,14 +335,14 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     }
     catch { }
     const theme = getAreaTheme(area);
-    const doc = new PDFDocument({ 
-        margin: PDF_CONFIG.MARGIN, 
-        info: { 
-            Title: `Relatório de Pontos - ${theme.name}`, 
+    const doc = new PDFDocument({
+        margin: PDF_CONFIG.MARGIN,
+        info: {
+            Title: `Relatório de Pontos - ${theme.name}`,
             Author: 'Sistema de Relatórios',
             Subject: `Análise de desempenho da equipe ${theme.name}`,
             Keywords: 'relatório, pontos, equipe, desempenho'
-        } 
+        }
     });
     const out: Buffer[] = [];
     let pageNumber = 1;
@@ -383,28 +355,22 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
     }
     catch { }
     const contentWidth = doc.page.width - doc.page.margins.left * 2;
-    // Enhanced title section with better typography
     doc.font(fonts.bold)
-       .fontSize(PDF_CONFIG.FONTS.TITLE)
-       .fillColor(theme.primary)
-       .text(`${theme.icon} Relatório de Pontos`, doc.page.margins.left, doc.y, { 
-           align: 'center', 
-           width: contentWidth 
-       });
-    
+        .fontSize(PDF_CONFIG.FONTS.TITLE)
+        .fillColor(theme.primary)
+        .text(`${theme.icon} Relatório de Pontos`, doc.page.margins.left, doc.y, {
+        align: 'center',
+        width: contentWidth
+    });
     doc.moveDown(0.3);
-    
     doc.font(fonts.medium)
-       .fontSize(PDF_CONFIG.FONTS.SUBTITLE)
-       .fillColor(PDF_CONFIG.COLORS.PRIMARY_TEXT)
-       .text(theme.name, doc.page.margins.left, doc.y, { 
-           align: 'center', 
-           width: contentWidth 
-       });
-    
+        .fontSize(PDF_CONFIG.FONTS.SUBTITLE)
+        .fillColor(PDF_CONFIG.COLORS.PRIMARY_TEXT)
+        .text(theme.name, doc.page.margins.left, doc.y, {
+        align: 'center',
+        width: contentWidth
+    });
     doc.moveDown(0.6);
-    
-    // Metadata section with better formatting
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', {
         weekday: 'long',
@@ -413,30 +379,19 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         day: 'numeric'
     });
     const timeStr = now.toLocaleTimeString('pt-BR');
-    
     doc.font(fonts.regular)
-       .fontSize(PDF_CONFIG.FONTS.SMALL)
-       .fillColor(PDF_CONFIG.COLORS.SECONDARY_TEXT)
-       .text(
-           `Gerado em ${dateStr} às ${timeStr}  •  Versão ${version}`,
-           doc.page.margins.left,
-           doc.y,
-           { align: 'center', width: contentWidth }
-       );
-    
+        .fontSize(PDF_CONFIG.FONTS.SMALL)
+        .fillColor(PDF_CONFIG.COLORS.SECONDARY_TEXT)
+        .text(`Gerado em ${dateStr} às ${timeStr}  •  Versão ${version}`, doc.page.margins.left, doc.y, { align: 'center', width: contentWidth });
     doc.moveDown(0.8);
-    
-    // Enhanced decorative line with gradient effect
     doc.save()
-       .rect(doc.page.margins.left, doc.y, contentWidth, 4)
-       .fill(theme.primary)
-       .restore();
-    
+        .rect(doc.page.margins.left, doc.y, contentWidth, 4)
+        .fill(theme.primary)
+        .restore();
     doc.save()
-       .rect(doc.page.margins.left, doc.y + 4, contentWidth, 1)
-       .fill(theme.accent)
-       .restore();
-    
+        .rect(doc.page.margins.left, doc.y + 4, contentWidth, 1)
+        .fill(theme.accent)
+        .restore();
     doc.moveDown(PDF_CONFIG.SPACING.SECTION);
     if (!rows.length) {
         doc.font(fonts.regular).fontSize(14).fillColor('#777').text('Nenhum participante ainda.');
