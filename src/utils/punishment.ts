@@ -271,7 +271,8 @@ export async function logPunishment(target: GuildMember, punishment: any, execut
         
         if (additionalInfo) {
             const url = String(additionalInfo).trim();
-            const isImage = /\.(png|jpe?g|gif|webp)$/i.test(url);
+            // Accept Discord CDN/image URLs that may contain query strings after the extension
+            const isImage = /\.(png|jpe?g|gif|webp)(\?.*)?$/i.test(url);
             // Mostra o link da prova e, se for imagem, exibe-a diretamente no embed
             embed.addFields({ name: '<a:setabranca:1417092970380791850> Prova', value: url, inline: false });
             if (isImage) {
