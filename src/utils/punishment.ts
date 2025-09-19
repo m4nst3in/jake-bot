@@ -270,7 +270,13 @@ export async function logPunishment(target: GuildMember, punishment: any, execut
         }
         
         if (additionalInfo) {
-            embed.addFields({ name: '<:z_mod_PIG_CDW:939925699551199272> Informação Adicional', value: additionalInfo, inline: false });
+            const url = String(additionalInfo).trim();
+            const isImage = /\.(png|jpe?g|gif|webp)$/i.test(url);
+            // Mostra o link da prova e, se for imagem, exibe-a diretamente no embed
+            embed.addFields({ name: '<a:setabranca:1417092970380791850> Prova', value: url, inline: false });
+            if (isImage) {
+                embed.setImage(url);
+            }
         }
         
         // Add punishment ID to embed for reference

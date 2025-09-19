@@ -338,7 +338,12 @@ export default {
                             });
                             if (proofMessage && proofMessage.size > 0) {
                                 const proof = proofMessage.first();
-                                let savedProofUrl = proof?.attachments.first()?.url;
+                                const firstAttachment = proof?.attachments.first();
+                                // URL direta do arquivo enviado pelo executor (pode expirar se a msg for deletada)
+                                const originalProofFileUrl = firstAttachment?.url;
+                                // URLs salvas no canal de backup (mensagem e anexo)
+                                let storageMessageUrl: string | undefined;
+                                let storageAttachmentUrl: string | undefined;
                                 try {
                                     const proofGuildId = '1405418716258111580';
                                     const proofChannelId = '1413999392939180032';
@@ -353,10 +358,10 @@ export default {
                                                 `Punição: ${punishmentConfig.punishmentTypes[punishment.type].name}`,
                                                 `Motivo: ${punishment.reason}`
                                             ].join('\n');
-                                            const firstAttachment = proof?.attachments.first();
                                             const files = firstAttachment ? [firstAttachment.url] : [];
                                             const savedMessage = await proofChannel.send({ content, files });
-                                            savedProofUrl = savedMessage.url;
+                                            storageMessageUrl = savedMessage.url; // link para consulta humana
+                                            storageAttachmentUrl = savedMessage.attachments.first()?.url || originalProofFileUrl || undefined; // URL do arquivo estável para usar no embed de log
                                             logger.info({
                                                 executorId: executor.id,
                                                 targetId: target.id,
@@ -375,12 +380,19 @@ export default {
                                 catch (error) {
                                     logger.warn({ error }, 'Não foi possível deletar mensagem da prova imediatamente');
                                 }
-                                const success = await applyPunishment(target, punishment, executor, interaction, savedProofUrl);
+                                // Preferimos a URL do anexo salvo no canal de backup; caso falhe, usamos a URL original
+                                const proofForLogging = storageAttachmentUrl || originalProofFileUrl;
+                                const success = await applyPunishment(target, punishment, executor, interaction, proofForLogging);
                                 if (success) {
                                     const successEmbed = new EmbedBuilder()
                                         .setTitle('<a:sim:1293359353180454933> Punição Aplicada')
                                         .setDescription(`A punição foi aplicada com sucesso em **${target.displayName}**.`)
-                                        .addFields({ name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true }, { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false }, { name: '<a:mov_call1:1252739847614103687> Prova', value: `[Anexo enviado](${savedProofUrl})`, inline: false })
+                                        .addFields(
+                                            { name: '<a:mov_call1:1252739847614103687> Punição', value: punishmentConfig.punishmentTypes[punishment.type].name, inline: true },
+                                            { name: '<a:mov_call1:1252739847614103687> Motivo', value: punishment.reason, inline: false },
+                                            // Mostramos o link da mensagem de armazenamento (quando existir) para referência do executor
+                                            { name: '<a:mov_call1:1252739847614103687> Prova', value: storageMessageUrl ? `[Anexo armazenado](${storageMessageUrl})` : (proofForLogging ? `[Anexo enviado](${proofForLogging})` : '—'), inline: false }
+                                        )
                                         .setColor(0x2ECC71)
                                         .setFooter({ text: 'Sistema de Punições - CDW', iconURL: interaction.guild?.iconURL() || undefined })
                                         .setTimestamp();
