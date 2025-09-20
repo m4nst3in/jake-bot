@@ -112,8 +112,12 @@ export function scheduleWeeklyTasks(client: Client) {
         const rankingChannelId = (cfg as any).support?.channels?.ranking || (cfg as any).channels?.ranking;
         const supportBackupChannelId = '1414439918951993364';
         const journalismBackupChannelId = '1414440215468048444';
+        const designChannelId = '1299517485149716480';
+        const designBackupChannelId = '1414440305935122434';
+        const recruitBackupChannelId = '1414440076871598090';
+        const recruitChannelId = (cfg as any).channels?.recruitRanking;
         const tzNow = new Date();
-        logger.info('Executando reset semanal das áreas Suporte e Jornalismo');
+        logger.info('Executando reset semanal das áreas Suporte, Jornalismo, Design, Recrutamento e Mov Call');
         const svc = new PointsService();
         try {
             const supportArea = 'Suporte';
@@ -136,6 +140,36 @@ export function scheduleWeeklyTasks(client: Client) {
             }
             await resetSupportOnly();
             await resetAreaPoints('Jornalismo');
+            // Design (migrado do sábado 00:00 para sexta 22:00)
+            const designBackup = await exportAreaPoints('Design');
+            let designPdf: Buffer | null = null;
+            try {
+                designPdf = await generateAreaPdf(client, 'Design');
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha gerar PDF design pré-reset');
+            }
+            await resetAreaPoints('Design');
+            // Recrutamento (migrado do sábado 12:00 para sexta 22:00)
+            const recruitBackup = await exportAreaPoints('Recrutamento');
+            let recruitPdf: Buffer | null = null;
+            try {
+                recruitPdf = await generateAreaPdf(client, 'Recrutamento');
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha gerar PDF recrutamento pré-reset');
+            }
+            await resetAreaPoints('Recrutamento');
+            // Mov Call (usa chave de DB 'movcall' para reset)
+            const movBackup = await exportAreaPoints('movcall');
+            let movPdf: Buffer | null = null;
+            try {
+                movPdf = await generateAreaPdf(client, 'Mov Call');
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha gerar PDF Mov Call pré-reset');
+            }
+            await resetAreaPoints('movcall');
             if (rankingChannelId) {
                 const ch: any = await client.channels.fetch(supportBackupChannelId).catch(() => null);
                 if (ch && ch.isTextBased()) {
@@ -226,18 +260,104 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha bloco backup/reset jornalismo');
             }
+            // Envio Design
+            try {
+                const dBackupCh: any = await client.channels.fetch(designBackupChannelId).catch(() => null);
+                if (dBackupCh && dBackupCh.isTextBased()) {
+                    try {
+                        const backupEmbed = new EmbedBuilder()
+                            .setTitle('🗄️ Backup Área - Design')
+                            .setDescription(`Registros: ${designBackup.count}. Backup gerado antes do reset.`)
+                            .setColor(0xE67E22)
+                            .setTimestamp();
+                        const jsonFile = new AttachmentBuilder(designBackup.jsonBuffer, { name: `design-${Date.now()}.json` });
+                        const csvFile = new AttachmentBuilder(designBackup.csvBuffer, { name: `design-${Date.now()}.csv` });
+                        const files: any[] = [jsonFile, csvFile];
+                        if (designPdf)
+                            files.push({ attachment: designPdf, name: `design-${Date.now()}.pdf` });
+                        await dBackupCh.send({ embeds: [backupEmbed], files });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha envio backup design');
+                    }
+                }
+                const dCh: any = await client.channels.fetch(designChannelId).catch(() => null);
+                if (dCh && dCh.isTextBased()) {
+                    const embed = new EmbedBuilder()
+                        .setTitle('♻️ Reset Semanal de Pontos')
+                        .setDescription('A pontuação da equipe de **Design** foi resetada.')
+                        .setColor(0xE67E22)
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
+                        .setTimestamp();
+                    await dCh.send({ embeds: [embed] });
+                    try {
+                        const rankingEmbed = await svc.buildRankingEmbedUnified('Design');
+                        (rankingEmbed as any).setColor && (rankingEmbed as any).setColor(0xE67E22);
+                        await dCh.send({ embeds: [rankingEmbed] });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha ranking pós-reset design');
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha envio reset design');
+            }
+            // Envio Recrutamento
+            try {
+                const backupCh: any = await client.channels.fetch(recruitBackupChannelId).catch(() => null);
+                if (backupCh && backupCh.isTextBased()) {
+                    try {
+                        const backupEmbed = new EmbedBuilder()
+                            .setTitle('🗄️ Backup Área - Recrutamento')
+                            .setDescription(`Registros: ${recruitBackup.count}. Backup gerado antes do reset.`)
+                            .setColor(0x39ff14)
+                            .setTimestamp();
+                        const jsonFile = new AttachmentBuilder(recruitBackup.jsonBuffer, { name: `recrutamento-${Date.now()}.json` });
+                        const csvFile = new AttachmentBuilder(recruitBackup.csvBuffer, { name: `recrutamento-${Date.now()}.csv` });
+                        const files: any[] = [jsonFile, csvFile];
+                        if (recruitPdf)
+                            files.push({ attachment: recruitPdf, name: `recrutamento-${Date.now()}.pdf` });
+                        await backupCh.send({ embeds: [backupEmbed], files });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha envio backup recrutamento');
+                    }
+                }
+                const rRankCh: any = recruitChannelId ? await client.channels.fetch(recruitChannelId).catch(() => null) : null;
+                if (rRankCh && rRankCh.isTextBased()) {
+                    const embed = new EmbedBuilder()
+                        .setTitle('♻️ Reset Semanal de Pontos')
+                        .setDescription('A pontuação da equipe de **Recrutamento** foi resetada.')
+                        .setColor(0x39ff14)
+                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
+                        .setTimestamp();
+                    await rRankCh.send({ embeds: [embed] });
+                    try {
+                        const rankingEmbed = await svc.buildRankingEmbedUnified('Recrutamento');
+                        await rRankCh.send({ embeds: [rankingEmbed] });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha ranking pós-reset recrutamento');
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha envio reset recrutamento');
+            }
+            // Mov Call: apenas backup local e reset, sem canais específicos configurados
+            logger.info({ count: movBackup.count }, 'Mov Call resetada (backup salvo em disco)');
         }
         catch (err) {
             logger.error({ err }, 'Falha ao resetar suporte e jornalismo semanal');
         }
     }, { timezone: tz });
     cron.schedule('0 0 0 * * 6', async () => {
+        // Somente Eventos resetam no sábado 00:00
         const eventsChannelId = '1283495783328518144';
-        const designChannelId = '1299517485149716480';
         const eventsBackupChannelId = '1287585553889624064';
-        const designBackupChannelId = '1414440305935122434';
         const svc = new PointsService();
-        logger.info('Executando reset semanal das áreas Eventos e Design');
+        logger.info('Executando reset semanal da área Eventos');
         try {
             const evBackup = await exportAreaPoints('Eventos');
             let evPdf: Buffer | null = null;
@@ -247,16 +367,7 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF eventos');
             }
-            const dBackup = await exportAreaPoints('Design');
-            let dPdf: Buffer | null = null;
-            try {
-                dPdf = await generateAreaPdf(client, 'Design');
-            }
-            catch (e) {
-                logger.warn({ e }, 'Falha gerar PDF design');
-            }
             await resetAreaPoints('Eventos');
-            await resetAreaPoints('Design');
             try {
                 const evBackupCh: any = await client.channels.fetch(eventsBackupChannelId).catch(() => null);
                 if (evBackupCh && evBackupCh.isTextBased()) {
@@ -299,120 +410,12 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha envio reset eventos');
             }
-            try {
-                const dBackupCh: any = await client.channels.fetch(designBackupChannelId).catch(() => null);
-                if (dBackupCh && dBackupCh.isTextBased()) {
-                    try {
-                        const backupEmbed = new EmbedBuilder()
-                            .setTitle('🗄️ Backup Área - Design')
-                            .setDescription(`Registros: ${dBackup.count}. Backup gerado antes do reset.`)
-                            .setColor(0xE67E22)
-                            .setTimestamp();
-                        const jsonFile = new AttachmentBuilder(dBackup.jsonBuffer, { name: `design-${Date.now()}.json` });
-                        const csvFile = new AttachmentBuilder(dBackup.csvBuffer, { name: `design-${Date.now()}.csv` });
-                        const files: any[] = [jsonFile, csvFile];
-                        if (dPdf)
-                            files.push({ attachment: dPdf, name: `design-${Date.now()}.pdf` });
-                        await dBackupCh.send({ embeds: [backupEmbed], files });
-                    }
-                    catch (e) {
-                        logger.warn({ e }, 'Falha envio backup design');
-                    }
-                }
-                const dCh: any = await client.channels.fetch(designChannelId).catch(() => null);
-                if (dCh && dCh.isTextBased()) {
-                    const embed = new EmbedBuilder()
-                        .setTitle('♻️ Reset Semanal de Pontos')
-                        .setDescription('A pontuação da equipe de **Design** foi resetada.')
-                        .setColor(0xE67E22)
-                        .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
-                        .setTimestamp();
-                    await dCh.send({ embeds: [embed] });
-                    try {
-                        const rankingEmbed = await svc.buildRankingEmbedUnified('Design');
-                        (rankingEmbed as any).setColor && (rankingEmbed as any).setColor(0xE67E22);
-                        await dCh.send({ embeds: [rankingEmbed] });
-                    }
-                    catch (e) {
-                        logger.warn({ e }, 'Falha ranking pós-reset design');
-                    }
-                }
-            }
-            catch (e) {
-                logger.warn({ e }, 'Falha envio reset design');
-            }
         }
         catch (err) {
-            logger.error({ err }, 'Falha reset eventos/design');
+            logger.error({ err }, 'Falha reset eventos');
         }
     }, { timezone: tz });
-    cron.schedule('0 0 12 * * 6', async () => {
-        const cfg = loadConfig();
-        const recruitChannelId = (cfg as any).channels?.recruitRanking;
-        const recruitBackupChannelId = '1414440076871598090';
-        const svc = new PointsService();
-        logger.info('Executando reset semanal da área Recrutamento');
-        try {
-            const rBackup = await exportAreaPoints('Recrutamento');
-            let rPdf: Buffer | null = null;
-            try {
-                rPdf = await generateAreaPdf(client, 'Recrutamento');
-            }
-            catch (e) {
-                logger.warn({ e }, 'Falha gerar PDF recrutamento');
-            }
-            await resetAreaPoints('Recrutamento');
-            if (recruitChannelId) {
-                try {
-                    const backupCh: any = await client.channels.fetch(recruitBackupChannelId).catch(() => null);
-                    if (backupCh && backupCh.isTextBased()) {
-                        try {
-                            const backupEmbed = new EmbedBuilder()
-                                .setTitle('🗄️ Backup Área - Recrutamento')
-                                .setDescription(`Registros: ${rBackup.count}. Backup gerado antes do reset.`)
-                                .setColor(0x39ff14)
-                                .setTimestamp();
-                            const jsonFile = new AttachmentBuilder(rBackup.jsonBuffer, { name: `recrutamento-${Date.now()}.json` });
-                            const csvFile = new AttachmentBuilder(rBackup.csvBuffer, { name: `recrutamento-${Date.now()}.csv` });
-                            const files: any[] = [jsonFile, csvFile];
-                            if (rPdf)
-                                files.push({ attachment: rPdf, name: `recrutamento-${Date.now()}.pdf` });
-                            await backupCh.send({ embeds: [backupEmbed], files });
-                        }
-                        catch (e) {
-                            logger.warn({ e }, 'Falha envio backup recrutamento');
-                        }
-                    }
-                    else {
-                        logger.warn('Canal de backup recrutamento não acessível');
-                    }
-                    const rRankCh: any = await client.channels.fetch(recruitChannelId).catch(() => null);
-                    if (rRankCh && rRankCh.isTextBased()) {
-                        const embed = new EmbedBuilder()
-                            .setTitle('♻️ Reset Semanal de Pontos')
-                            .setDescription('A pontuação da equipe de **Recrutamento** foi resetada.')
-                            .setColor(0x39ff14)
-                            .setFooter({ text: 'Novo ciclo iniciado', iconURL: undefined })
-                            .setTimestamp();
-                        await rRankCh.send({ embeds: [embed] });
-                        try {
-                            const rankingEmbed = await svc.buildRankingEmbedUnified('Recrutamento');
-                            await rRankCh.send({ embeds: [rankingEmbed] });
-                        }
-                        catch (e) {
-                            logger.warn({ e }, 'Falha ranking pós-reset recrutamento');
-                        }
-                    }
-                }
-                catch (e) {
-                    logger.warn({ e }, 'Falha envio reset recrutamento');
-                }
-            }
-        }
-        catch (err) {
-            logger.error({ err }, 'Falha reset recrutamento');
-        }
-    }, { timezone: tz });
+    // Removido: Recrutamento não reseta mais no sábado 12:00
     cron.schedule('0 0 22 * * 5', async () => {
         try {
             const cfg: any = loadConfig();

@@ -103,7 +103,7 @@ function getAreaTheme(area: string): AreaTheme {
             primary: '#1abc9c',
             secondary: '#d8f7f1',
             accent: '#16a085',
-            name: 'MovCall',
+            name: 'Mov Call',
             icon: '📞',
             cssClass: 'movcall'
         },
@@ -563,11 +563,29 @@ function renderConditionals(template: string, data: TemplateData): string {
     result = result.replace(/{{\/each}}/g, '');
     return result;
 }
+function normalizeAreaKey(input: string): string {
+    const base = (input || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/-/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (base === 'mov call' || base === 'movcall') return 'movcall';
+    if (base === 'design') return 'design';
+    if (base === 'eventos' || base === 'evento') return 'eventos';
+    if (base === 'suporte') return 'suporte';
+    if (base === 'recrutamento') return 'recrutamento';
+    if (base === 'jornalismo') return 'jornalismo';
+    return base; // fallback
+}
+
 export async function generateAreaPdf(client: Client, area: string): Promise<Buffer> {
     let browser: Browser | null = null;
     try {
-        const rows = await fetchAreaRows(client, area);
-        const theme = getAreaTheme(area);
+        const areaKey = normalizeAreaKey(area);
+        const rows = await fetchAreaRows(client, areaKey);
+        const theme = getAreaTheme(areaKey);
         if (!rows.length) {
             throw new Error('Nenhum participante encontrado para esta área');
         }
@@ -575,7 +593,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         const avgPoints = totalPoints / rows.length;
         const medPoints = median(rows.map(r => r.points));
         const maxPoints = rows[0].points || 1;
-        const participants = await processParticipants(client, rows, area, totalPoints, maxPoints);
+        const participants = await processParticipants(client, rows, areaKey, totalPoints, maxPoints);
         const topParticipants = participants;
         if (participants.length === 0) {
             const mockParticipants = [
@@ -635,7 +653,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             avgPoints: formatNumber(Math.round(avgPoints)),
             medianPoints: formatNumber(Math.round(medPoints)),
             maxPoints: formatNumber(maxPoints),
-            isSupport: area.toLowerCase() === 'suporte',
+            isSupport: areaKey === 'suporte',
             topParticipants,
             participants,
             pageNumber: 1

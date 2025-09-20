@@ -19,7 +19,8 @@
     "backup": "tsx src/scripts/backup.ts",
     "strip:comments": "tsx src/scripts/strip-comments.ts",
     "sync:staff": "tsx src/scripts/sync-staff.ts",
-    "migrate:punishments": "tsx src/scripts/migrate-punishments.ts"
+    "migrate:punishments": "tsx src/scripts/migrate-punishments.ts",
+    "normalize:areas": "tsx src/scripts/normalize-areas.ts"
   },
   "dependencies": {
     "bullmq": "^5.58.5",

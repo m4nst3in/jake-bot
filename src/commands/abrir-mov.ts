@@ -17,7 +17,7 @@ export default {
             const channelId = movConfig.channelId || '1338533776665350226';
             const roleId = movConfig.roleId || '1136861814328668230';
             const extraLeadRoleId = movConfig.extraLeadRoleId || '1136864678253969430';
-            const openGif = movConfig.openGif || 'https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif';
+            const openGif = movConfig.openGif || 'https://cdn.discordapp.com/attachments/1196131147135066112/1417270814491017409/org_aberto.gif?ex=68cf25cd&is=68cdd44d&hm=af70922ee25f7411ce71e675d861e9a525f4e0db8a02eb09aa4b5b3e8cf09e8b&';
             const member = interaction.member as any;
             const hasRole = (id: string) => member?.roles?.cache?.has(id);
             const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;

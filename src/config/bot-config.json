@@ -630,8 +630,8 @@
     "channelId": "1338533776665350226",
     "roleId": "1136861814328668230",
     "extraLeadRoleId": "1136864678253969430",
-    "closeGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414702137312542883/org_fechado-2.gif",
-    "openGif": "https://cdn.discordapp.com/attachments/1338533776665350226/1414750584602628258/org_aberto.gif",
+    "closeGif": "https://cdn.discordapp.com/attachments/1196131147135066112/1417270814151020615/org_fechado.gif?ex=68cf25cd&is=68cdd44d&hm=2345eb2e5916f80636e6b43b35ce0b1c1f61df2eb4366d2cd1bdac93714c8013&",
+    "openGif": "https://cdn.discordapp.com/attachments/1196131147135066112/1417270814491017409/org_aberto.gif?ex=68cf25cd&is=68cdd44d&hm=af70922ee25f7411ce71e675d861e9a525f4e0db8a02eb09aa4b5b3e8cf09e8b&",
     "windows": [
   "0 0 17 * * 1",
   "0 0 17 * * 2",
