@@ -66,6 +66,9 @@ interface ParticipantData {
     canPromote?: boolean;
     promoteIcon?: string;
     promoteText?: string;
+    // Area flags for templating
+    isSupport?: boolean;
+    isNonSupport?: boolean;
 }
 interface TemplateData {
     title: string;
@@ -351,6 +354,20 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
     const isSupport = areaKey === 'suporte';
     const SUPPORT_PLANTOES_META = 4;
     const areaRankGoals = metasRankIndex[areaKey] || {};
+    // Prepare guild/context and progressionRoles for role-based promotion check
+    const cfg: any = loadConfig();
+    const areaCfg = (cfg.areas || []).find((a: any) => (a.name || '').toLowerCase() === areaKey);
+    const guildId: string | undefined = areaCfg?.guildId;
+    const progression = guildId ? (cfg.progressionRoles || {})[guildId] : undefined;
+    const upaRoles: string[] = progression?.upa || [];
+    const naoUpaRoles: string[] = progression?.naoUpa || [];
+    let areaGuild: any = null;
+    if (guildId) {
+        areaGuild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+        if (areaGuild) {
+            await areaGuild.members.fetch().catch(() => null);
+        }
+    }
     const normalizeRank = (n?: string) => (n || '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
@@ -412,6 +429,18 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
                 goalText: `Meta: ${threshold}${hitPoints ? '' : ` (faltam ${Math.max(0, threshold - row.points)})`}`
             };
         }
+        // Promotion decision via roles: member must have a role in 'upa' and NOT have any in 'naoUpa'
+        let canPromote = false;
+        if (areaGuild) {
+            const member = areaGuild.members.cache.get(row.user_id) || await areaGuild.members.fetch(row.user_id).catch(() => null);
+            if (member) {
+                const hasUpa = upaRoles.some((rid: string) => member.roles.cache.has(rid));
+                const hasNaoUpa = naoUpaRoles.some((rid: string) => member.roles.cache.has(rid));
+                canPromote = hasUpa && !hasNaoUpa;
+            }
+        }
+        const promoteIcon = canPromote ? '✅' : '❌';
+        const promoteText = canPromote ? 'Sim' : 'Não';
         const rankColor = await getRankColor(client, row.user_id, row.rankName);
         let hex = (rankColor || '#6b7280').replace('#', '');
         if (hex.length === 3) {
@@ -427,10 +456,6 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
         const rankBg = tooLight ? '#f5f5f5' : 'transparent';
         const isTop1 = i === 0;
         const badgeText = isTop1 ? 'Staff Sensação' : (metGoals ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA');
-        // Promotion decision per-area
-        const canPromote = isSupport ? metGoals : (!!g ? (row.points >= (g.upPoints ?? g.points ?? 0)) : false);
-        const promoteIcon = canPromote ? '✅' : '❌';
-        const promoteText = canPromote ? 'Sim' : 'Não';
         participants.push({
             username,
             userId: row.user_id,
@@ -530,6 +555,8 @@ function renderLoops(template: string, data: TemplateData): string {
             itemBlock = itemBlock.replace(/{{#unless reportsGoalMet}}([\s\S]*?){{\/unless}}/g, !participant.reportsGoalMet ? '$1' : '');
             itemBlock = itemBlock.replace(/{{#unless shiftsGoalMet}}([\s\S]*?){{\/unless}}/g, !participant.shiftsGoalMet ? '$1' : '');
             itemBlock = itemBlock.replace(/{{#unless goalMet}}([\s\S]*?){{\/unless}}/g, !participant.goalMet ? '$1' : '');
+            itemBlock = itemBlock.replace(/{{#if isSupport}}([\s\S]*?){{\/if}}/g, participant.isSupport ? '$1' : '');
+            itemBlock = itemBlock.replace(/{{#if isNonSupport}}([\s\S]*?){{\/if}}/g, participant.isSupport ? '' : '$1');
             Object.entries(participant).forEach(([key, value]) => {
                 const regex = new RegExp(`{{${key}}}`, 'g');
                 if (key === 'points') {
