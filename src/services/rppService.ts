@@ -76,13 +76,32 @@ export const inMemorySnapshots: Record<string, RppRoleSnapshot> = {};
 export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
     const cfg: any = loadConfig();
     const mainGuildId = cfg.mainGuildId;
-    if (!mainGuildId)
-        return;
-    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(() => null);
-    if (!guild)
-        return;
-    const member = await guild.members.fetch(userId).catch(() => null);
-    if (!member)
+    // try configured main guild first; if not found, fall back to discovering the guild where the member exists
+    let guild: Guild | null = null;
+    if (mainGuildId) {
+        guild = await client.guilds.fetch(mainGuildId).catch(() => null);
+    }
+    let member = guild ? await guild.members.fetch(userId).catch(() => null) : null;
+    if (!guild || !member) {
+        // fallback: scan cached guilds to find the member
+        const candidates: Array<{ g: Guild; m: any }> = [];
+        for (const g of client.guilds.cache.values()) {
+            const m = await g.members.fetch(userId).catch(() => null);
+            if (m) candidates.push({ g, m });
+        }
+        // Prefer the guild that contains the global leader role (main guild)
+        const leaderGeneralRole = String(cfg.protectionRoles?.leaderGeneral || '1411223951350435961');
+        let chosen = null as null | { g: Guild; m: any };
+        for (const c of candidates) {
+            await c.g.roles.fetch().catch(() => null);
+            if (c.g.roles.cache.has(leaderGeneralRole)) {
+                chosen = c; break;
+            }
+        }
+        if (!chosen) chosen = candidates[0] || null;
+        if (chosen) { guild = chosen.g; member = chosen.m; }
+    }
+    if (!guild || !member)
         return;
     const staffGlobalRole = cfg.roles?.staff;
     const recoveryRole = cfg.rppRoles?.recovery || '1136856157835763783';
@@ -137,13 +156,28 @@ export async function applyRppEntryRoleAdjust(client: Client, userId: string) {
 export async function applyRppExitRoleRestore(client: Client, userId: string) {
     const cfg: any = loadConfig();
     const mainGuildId = cfg.mainGuildId;
-    if (!mainGuildId)
-        return;
-    const guild: Guild | null = await client.guilds.fetch(mainGuildId).catch(() => null);
-    if (!guild)
-        return;
-    const member = await guild.members.fetch(userId).catch(() => null);
-    if (!member)
+    // try configured main guild first; if not found, fall back to discovering the guild where the member exists
+    let guild: Guild | null = null;
+    if (mainGuildId) {
+        guild = await client.guilds.fetch(mainGuildId).catch(() => null);
+    }
+    let member = guild ? await guild.members.fetch(userId).catch(() => null) : null;
+    if (!guild || !member) {
+        const candidates: Array<{ g: Guild; m: any }> = [];
+        for (const g of client.guilds.cache.values()) {
+            const m = await g.members.fetch(userId).catch(() => null);
+            if (m) candidates.push({ g, m });
+        }
+        const leaderGeneralRole = String(cfg.protectionRoles?.leaderGeneral || '1411223951350435961');
+        let chosen = null as null | { g: Guild; m: any };
+        for (const c of candidates) {
+            await c.g.roles.fetch().catch(() => null);
+            if (c.g.roles.cache.has(leaderGeneralRole)) { chosen = c; break; }
+        }
+        if (!chosen) chosen = candidates[0] || null;
+        if (chosen) { guild = chosen.g; member = chosen.m; }
+    }
+    if (!guild || !member)
         return;
     const recoveryRole = cfg.rppRoles?.recovery || '1136856157835763783';
     const repo = new RppSnapshotRepository();

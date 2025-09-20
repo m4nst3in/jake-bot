@@ -12,7 +12,7 @@ export interface RPPRecord {
 export class RPPRepository {
     async clearAll() {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             await new Promise<void>((resolve, reject) => {
                 db.run('DELETE FROM rpps', [], function (err: Error | null) {
                     if (err)
@@ -29,7 +29,7 @@ export class RPPRepository {
     }
     async create(data: Omit<RPPRecord, 'id'>): Promise<RPPRecord> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             const id = await new Promise<number>((resolve, reject) => {
                 db.run('INSERT INTO rpps (user_id,status,requested_at,processed_by,processed_at,reason,return_date) VALUES (?,?,?,?,?,?,?)', [data.user_id, data.status, data.requested_at, data.processed_by, data.processed_at, data.reason, data.return_date], function (this: any, err: Error | null) {
                     if (err)
@@ -49,7 +49,7 @@ export class RPPRepository {
     async updateStatus(id: number | string, status: RPPRecord['status'], processed_by: string): Promise<void> {
         const processed_at = new Date().toISOString();
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             await new Promise<void>((resolve, reject) => {
                 db.run('UPDATE rpps SET status=?, processed_by=?, processed_at=? WHERE id=?', [status, processed_by, processed_at, id], function (err: Error | null) {
                     if (err)
@@ -74,7 +74,7 @@ export class RPPRepository {
     }
     async listPending(limit = 20): Promise<RPPRecord[]> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord[]>((resolve, reject) => {
                 db.all('SELECT * FROM rpps WHERE status="PENDING" ORDER BY requested_at ASC LIMIT ?', [limit], function (err: Error | null, rows: any[]) {
                     if (err)
@@ -92,7 +92,7 @@ export class RPPRepository {
     }
     async findPendingByUser(userId: string): Promise<RPPRecord | null> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord | null>((resolve, reject) => {
                 db.get('SELECT * FROM rpps WHERE user_id=? AND status="PENDING" ORDER BY requested_at DESC LIMIT 1', [userId], function (err: Error | null, row: any) {
                     if (err)
@@ -110,7 +110,7 @@ export class RPPRepository {
     }
     async listActive(guildFilterUserIds?: string[]): Promise<RPPRecord[]> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             const query = guildFilterUserIds && guildFilterUserIds.length ? `SELECT * FROM rpps WHERE status="ACCEPTED" AND user_id IN (${guildFilterUserIds.map(() => '?').join(',')})` : 'SELECT * FROM rpps WHERE status="ACCEPTED"';
             return new Promise<RPPRecord[]>((resolve, reject) => {
                 db.all(query, guildFilterUserIds || [], function (err: Error | null, rows: any[]) {
@@ -131,7 +131,7 @@ export class RPPRepository {
     }
     async findActiveByUser(userId: string): Promise<RPPRecord | null> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord | null>((resolve, reject) => {
                 db.get('SELECT * FROM rpps WHERE user_id=? AND status="ACCEPTED" ORDER BY processed_at DESC LIMIT 1', [userId], function (err: Error | null, row: any) {
                     if (err)
@@ -149,7 +149,7 @@ export class RPPRepository {
     }
     async markRemoved(userId: string, moderatorId: string) {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             await new Promise<void>((resolve, reject) => {
                 db.run('UPDATE rpps SET status="REMOVED", processed_by=?, processed_at=CURRENT_TIMESTAMP WHERE user_id=? AND status="ACCEPTED"', [moderatorId, userId], function (err: Error | null) {
                     if (err)
@@ -166,7 +166,7 @@ export class RPPRepository {
     }
     async findById(id: number | string): Promise<RPPRecord | null> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord | null>((resolve, reject) => {
                 db.get('SELECT * FROM rpps WHERE id=?', [id], function (err: Error | null, row: any) {
                     if (err)
@@ -192,7 +192,7 @@ export class RPPRepository {
     }
     async listActivePaged(limit: number, offset: number): Promise<RPPRecord[]> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord[]>((resolve, reject) => {
                 db.all('SELECT * FROM rpps WHERE status="ACCEPTED" ORDER BY processed_at DESC LIMIT ? OFFSET ?', [limit, offset], function (err: Error | null, rows: any[]) {
                     if (err)
@@ -209,7 +209,7 @@ export class RPPRepository {
     }
     async listRemovedPaged(limit: number, offset: number): Promise<RPPRecord[]> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<RPPRecord[]>((resolve, reject) => {
                 db.all('SELECT * FROM rpps WHERE status="REMOVED" ORDER BY processed_at DESC LIMIT ? OFFSET ?', [limit, offset], function (err: Error | null, rows: any[]) {
                     if (err)
@@ -226,7 +226,7 @@ export class RPPRepository {
     }
     async countActive(): Promise<number> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<number>((resolve, reject) => {
                 db.get('SELECT COUNT(*) as c FROM rpps WHERE status="ACCEPTED"', [], function (err: Error | null, row: any) {
                     if (err)
@@ -243,7 +243,7 @@ export class RPPRepository {
     }
     async countRemoved(): Promise<number> {
         if (DatabaseManager.current === 'sqlite') {
-            const db = DatabaseManager.getSqlite().connection;
+            const db = DatabaseManager.getSqlite('rpp').connection;
             return new Promise<number>((resolve, reject) => {
                 db.get('SELECT COUNT(*) as c FROM rpps WHERE status="REMOVED"', [], function (err: Error | null, row: any) {
                     if (err)

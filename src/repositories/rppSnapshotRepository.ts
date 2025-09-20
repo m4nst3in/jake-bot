@@ -1,4 +1,5 @@
 import { BaseRepo } from './base.ts';
+import { DatabaseManager } from '../db/manager.ts';
 export interface RppSnapshotRecord {
     user_id: string;
     roles: string[];
@@ -7,9 +8,10 @@ export interface RppSnapshotRecord {
 export class RppSnapshotRepository extends BaseRepo {
     async upsert(userId: string, roles: string[]) {
         if (this.isSqlite()) {
+            const sqlite = DatabaseManager.getSqlite('rpp').connection;
             const rolesStr = JSON.stringify(roles);
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('INSERT INTO rpp_role_snapshots (user_id, roles, stored_at) VALUES (?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id) DO UPDATE SET roles=excluded.roles, stored_at=CURRENT_TIMESTAMP', [userId, rolesStr], function (err) {
+                sqlite.run('INSERT INTO rpp_role_snapshots (user_id, roles, stored_at) VALUES (?,?,CURRENT_TIMESTAMP) ON CONFLICT(user_id) DO UPDATE SET roles=excluded.roles, stored_at=CURRENT_TIMESTAMP', [userId, rolesStr], function (err) {
                     if (err)
                         reject(err);
                     else
@@ -23,8 +25,9 @@ export class RppSnapshotRepository extends BaseRepo {
     }
     async get(userId: string): Promise<RppSnapshotRecord | null> {
         if (this.isSqlite()) {
+            const sqlite = DatabaseManager.getSqlite('rpp').connection;
             return await new Promise<RppSnapshotRecord | null>((resolve, reject) => {
-                this.sqlite.get('SELECT user_id, roles, stored_at FROM rpp_role_snapshots WHERE user_id=?', [userId], function (err, row: any) {
+                sqlite.get('SELECT user_id, roles, stored_at FROM rpp_role_snapshots WHERE user_id=?', [userId], function (err, row: any) {
                     if (err)
                         reject(err);
                     else if (!row)
@@ -41,8 +44,9 @@ export class RppSnapshotRepository extends BaseRepo {
     }
     async delete(userId: string) {
         if (this.isSqlite()) {
+            const sqlite = DatabaseManager.getSqlite('rpp').connection;
             await new Promise<void>((resolve, reject) => {
-                this.sqlite.run('DELETE FROM rpp_role_snapshots WHERE user_id=?', [userId], function (err) {
+                sqlite.run('DELETE FROM rpp_role_snapshots WHERE user_id=?', [userId], function (err) {
                     if (err)
                         reject(err);
                     else
