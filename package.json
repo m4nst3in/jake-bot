@@ -15,6 +15,7 @@
     "deploy:commands": "tsx src/scripts/deploy-commands.ts",
     "migrate:sqlite": "tsx src/db/sqlite/migrate.ts",
     "migrate:mongo": "tsx src/db/mongo/migrate.ts",
+    "migrate:sqlite-to-mongo": "tsx src/scripts/migrate-sqlite-to-mongo.ts",
     "seed:bancas": "tsx src/scripts/seed-bancas.ts",
     "backup": "tsx src/scripts/backup.ts",
     "strip:comments": "tsx src/scripts/strip-comments.ts",
