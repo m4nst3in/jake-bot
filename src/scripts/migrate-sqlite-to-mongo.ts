@@ -30,7 +30,8 @@ function all<T = any>(db: sqlite3.Database, sql: string, params: any[] = []): Pr
 }
 
 async function migrate() {
-  const coreFile = process.env.SQLITE_CORE_FILE || process.env.SQLITE_FILE || './data/core.db';
+  const oldFile = process.env.SQLITE_OLD_FILE || process.env.SQLITE_FILE || './data/jake.db';
+  const coreFile = process.env.SQLITE_CORE_FILE || './data/core.db';
   const pointsFile = process.env.SQLITE_POINTS_FILE || './data/points.db';
   const blacklistFile = process.env.SQLITE_BLACKLIST_FILE || './data/blacklist.db';
   const rppFile = process.env.SQLITE_RPP_FILE || './data/rpp.db';
@@ -52,7 +53,7 @@ async function migrate() {
     }
   }
 
-  // CORE
+  // CORE (prefer split file; if missing or empty, fallback to old monolithic)
   if (exists(coreFile)) {
     const coreDb = await openDb(coreFile);
     const tables: Record<string, string> = {
@@ -76,9 +77,30 @@ async function migrate() {
     coreDb.close();
   } else {
     console.log(`[skip] core file not found: ${coreFile}`);
+    if (exists(oldFile)) {
+      console.log(`[fallback] reading core tables from old file: ${oldFile}`);
+      const oldDb = await openDb(oldFile);
+      const tables: Record<string, string> = {
+        users: 'users',
+        occurrences: 'occurrences',
+        role_transfers: 'role_transfers',
+        audits: 'audits',
+        config: 'config',
+        bancas: 'bancas',
+        staff_members: 'staff_members',
+      };
+      for (const [table, coll] of Object.entries(tables)) {
+        try {
+          const rows = await all<any>(oldDb, `SELECT * FROM ${table}`);
+          console.log(`[migrate-old] ${table} -> ${coll}: ${rows.length}`);
+          if (rows.length) await insertMany(coll, rows);
+        } catch {}
+      }
+      oldDb.close();
+    }
   }
 
-  // POINTS
+  // POINTS (split preferred, fallback to old)
   if (exists(pointsFile)) {
     const pDb = await openDb(pointsFile);
     try {
@@ -94,9 +116,24 @@ async function migrate() {
     pDb.close();
   } else {
     console.log(`[skip] points file not found: ${pointsFile}`);
+    if (exists(oldFile)) {
+      console.log(`[fallback] reading points from old file: ${oldFile}`);
+      const oldDb = await openDb(oldFile);
+      try {
+        const points = await all<any>(oldDb, 'SELECT * FROM points');
+        console.log(`[migrate-old] points: ${points.length}`);
+        if (points.length) await insertMany('points', points);
+      } catch {}
+      try {
+        const logs = await all<any>(oldDb, 'SELECT * FROM point_logs');
+        console.log(`[migrate-old] point_logs: ${logs.length}`);
+        if (logs.length) await insertMany('point_logs', logs);
+      } catch {}
+      oldDb.close();
+    }
   }
 
-  // BLACKLIST
+  // BLACKLIST (split preferred, fallback to old)
   if (exists(blacklistFile)) {
     const bDb = await openDb(blacklistFile);
     try {
@@ -107,9 +144,19 @@ async function migrate() {
     bDb.close();
   } else {
     console.log(`[skip] blacklist file not found: ${blacklistFile}`);
+    if (exists(oldFile)) {
+      console.log(`[fallback] reading blacklist from old file: ${oldFile}`);
+      const oldDb = await openDb(oldFile);
+      try {
+        const rows = await all<any>(oldDb, 'SELECT * FROM blacklist');
+        console.log(`[migrate-old] blacklist: ${rows.length}`);
+        if (rows.length) await insertMany('blacklist', rows);
+      } catch {}
+      oldDb.close();
+    }
   }
 
-  // RPP
+  // RPP (split preferred, fallback to old)
   if (exists(rppFile)) {
     const rDb = await openDb(rppFile);
     try {
@@ -125,6 +172,21 @@ async function migrate() {
     rDb.close();
   } else {
     console.log(`[skip] rpp file not found: ${rppFile}`);
+    if (exists(oldFile)) {
+      console.log(`[fallback] reading rpp tables from old file: ${oldFile}`);
+      const oldDb = await openDb(oldFile);
+      try {
+        const rows = await all<any>(oldDb, 'SELECT * FROM rpps');
+        console.log(`[migrate-old] rpps: ${rows.length}`);
+        if (rows.length) await insertMany('rpps', rows);
+      } catch {}
+      try {
+        const snaps = await all<any>(oldDb, 'SELECT * FROM rpp_role_snapshots');
+        console.log(`[migrate-old] rpp_role_snapshots: ${snaps.length}`);
+        if (snaps.length) await insertMany('rpp_role_snapshots', snaps.map(s => ({...s, roles: typeof s.roles === 'string' ? JSON.parse(s.roles) : s.roles })));
+      } catch {}
+      oldDb.close();
+    }
   }
 
   // Indexes

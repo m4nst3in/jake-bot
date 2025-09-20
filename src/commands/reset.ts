@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField, ActionRowBuilder, ModalBuilder, TextInputBuilder } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, ActionRowBuilder, ModalBuilder, TextInputBuilder } from 'discord.js';
 import { PointsService } from '../services/pointsService.ts';
 import { AREAS, isValidArea } from '../constants/areas.ts';
 const svc = new PointsService();
@@ -15,18 +15,28 @@ export default {
         for (const a of AREAS)
             opt = opt.addChoices({ name: a, value: a });
         return opt;
-    })
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
+    }),
     async execute(interaction: ChatInputCommandInteraction) {
         const cfg: any = (await import('../config/index.ts')).loadConfig();
         const owners: string[] = cfg.owners || [];
         const fullAccessRoleId: string | undefined = cfg.fullAccessRoleId;
         const hasFull = !!(fullAccessRoleId && (interaction.member as any)?.roles?.cache?.has(fullAccessRoleId));
-        if (!owners.includes(interaction.user.id) && !hasFull) {
-            return interaction.reply({ content: 'Sem permissão para resetar, tá metendo o nariz aonde não deve.', ephemeral: true });
-        }
         const tipo = interaction.options.getString('tipo', true);
         const area = interaction.options.getString('area');
+        // Area leadership check (only for pontos + specific area)
+        let isAreaLeader = false;
+        if (tipo === 'pontos' && area) {
+            const key = area.toLowerCase();
+            const leaderRoleId: string | undefined = cfg.primaryGuildLeadershipRoles?.[key];
+            if (leaderRoleId) {
+                isAreaLeader = !!(interaction.member as any)?.roles?.cache?.has(leaderRoleId);
+            }
+        }
+        const canResetAll = owners.includes(interaction.user.id) || hasFull;
+        const canResetArea = tipo === 'pontos' && !!area && isAreaLeader;
+        if (!canResetAll && !canResetArea) {
+            return interaction.reply({ content: 'Sem permissão para resetar. Apenas owners/full access podem resetar tudo. Líderes de área podem resetar apenas a sua área.', ephemeral: true });
+        }
         if (tipo === 'pontos' && area && !isValidArea(area)) {
             return interaction.reply({ content: 'Área inválida.', ephemeral: true });
         }
@@ -38,7 +48,7 @@ export default {
         }
         const modal = new ModalBuilder()
             .setCustomId(tipo === 'pontos'
-            ? `reset_points_modal:${area || '__all__'}`
+            ? `reset_points_modal:${(canResetAll ? (area || '__all__') : (area || '__all__'))}`
             : tipo === 'rpp'
                 ? 'reset_rpp_modal:__all__'
                 : `reset_blacklist_modal:${area || '__all__'}`)
