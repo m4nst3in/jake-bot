@@ -75,8 +75,10 @@
             {{#if isSupport}}
             <th>Relatórios</th>
             <th>Plantões</th>
+            <th>Upa?</th>
             {{else}}
             <th>Participação</th>
+            <th>Upa?</th>
             {{/if}}
           </tr>
         </thead>
@@ -90,8 +92,10 @@
             {{#if isSupport}}
             <td>{{reports}}</td>
             <td>{{shifts}}</td>
+            <td>{{promoteIcon}} {{promoteText}}</td>
             {{else}}
             <td>{{participation}}</td>
+            <td>{{promoteIcon}} {{promoteText}}</td>
             {{/if}}
           </tr>
           {{/each}}
@@ -135,11 +139,13 @@
                   <div class="item"><div class="ic">{{reportsIcon}}</div><div>Relatórios: {{reports}}/{{reportsGoal}} {{#unless reportsGoalMet}}(faltam {{reportsNeeded}}){{/unless}}</div></div>
                 {{/if}}
                 <div class="item"><div class="ic">{{shiftsIcon}}</div><div>Plantões: {{shifts}}/{{shiftsGoal}} {{#unless shiftsGoalMet}}(faltam {{shiftsNeeded}}){{/unless}}</div></div>
+                <div class="item"><div class="ic">{{promoteIcon}}</div><div>Upa? {{promoteText}}</div></div>
               {{/if}}
               {{#if isNonSupport}}
                 {{#if goal}}
                   <div class="item"><div class="ic">{{goalIcon}}</div><div>Meta: {{goal}} {{#unless goalMet}}(faltam {{goalNeeded}}){{/unless}}</div></div>
                 {{/if}}
+                <div class="item"><div class="ic">{{promoteIcon}}</div><div>Upa? {{promoteText}}</div></div>
               {{/if}}
             </div>
           </div>

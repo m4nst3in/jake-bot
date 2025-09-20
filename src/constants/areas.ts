@@ -1,5 +1,5 @@
 export const AREAS = [
-    'Mov Call',
+    'Movcall',
     'Design',
     'Eventos',
     'Suporte',
@@ -22,7 +22,7 @@ export function normalizeAreaName(input: string): Area | null {
         .trim();
     // Handle Mov Call variants
     const movcallKeys = new Set(['movcall', 'mov call', 'mov-call']);
-    if (movcallKeys.has(base)) return 'Mov Call';
+    if (movcallKeys.has(base)) return 'Movcall';
     // Generic matching for other areas (case/space-insensitive)
     const candidates: Record<string, Area> = {
         'design': 'Design',

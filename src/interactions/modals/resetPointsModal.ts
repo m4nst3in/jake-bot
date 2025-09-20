@@ -18,8 +18,8 @@ export default {
                 const canonical = normalizeAreaName(areaRaw || '');
                 if (!canonical || !isValidArea(canonical))
                     return interaction.editReply('Área inválida.');
-                // Map display name to DB key where needed (Mov Call -> movcall)
-                const dbArea = canonical === 'Mov Call' ? 'movcall' : canonical;
+                // Map display name to DB key where needed (Movcall is the DB key/display)
+                const dbArea = canonical === 'Movcall' ? 'Movcall' : canonical;
                 await (svc as any).resetArea(dbArea);
                 await interaction.editReply(`Pontuações da área ${canonical} resetadas.`);
             }

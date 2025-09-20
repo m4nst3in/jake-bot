@@ -161,8 +161,8 @@ export function scheduleWeeklyTasks(client: Client) {
                 logger.warn({ e }, 'Falha gerar PDF recrutamento pré-reset');
             }
             await resetAreaPoints('Recrutamento');
-            // Mov Call (usa chave de DB 'movcall' para reset)
-            const movBackup = await exportAreaPoints('movcall');
+            // Movcall (usa chave de DB 'Movcall' para reset)
+            const movBackup = await exportAreaPoints('Movcall');
             let movPdf: Buffer | null = null;
             try {
                 movPdf = await generateAreaPdf(client, 'Mov Call');
@@ -170,7 +170,7 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha gerar PDF Mov Call pré-reset');
             }
-            await resetAreaPoints('movcall');
+            await resetAreaPoints('Movcall');
             if (rankingChannelId) {
                 const ch: any = await client.channels.fetch(supportBackupChannelId).catch(() => null);
                 if (ch && ch.isTextBased()) {

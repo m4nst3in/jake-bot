@@ -1,6 +1,7 @@
 import { ModalSubmitInteraction, GuildMember } from 'discord.js';
 import { PointsService } from '../../services/pointsService.ts';
 import { assertAreaPermission } from '../../utils/permissions.ts';
+import { isValidArea, normalizeAreaName } from '../../constants/areas.ts';
 const svc = new PointsService();
 export default {
     id: /^pts_amount:(add|remove):(.+)$/,
@@ -9,12 +10,17 @@ export default {
             await interaction.deferReply({ ephemeral: true });
         }
         catch { }
-        const [, mode, area] = interaction.customId.split(':');
+        const [, mode, areaRaw] = interaction.customId.split(':');
         const member = interaction.member as GuildMember | null;
-        if (!assertAreaPermission(member, area)) {
+        if (!assertAreaPermission(member, areaRaw)) {
             await interaction.editReply('Sem permissão para esta área.');
             return;
         }
+        const canonical = normalizeAreaName(areaRaw || '');
+        if (!canonical || !isValidArea(canonical)) {
+            return interaction.editReply('Área inválida.');
+        }
+        const dbArea = canonical === 'Movcall' ? 'Movcall' : canonical;
         const qtyRaw = interaction.fields.getTextInputValue('amount');
         const userFieldRaw = interaction.fields.getTextInputValue('user');
         const reason = interaction.fields.getTextInputValue('reason');
@@ -39,9 +45,9 @@ export default {
         for (const targetId of userIds) {
             try {
                 if (mode === 'add')
-                    await svc.adicionar(targetId, area, qty, reason || '—', interaction.user.id);
+                    await svc.adicionar(targetId, dbArea, qty, reason || '—', interaction.user.id);
                 else
-                    await svc.remover(targetId, area, qty, reason || '—', interaction.user.id);
+                    await svc.remover(targetId, dbArea, qty, reason || '—', interaction.user.id);
                 results.push({ id: targetId, ok: true });
             }
             catch {
@@ -53,7 +59,7 @@ export default {
         const actionWord = mode === 'add' ? 'Adicionados' : 'Removidos';
         let msg = '';
         if (ok)
-            msg += `✅ ${actionWord} ${qty} pts para: ${ok} em ${area}.`;
+            msg += `✅ ${actionWord} ${qty} pts para: ${ok} em ${canonical}.`;
         if (fail)
             msg += `\n⚠️ Falhou para: ${fail}.`;
         if (!msg)

@@ -62,6 +62,10 @@ interface ParticipantData {
     goalNeeded?: number;
     isTop1?: boolean;
     badgeText?: string;
+    // Promotion eligibility
+    canPromote?: boolean;
+    promoteIcon?: string;
+    promoteText?: string;
 }
 interface TemplateData {
     title: string;
@@ -103,7 +107,7 @@ function getAreaTheme(area: string): AreaTheme {
             primary: '#1abc9c',
             secondary: '#d8f7f1',
             accent: '#16a085',
-            name: 'Mov Call',
+            name: 'Movcall',
             icon: '📞',
             cssClass: 'movcall'
         },
@@ -423,6 +427,10 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
         const rankBg = tooLight ? '#f5f5f5' : 'transparent';
         const isTop1 = i === 0;
         const badgeText = isTop1 ? 'Staff Sensação' : (metGoals ? 'META CUMPRIDA' : 'META NÃO CUMPRIDA');
+        // Promotion decision per-area
+        const canPromote = isSupport ? metGoals : (!!g ? (row.points >= (g.upPoints ?? g.points ?? 0)) : false);
+        const promoteIcon = canPromote ? '✅' : '❌';
+        const promoteText = canPromote ? 'Sim' : 'Não';
         participants.push({
             username,
             userId: row.user_id,
@@ -444,6 +452,9 @@ async function processParticipants(client: Client, rows: MemberRow[], area: stri
             participation: !isSupport ? `${partPct.toFixed(0)}% do líder` : undefined,
             isTop1,
             badgeText,
+            canPromote,
+            promoteIcon,
+            promoteText,
             ...goalData
         });
     }
@@ -563,7 +574,7 @@ function renderConditionals(template: string, data: TemplateData): string {
     result = result.replace(/{{\/each}}/g, '');
     return result;
 }
-function normalizeAreaKey(input: string): string {
+function normalizeDbArea(input: string): string {
     const base = (input || '')
         .toLowerCase()
         .normalize('NFD')
@@ -571,7 +582,7 @@ function normalizeAreaKey(input: string): string {
         .replace(/-/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-    if (base === 'mov call' || base === 'movcall') return 'movcall';
+    if (base === 'mov call' || base === 'movcall') return 'Movcall';
     if (base === 'design') return 'design';
     if (base === 'eventos' || base === 'evento') return 'eventos';
     if (base === 'suporte') return 'suporte';
@@ -583,9 +594,10 @@ function normalizeAreaKey(input: string): string {
 export async function generateAreaPdf(client: Client, area: string): Promise<Buffer> {
     let browser: Browser | null = null;
     try {
-        const areaKey = normalizeAreaKey(area);
-        const rows = await fetchAreaRows(client, areaKey);
-        const theme = getAreaTheme(areaKey);
+        const areaDb = normalizeDbArea(area); // e.g., 'Movcall'
+        const areaKeyLower = (areaDb || '').toString().toLowerCase(); // for metas/themes keys
+        const rows = await fetchAreaRows(client, areaDb);
+        const theme = getAreaTheme(areaKeyLower);
         if (!rows.length) {
             throw new Error('Nenhum participante encontrado para esta área');
         }
@@ -593,7 +605,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
         const avgPoints = totalPoints / rows.length;
         const medPoints = median(rows.map(r => r.points));
         const maxPoints = rows[0].points || 1;
-        const participants = await processParticipants(client, rows, areaKey, totalPoints, maxPoints);
+        const participants = await processParticipants(client, rows, areaKeyLower, totalPoints, maxPoints);
         const topParticipants = participants;
         if (participants.length === 0) {
             const mockParticipants = [
@@ -653,7 +665,7 @@ export async function generateAreaPdf(client: Client, area: string): Promise<Buf
             avgPoints: formatNumber(Math.round(avgPoints)),
             medianPoints: formatNumber(Math.round(medPoints)),
             maxPoints: formatNumber(maxPoints),
-            isSupport: areaKey === 'suporte',
+            isSupport: areaKeyLower === 'suporte',
             topParticipants,
             participants,
             pageNumber: 1

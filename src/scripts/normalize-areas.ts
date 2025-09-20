@@ -10,6 +10,7 @@ function normAreaKey(input: string): string {
     .replace(/-/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+  // Normalize to detection key (lower): we treat any variant as 'movcall'
   if (base === 'mov call' || base === 'movcall') return 'movcall';
   return base;
 }
@@ -28,7 +29,7 @@ async function normalizeSqlite() {
       });
       if (!variants.length) return resolve();
 
-      logger.info({ variants }, 'Encontradas variantes de area para Mov Call');
+      logger.info({ variants }, 'Encontradas variantes de area para Movcall');
 
       await new Promise<void>((resT, rejT) => {
         db.run('BEGIN TRANSACTION', [], (err) => err ? rejT(err) : resT());
@@ -63,11 +64,11 @@ async function normalizeSqlite() {
               (err) => err ? rej(err) : res()
             );
           });
-          // Upsert unified row with area='movcall'
+          // Upsert unified row with area='Movcall'
           await new Promise<void>((res, rej) => {
             db.run(
               `INSERT INTO points (user_id, area, points, reports_count, shifts_count, last_updated)
-               VALUES (?, 'movcall', ?, ?, ?, ?)
+               VALUES (?, 'Movcall', ?, ?, ?, ?)
                ON CONFLICT(user_id, area) DO UPDATE SET
                  points=points+excluded.points,
                  reports_count=COALESCE(reports_count,0)+COALESCE(excluded.reports_count,0),
@@ -104,7 +105,7 @@ async function normalizeMongo() {
   const distinctAreas: string[] = await points.distinct('area');
   const variants = distinctAreas.filter(a => normAreaKey(String(a)) === 'movcall');
   if (!variants.length) return;
-  logger.info({ variants }, 'Encontradas variantes de area para Mov Call (Mongo)');
+  logger.info({ variants }, 'Encontradas variantes de area para Movcall (Mongo)');
 
   // Aggregate by user_id across variants
   const cursor = points.aggregate([
@@ -125,8 +126,8 @@ async function normalizeMongo() {
     const userId = String(doc._id);
     // Remove existing variant docs
     bulk.find({ user_id: userId, area: { $in: variants } }).delete();
-    // Upsert unified doc
-    bulk.find({ user_id: userId, area: 'movcall' }).upsert().updateOne({
+    // Upsert unified doc as 'Movcall'
+    bulk.find({ user_id: userId, area: 'Movcall' }).upsert().updateOne({
       $inc: {
         points: doc.totalPoints || 0,
         reports_count: doc.totalReports || 0,
