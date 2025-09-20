@@ -116,6 +116,7 @@ export function scheduleWeeklyTasks(client: Client) {
         const designBackupChannelId = '1414440305935122434';
         const recruitBackupChannelId = '1414440076871598090';
         const recruitChannelId = (cfg as any).channels?.recruitRanking;
+        const movBackupChannelId = '1418786130488459284';
         const tzNow = new Date();
         logger.info('Executando reset semanal das áreas Suporte, Jornalismo, Design, Recrutamento e Mov Call');
         const svc = new PointsService();
@@ -345,8 +346,31 @@ export function scheduleWeeklyTasks(client: Client) {
             catch (e) {
                 logger.warn({ e }, 'Falha envio reset recrutamento');
             }
-            // Mov Call: apenas backup local e reset, sem canais específicos configurados
-            logger.info({ count: movBackup.count }, 'Mov Call resetada (backup salvo em disco)');
+            // Mov Call: enviar backup para canal indicado
+            try {
+                const movBackupCh: any = await client.channels.fetch(movBackupChannelId).catch(() => null);
+                if (movBackupCh && movBackupCh.isTextBased()) {
+                    try {
+                        const backupEmbed = new EmbedBuilder()
+                            .setTitle('🗄️ Backup Área - Mov Call')
+                            .setDescription(`Registros: ${movBackup.count}. Backup gerado antes do reset.`)
+                            .setColor(0x16a085)
+                            .setTimestamp();
+                        const jsonFile = new AttachmentBuilder(movBackup.jsonBuffer, { name: `movcall-${Date.now()}.json` });
+                        const csvFile = new AttachmentBuilder(movBackup.csvBuffer, { name: `movcall-${Date.now()}.csv` });
+                        const files: any[] = [jsonFile, csvFile];
+                        if (movPdf)
+                            files.push({ attachment: movPdf, name: `movcall-${Date.now()}.pdf` });
+                        await movBackupCh.send({ embeds: [backupEmbed], files });
+                    }
+                    catch (e) {
+                        logger.warn({ e }, 'Falha envio backup Mov Call');
+                    }
+                }
+            }
+            catch (e) {
+                logger.warn({ e }, 'Falha bloco envio Mov Call');
+            }
         }
         catch (err) {
             logger.error({ err }, 'Falha ao resetar suporte e jornalismo semanal');

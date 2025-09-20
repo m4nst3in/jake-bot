@@ -1,6 +1,6 @@
 import { ModalSubmitInteraction } from 'discord.js';
 import { PointsService } from '../../../src/services/pointsService.ts';
-import { AREAS, isValidArea } from '../../constants/areas.ts';
+import { AREAS, isValidArea, normalizeAreaName } from '../../constants/areas.ts';
 const svc = new PointsService();
 export default {
     id: 'reset_points_modal',
@@ -15,10 +15,13 @@ export default {
         await interaction.deferReply({ ephemeral: true });
         try {
             if (areaRaw && areaRaw !== '__all__') {
-                if (!isValidArea(areaRaw))
+                const canonical = normalizeAreaName(areaRaw || '');
+                if (!canonical || !isValidArea(canonical))
                     return interaction.editReply('Área inválida.');
-                await (svc as any).resetArea(areaRaw);
-                await interaction.editReply(`Pontuações da área ${areaRaw} resetadas.`);
+                // Map display name to DB key where needed (Mov Call -> movcall)
+                const dbArea = canonical === 'Mov Call' ? 'movcall' : canonical;
+                await (svc as any).resetArea(dbArea);
+                await interaction.editReply(`Pontuações da área ${canonical} resetadas.`);
             }
             else {
                 await (svc as any).resetAll();
